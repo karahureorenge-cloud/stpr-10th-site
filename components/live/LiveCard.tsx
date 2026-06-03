@@ -1,7 +1,7 @@
 import Link from "next/link"
 import type { CSSProperties } from "react"
 import type { Live } from "@/data/lives"
-import { formatDateDot } from "@/lib/utils"
+import { formatDateDot, type ViewMode } from "@/lib/utils"
 import "@/components/group/strawberry-prince/strawberry-prince.css"
 
 const BASE = "/stpr-10th-anniversary"
@@ -32,9 +32,11 @@ const DATE_STYLE: CSSProperties = {
 export default function LiveCard({
   live,
   index = 0,
+  view = "grid",
 }: {
   live: Live
   index?: number
+  view?: ViewMode
 }) {
   const idx = index
   const isLatest = idx === 0
@@ -45,6 +47,34 @@ export default function LiveCard({
       ? ` 〜 ${formatDateDot(live.periodEnd)}`
       : ""
   }`
+
+  // リスト表示: 画像小さめ（左）+ テキスト（右）の横長 1 行レイアウト。
+  if (view === "list") {
+    return (
+      <Link
+        href={`${BASE}/live/${live.slug}`}
+        className="group flex items-center gap-3 overflow-hidden rounded-2xl border border-gold-200/70 bg-white/55 p-3 backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(212,168,83,0.22)]"
+      >
+        <div
+          className="relative w-28 shrink-0 overflow-hidden rounded-xl bg-white/40 sm:w-40"
+          style={{ aspectRatio: "16/9" }}
+        >
+          {live.keyVisual && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={live.keyVisual} alt={live.title} className="h-full w-full object-cover" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-sm font-bold" style={{ color: "var(--sp-text)" }}>
+            {live.title}
+          </h3>
+          <p className="mt-1" style={DATE_STYLE}>
+            {dateRange}
+          </p>
+        </div>
+      </Link>
+    )
+  }
 
   return (
     <Link

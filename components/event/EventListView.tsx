@@ -48,7 +48,7 @@ export default function EventListView({
 
       <div className={gridCls}>
         {sorted.map((e, i) => (
-          <EventCard key={e.slug} event={e} index={i} />
+          <EventCard key={e.slug} event={e} index={i} view={view} />
         ))}
       </div>
     </div>

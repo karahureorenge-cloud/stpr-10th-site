@@ -56,6 +56,7 @@ export default function LiveListView({
                 key={live.slug}
                 live={live}
                 index={indexBySlug.get(live.slug) ?? 0}
+                view={view}
               />
             ))}
           </div>

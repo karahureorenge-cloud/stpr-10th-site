@@ -1,7 +1,7 @@
 import Link from "next/link"
 import type { CSSProperties } from "react"
 import type { Event } from "@/data/events"
-import { formatDateDot } from "@/lib/utils"
+import { formatDateDot, type ViewMode } from "@/lib/utils"
 import "@/components/group/strawberry-prince/strawberry-prince.css"
 
 const BASE = "/stpr-10th-anniversary"
@@ -32,9 +32,11 @@ const DATE_STYLE: CSSProperties = {
 export default function EventCard({
   event,
   index = 0,
+  view = "grid",
 }: {
   event: Event
   index?: number
+  view?: ViewMode
 }) {
   const idx = index
   const eventType = event.eventType
@@ -44,6 +46,42 @@ export default function EventCard({
       ? ` 〜 ${formatDateDot(event.periodEnd)}`
       : ""
   }`
+
+  // リスト表示: 画像小さめ（左）+ テキスト（右）の横長 1 行レイアウト。
+  if (view === "list") {
+    return (
+      <Link
+        href={`${BASE}/event/${event.slug}`}
+        className="group flex items-center gap-3 overflow-hidden rounded-2xl border border-gold-200/70 bg-white/55 p-3 backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(212,168,83,0.22)]"
+      >
+        <div
+          className="relative w-28 shrink-0 overflow-hidden rounded-xl bg-white/40 sm:w-40"
+          style={{ aspectRatio: "16/9" }}
+        >
+          {event.keyVisual && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.keyVisual} alt={event.title} className="h-full w-full object-cover" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-sm font-bold" style={{ color: "var(--sp-text)" }}>
+            {event.title}
+          </h3>
+          {event.collabPartner && (
+            <p className="truncate text-xs font-bold" style={{ color: "var(--sp-text-accent)" }}>
+              ✕ {event.collabPartner}
+            </p>
+          )}
+          <p className="mt-0.5" style={DATE_STYLE}>
+            {dateRange}
+          </p>
+          {eventType && (
+            <p className="text-[10px] uppercase tracking-wider text-[#9a8aa0]">{eventType}</p>
+          )}
+        </div>
+      </Link>
+    )
+  }
 
   return (
     <Link

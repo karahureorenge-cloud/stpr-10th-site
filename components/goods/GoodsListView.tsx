@@ -72,6 +72,7 @@ export default function GoodsListView({
                   key={g.slug}
                   goods={g}
                   index={indexBySlug.get(g.slug) ?? 0}
+                  view={view}
                 />
               ))}
             </div>

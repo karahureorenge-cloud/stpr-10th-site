@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { Goods } from "@/data/goods"
+import type { ViewMode } from "@/lib/utils"
 import "@/components/group/strawberry-prince/strawberry-prince.css"
 
 const BASE = "/stpr-10th-anniversary"
@@ -12,13 +13,45 @@ const BASE = "/stpr-10th-anniversary"
 export default function GoodsCard({
   goods,
   index = 0,
+  view = "grid",
 }: {
   goods: Goods
   index?: number
+  view?: ViewMode
 }) {
   const idx = index
   const productType = goods.productType
   const useCheki = idx < 2
+
+  // リスト表示: 画像小さめ（左）+ テキスト（右）の横長 1 行レイアウト。
+  if (view === "list") {
+    return (
+      <Link
+        href={`${BASE}/goods/${goods.slug}`}
+        className="group flex items-center gap-3 overflow-hidden rounded-2xl border border-gold-200/70 bg-white/55 p-3 backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(212,168,83,0.22)]"
+      >
+        <div
+          className="relative w-28 shrink-0 overflow-hidden rounded-xl bg-white/40 sm:w-40"
+          style={{ aspectRatio: "16/9" }}
+        >
+          {goods.keyVisual && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={goods.keyVisual} alt={goods.title} className="h-full w-full object-cover" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-sm font-bold" style={{ color: "var(--sp-text)" }}>
+            {goods.title}
+          </h3>
+          {productType && (
+            <p className="mt-1 text-xs" style={{ color: "var(--sp-text-soft)" }}>
+              {productType}
+            </p>
+          )}
+        </div>
+      </Link>
+    )
+  }
 
   return (
     <Link
