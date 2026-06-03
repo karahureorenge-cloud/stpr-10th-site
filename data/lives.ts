@@ -53,6 +53,7 @@ export type VenueGoods = {
   ticketPeriod?: string // 整理券申込期間
   payment?: string // 決済方法
   note?: string // 備考（福袋情報など）
+  goodsImages?: string[] // 物販画像（複数）
 }
 
 /** ライブ物販情報 */

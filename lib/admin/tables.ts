@@ -111,6 +111,7 @@ export const TABLES: Record<string, TableConfig> = {
               { name: "ticketPeriod", label: "整理券申込期間", type: "text" },
               { name: "payment", label: "決済方法", type: "text" },
               { name: "note", label: "備考", type: "textarea" },
+              { name: "goodsImages", label: "物販画像（複数）", type: "image", multiple: true },
             ],
           },
           { name: "setlistNotes", label: "セトリ変更メモ", type: "textarea" },
