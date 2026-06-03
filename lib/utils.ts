@@ -6,8 +6,8 @@ import { MEMBERS, type Member } from "@/data/members"
 import type { Live, LiveStatus, Venue } from "@/data/lives"
 import type { Event } from "@/data/events"
 import type { Goods } from "@/data/goods"
-import type { Song } from "@/data/songs"
-import type { Album } from "@/data/albums"
+import type { Magazine } from "@/data/magazines"
+import type { Media } from "@/data/media"
 
 /**
  * ライブのステータスを日付から判定する。
@@ -176,7 +176,13 @@ export function venuesSummary(venues: Venue[]): string {
 //   lives / events / goods / songs / albums を年表アイテムへ集約する。
 // =========================================================================
 
-export type TimelineCategory = "live" | "event" | "goods" | "song" | "album"
+export type TimelineCategory =
+  | "anniversary"
+  | "live"
+  | "event"
+  | "goods"
+  | "magazine"
+  | "media"
 
 export type TimelineItem = {
   date: string // YYYY-MM-DD
@@ -202,18 +208,18 @@ function normalizeTimelineDate(raw?: string): string | null {
 }
 
 /**
- * lives / events / goods / songs / albums を年表アイテムへ集約する。
- * - 日付は各データの代表日（live/event=periodStart, goods/album=releaseDate,
- *   song=publishedDate）を正規化して使用。
- * - 楽曲の「歌ってみた / COVER / カバー」は年表から除外。
- * - 日付降順（同日はカテゴリ順）で返す。
+ * lives / events / goods / magazines / media を年表アイテムへ集約する。
+ * - 日付は各データの代表日（live/event=periodStart, goods/magazine=releaseDate,
+ *   media=dateLabel）を正規化して使用。
+ * - すとぷり 10周年（2026-06-04）を DB 非依存の固定エントリとして必ず追加。
+ * - 日付昇順（古い→新しい。同日はカテゴリ順）で返す。
  */
 export function buildTimeline(opts: {
   lives?: Live[]
   events?: Event[]
   goods?: Goods[]
-  songs?: Song[]
-  albums?: Album[]
+  magazines?: Magazine[]
+  media?: Media[]
 }): TimelineItem[] {
   const out: TimelineItem[] = []
 
@@ -232,6 +238,15 @@ export function buildTimeline(opts: {
     }
     out.push({ ...base, date, year, endDate })
   }
+
+  // 固定エントリ: すとぷり 10周年（データベース非依存）
+  out.push({
+    date: "2026-06-04",
+    year: 2026,
+    category: "anniversary",
+    title: "すとぷり 10周年",
+    href: "#",
+  })
 
   for (const l of opts.lives ?? []) {
     push(
@@ -255,34 +270,33 @@ export function buildTimeline(opts: {
       href: `${TIMELINE_BASE}/goods/${g.slug}`,
     })
   }
-  for (const s of opts.songs ?? []) {
-    const t = s.type?.trim()
-    if (t === "歌ってみた" || t === "COVER" || t === "カバー") continue
-    push(s.publishedDate, {
-      category: "song",
-      title: s.title,
-      description: s.artist,
-      href: `${TIMELINE_BASE}/music/${s.slug}`,
+  for (const m of opts.magazines ?? []) {
+    push(m.releaseDate, {
+      category: "magazine",
+      title: m.name,
+      description: m.issue,
+      href: `${TIMELINE_BASE}/magazine/${m.id}`,
     })
   }
-  for (const a of opts.albums ?? []) {
-    push(a.releaseDate, {
-      category: "album",
-      title: a.title,
-      description: a.artist,
-      href: `${TIMELINE_BASE}/album/${a.slug}`,
+  for (const m of opts.media ?? []) {
+    push(m.dateLabel, {
+      category: "media",
+      title: m.programName,
+      description: m.station,
+      href: "#",
     })
   }
 
   const catOrder: Record<TimelineCategory, number> = {
+    anniversary: 0,
     live: 1,
     event: 2,
-    album: 3,
-    song: 4,
-    goods: 5,
+    goods: 3,
+    magazine: 4,
+    media: 5,
   }
   out.sort((a, b) => {
-    if (a.date !== b.date) return a.date < b.date ? 1 : -1
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1
     return catOrder[a.category] - catOrder[b.category]
   })
   return out

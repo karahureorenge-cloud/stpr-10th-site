@@ -12,20 +12,21 @@ const CATEGORY_META: Record<
   TimelineCategory,
   { label: string; bg: string; text: string }
 > = {
+  anniversary: { label: "10TH", bg: "bg-gold-100", text: "text-gold-700" },
   live: { label: "LIVE", bg: "bg-rose-100", text: "text-rose-600" },
   event: { label: "EVENT", bg: "bg-amber-100", text: "text-amber-700" },
-  album: { label: "ALBUM", bg: "bg-violet-100", text: "text-violet-700" },
-  song: { label: "SONG", bg: "bg-sky-100", text: "text-sky-700" },
   goods: { label: "GOODS", bg: "bg-emerald-100", text: "text-emerald-700" },
+  magazine: { label: "MAGAZINE", bg: "bg-violet-100", text: "text-violet-700" },
+  media: { label: "MEDIA", bg: "bg-sky-100", text: "text-sky-700" },
 }
 
 const CATEGORY_FILTER_OPTIONS: { key: "all" | TimelineCategory; label: string }[] = [
   { key: "all", label: "ALL" },
   { key: "live", label: "LIVE" },
   { key: "event", label: "EVENT" },
-  { key: "album", label: "ALBUM" },
-  { key: "song", label: "SONG" },
   { key: "goods", label: "GOODS" },
+  { key: "magazine", label: "MAGAZINE" },
+  { key: "media", label: "MEDIA" },
 ]
 
 function fmtMD(dateStr: string): string {
@@ -49,7 +50,8 @@ export default function HistoryView({ items }: Props) {
   const years = useMemo(() => {
     const set = new Set<number>()
     items.forEach((i) => set.add(i.year))
-    return [...set].sort((a, b) => b - a)
+    // 古い→新しい（時系列順）
+    return [...set].sort((a, b) => a - b)
   }, [items])
 
   const [year, setYear] = useState<number | undefined>(years[0])
@@ -146,6 +148,35 @@ export default function HistoryView({ items }: Props) {
             const isExternal = item.href.startsWith("http")
             const isHash = item.href === "#"
             const dateLabel = fmtRange(item.date, item.endDate)
+
+            // 10周年記念日: ゴールド強調の特別エントリ
+            if (item.category === "anniversary") {
+              return (
+                <li
+                  key={`${item.date}-anniv-${i}`}
+                  className="relative pb-5 pl-6 last:pb-0"
+                >
+                  <span
+                    className="absolute -left-[7px] top-2 h-3.5 w-3.5 rounded-full bg-gold-400 ring-2 ring-white"
+                    aria-hidden
+                  />
+                  <div className="rounded-xl border border-gold-300 bg-gradient-to-r from-gold-100 to-rose-100 px-4 py-3 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs tabular-nums text-gold-700">
+                        {dateLabel}
+                      </span>
+                      <span className="rounded-full bg-gold-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                        10TH
+                      </span>
+                    </div>
+                    <p className="mt-1 font-serif text-base font-bold text-[#3a2540]">
+                      ★ {item.title}
+                    </p>
+                  </div>
+                </li>
+              )
+            }
+
             return (
               <li
                 key={`${item.date}-${item.category}-${i}`}
