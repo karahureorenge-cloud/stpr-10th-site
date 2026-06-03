@@ -118,8 +118,7 @@ export default function HeroSection() {
             width={360}
             height={200}
             priority
-            className="h-auto"
-            style={{ width: "clamp(260px, 35vw, 360px)", height: "auto", objectFit: "contain" }}
+            className="h-auto w-[160px] object-contain sm:w-[200px] md:w-[240px] lg:w-[320px]"
           />
         </div>
       </div>
