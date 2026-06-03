@@ -41,7 +41,7 @@ export default function MemberCard({ member }: { member: Member }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${member.name} のカードを開く`}
-        className="sp-member-card relative block group p-1.5 sm:p-3 w-full text-left"
+        className="sp-member-card relative block group p-1 sm:p-3 w-full text-left"
         style={
           {
             ["--sp-m-rgb" as string]: rgb,
@@ -49,9 +49,9 @@ export default function MemberCard({ member }: { member: Member }) {
         }
       >
         {/* 内側をアクキー風（厚みのある透明層） */}
-        <div className="sp-acrylic p-1.5 sm:p-3">
-          {/* カード表面：アイコン画像（正方形・丸角）。SP は少し小さく中央寄せ。 */}
-          <div className="relative mx-auto aspect-square w-4/5 overflow-hidden rounded bg-white/40 sm:w-full">
+        <div className="sp-acrylic p-1 sm:p-3">
+          {/* カード表面：アイコン画像（正方形・丸角）。SP は小さく中央寄せ。 */}
+          <div className="relative mx-auto aspect-square w-3/4 overflow-hidden rounded bg-white/40 sm:w-full">
             <SafeImage
               src={member.icon}
               alt={`${member.name} アイコン`}
@@ -63,14 +63,14 @@ export default function MemberCard({ member }: { member: Member }) {
           </div>
           <div className="text-center mt-2">
             <p
-              className="font-bold text-xs sm:text-sm"
+              className="whitespace-nowrap font-bold text-[11px] leading-tight sm:text-sm"
               style={{ color: "var(--sp-text)" }}
             >
               {member.name}
             </p>
             {member.nameEn && (
               <p
-                className={`${italianno.className} text-base sm:text-xl`}
+                className={`${italianno.className} whitespace-nowrap text-sm sm:text-xl`}
                 style={{
                   color: "var(--sp-text-accent)",
                   opacity: 0.75,
