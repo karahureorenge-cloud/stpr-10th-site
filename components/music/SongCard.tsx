@@ -1,10 +1,17 @@
 import Link from "next/link"
 import type { CSSProperties } from "react"
 import type { Song } from "@/data/songs"
-import { resolveYoutubeThumbnail, formatDateDot, accentColorFromSeed, rotationFromSeed } from "@/lib/utils"
+import {
+  resolveYoutubeThumbnail,
+  formatDateDot,
+  accentColorFromSeed,
+  rotationFromSeed,
+  getDaysUntil,
+} from "@/lib/utils"
 import type { ViewMode } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import TypeBadge from "@/components/common/TypeBadge"
+import Stamp from "@/components/common/Stamp"
 
 const BASE = "/stpr-10th-anniversary"
 
@@ -18,6 +25,11 @@ export default function SongCard({
 }) {
   const href = `${BASE}/music/${song.slug}`
   const thumb = resolveYoutubeThumbnail(song.youtubeId, song.youtubeUrl)
+  // 発売日が14日以内（過去14日〜本日）なら NEW。
+  const days = getDaysUntil(song.publishedDate)
+  const isNew = days !== null && days <= 0 && days >= -14
+  // 種別バッジの色：ORIGINAL=ピンク（rose）/ Cover=ラベンダー。
+  const typeTone = song.type === "ORIGINAL" ? "rose" : "lavender"
 
   if (view === "list") {
     return (
@@ -73,6 +85,12 @@ export default function SongCard({
           borderRadius: 2,
         }}
       />
+      {/* NEW バッジ（発売日が14日以内・左上）。EventCard と同様の配置。 */}
+      {isNew && (
+        <span className="absolute left-2 top-2 z-10">
+          <Stamp label="NEW" tone="pink" size="sm" rotate />
+        </span>
+      )}
       <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-50">
         <SafeImage
           src={thumb}
@@ -82,9 +100,6 @@ export default function SongCard({
           className="object-cover"
           sizes="(min-width: 768px) 33vw, 100vw"
         />
-        <span className="absolute right-2 top-2 z-10">
-          <TypeBadge label={song.type} tone="rose" size="sm" />
-        </span>
       </div>
       <p className="mt-3 truncate text-sm font-bold text-[#3a2540]">{song.title}</p>
       {song.publishedDate && (
@@ -92,6 +107,10 @@ export default function SongCard({
           {formatDateDot(song.publishedDate)}
         </p>
       )}
+      {/* 種別バッジ（日付の下）：ORIGINAL=ピンク / Cover=ラベンダー。 */}
+      <span className="mt-1.5 inline-block">
+        <TypeBadge label={song.type} tone={typeTone} size="sm" />
+      </span>
     </Link>
   )
 }

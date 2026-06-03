@@ -1,7 +1,7 @@
 type Props = {
   label: string
-  /** ゴールド（既定・カテゴリ/種別）/ ローズ（楽曲タイプ等）/ 白地（補助） */
-  tone?: "gold" | "rose" | "light"
+  /** ゴールド（既定・カテゴリ/種別）/ ローズ（楽曲タイプ等）/ ラベンダー（Cover 等）/ 白地（補助） */
+  tone?: "gold" | "rose" | "lavender" | "light"
   size?: "sm" | "md"
 }
 
@@ -15,9 +15,11 @@ export default function TypeBadge({ label, tone = "gold", size = "md" }: Props) 
   const toneCls =
     tone === "rose"
       ? "bg-rose-400/90 text-white"
-      : tone === "light"
-        ? "bg-white/90 text-gold-700"
-        : "bg-gold-400/95 text-white"
+      : tone === "lavender"
+        ? "bg-violet-400/90 text-white"
+        : tone === "light"
+          ? "bg-white/90 text-gold-700"
+          : "bg-gold-400/95 text-white"
   return (
     <span
       className={`inline-flex items-center rounded-full font-bold tracking-wider ${sizeCls} ${toneCls}`}
