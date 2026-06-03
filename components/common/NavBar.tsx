@@ -16,6 +16,9 @@ const NAV_ITEMS: { label: string; segment: string }[] = [
   { label: "VISUAL", segment: "visual" },
   { label: "MAGAZINE", segment: "magazine" },
   { label: "MEDIA", segment: "media" },
+  { label: "PROJECT", segment: "project" },
+  { label: "MOVIE", segment: "movie" },
+  { label: "STREAM", segment: "stream" },
   { label: "HISTORY", segment: "history" },
   { label: "ABOUT", segment: "about" },
 ]
@@ -31,10 +34,16 @@ export default function NavBar({
   hasMusic = true,
   hasAlbum = true,
   hasVisual = true,
+  hasProject = true,
+  hasMovie = true,
+  hasStream = true,
 }: {
   hasMusic?: boolean
   hasAlbum?: boolean
   hasVisual?: boolean
+  hasProject?: boolean
+  hasMovie?: boolean
+  hasStream?: boolean
 }) {
   const pathname = usePathname()
 
@@ -42,6 +51,9 @@ export default function NavBar({
     if (item.segment === "music") return hasMusic
     if (item.segment === "album") return hasAlbum
     if (item.segment === "visual") return hasVisual
+    if (item.segment === "project") return hasProject
+    if (item.segment === "movie") return hasMovie
+    if (item.segment === "stream") return hasStream
     return true
   })
 

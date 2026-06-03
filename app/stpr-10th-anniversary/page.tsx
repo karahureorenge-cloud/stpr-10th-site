@@ -10,6 +10,7 @@ import MusicListView from "@/components/music/MusicListView"
 import AlbumListView from "@/components/album/AlbumListView"
 import MagazineListView from "@/components/magazine/MagazineListView"
 import MediaListView from "@/components/media/MediaListView"
+import LinkCard from "@/components/common/LinkCard"
 import EmptyState from "@/components/common/EmptyState"
 import MoreLink from "@/components/common/MoreLink"
 import { MEMBERS } from "@/data/members"
@@ -21,6 +22,9 @@ import {
   getAlbums,
   getMagazines,
   getMedia,
+  getProjects,
+  getMovies,
+  getStreams,
 } from "@/lib/repo"
 import { T } from "@/lib/theme"
 
@@ -42,20 +46,28 @@ function byDateDesc(a?: string, b?: string): number {
  */
 export default async function TopPage() {
   // 全カテゴリのデータを並行取得。
-  const [lives, events, goods, songs, albums, magazines, media] = await Promise.all([
-    getLives(),
-    getEvents(),
-    getGoods(),
-    getSongs(),
-    getAlbums(),
-    getMagazines(),
-    getMedia(),
-  ])
+  const [lives, events, goods, songs, albums, magazines, media, projects, movies, streams] =
+    await Promise.all([
+      getLives(),
+      getEvents(),
+      getGoods(),
+      getSongs(),
+      getAlbums(),
+      getMagazines(),
+      getMedia(),
+      getProjects(),
+      getMovies(),
+      getStreams(),
+    ])
 
   // TOP は各カテゴリの最新数件だけを見せ、残りは「もっと見る」で全件ページへ。
   const latestLives = [...lives].sort((a, b) => byDateDesc(a.periodStart, b.periodStart)).slice(0, 1)
   const latestEvents = [...events].sort((a, b) => byDateDesc(a.periodStart, b.periodStart)).slice(0, 3)
   const latestGoods = [...goods].sort((a, b) => byDateDesc(a.releaseDate, b.releaseDate)).slice(0, 1)
+  // PROJECT / MOVIE / STREAM は取得時点で公開日の新しい順。最新3件のみ表示。
+  const latestProjects = projects.slice(0, 3)
+  const latestMovies = movies.slice(0, 3)
+  const latestStreams = streams.slice(0, 3)
 
   // データ0件のカテゴリはグリッドからも外す（MUSIC / ALBUM）。
   const omitCategories = [
@@ -191,6 +203,71 @@ export default async function TopPage() {
         <MediaListView media={media.slice(0, 5)} showControls={false} />
         {media.length > 5 && <MoreLink href={`${BASE}/media`} />}
       </Section>
+
+      {/* 12. PROJECT（最新3件 + もっと見る・0件なら非表示） */}
+      {projects.length > 0 && (
+        <Section id="project" subtitle="PROJECT" title="企画" tone="white">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {latestProjects.map((p) => (
+              <LinkCard
+                key={p.slug}
+                href={`${BASE}/project/${p.slug}`}
+                seed={p.slug}
+                title={p.title}
+                thumbnail={p.thumbnail}
+                date={p.publishDate}
+                category={p.category}
+                fallbackLabel="PROJECT"
+              />
+            ))}
+          </div>
+          {projects.length > latestProjects.length && <MoreLink href={`${BASE}/project`} />}
+        </Section>
+      )}
+
+      {/* 13. MOVIE（最新3件 + もっと見る・0件なら非表示） */}
+      {movies.length > 0 && (
+        <Section id="movie" subtitle="MOVIE" title="動画" tone="pearl">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {latestMovies.map((m) => (
+              <LinkCard
+                key={m.id}
+                href={m.url}
+                external
+                seed={m.id}
+                title={m.title}
+                thumbnail={m.thumbnail}
+                date={m.publishDate}
+                category={m.category}
+                fallbackLabel="MOVIE"
+              />
+            ))}
+          </div>
+          {movies.length > latestMovies.length && <MoreLink href={`${BASE}/movie`} />}
+        </Section>
+      )}
+
+      {/* 14. STREAM（最新3件 + もっと見る・0件なら非表示） */}
+      {streams.length > 0 && (
+        <Section id="stream" subtitle="STREAM" title="配信" tone="white">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {latestStreams.map((s) => (
+              <LinkCard
+                key={s.id}
+                href={s.url}
+                external
+                seed={s.id}
+                title={s.title}
+                thumbnail={s.thumbnail}
+                date={s.publishDate}
+                category={s.category}
+                fallbackLabel="STREAM"
+              />
+            ))}
+          </div>
+          {streams.length > latestStreams.length && <MoreLink href={`${BASE}/stream`} />}
+        </Section>
+      )}
     </div>
   )
 }

@@ -6,7 +6,11 @@ import { useEffect, useState } from "react"
 const BASE = "/stpr-10th-anniversary"
 
 // メニュー項目。TOP/各セクションは同一ページのアンカー、VISUAL/HISTORY は専用ページ。
-type NavItem = { label: string; href: string; needs?: "music" | "album" | "visual" }
+type NavItem = {
+  label: string
+  href: string
+  needs?: "music" | "album" | "visual" | "project" | "movie" | "stream"
+}
 const ITEMS: NavItem[] = [
   { label: "TOP", href: BASE },
   { label: "LIVE", href: `${BASE}#live` },
@@ -17,6 +21,9 @@ const ITEMS: NavItem[] = [
   { label: "VISUAL", href: `${BASE}/visual`, needs: "visual" },
   { label: "MAGAZINE", href: `${BASE}#magazine` },
   { label: "MEDIA", href: `${BASE}#media` },
+  { label: "PROJECT", href: `${BASE}/project`, needs: "project" },
+  { label: "MOVIE", href: `${BASE}/movie`, needs: "movie" },
+  { label: "STREAM", href: `${BASE}/stream`, needs: "stream" },
   { label: "HISTORY", href: `${BASE}/history` },
   { label: "ABOUT", href: `${BASE}/about` },
 ]
@@ -33,10 +40,16 @@ export default function BottomNav({
   hasMusic,
   hasAlbum,
   hasVisual,
+  hasProject,
+  hasMovie,
+  hasStream,
 }: {
   hasMusic: boolean
   hasAlbum: boolean
   hasVisual: boolean
+  hasProject: boolean
+  hasMovie: boolean
+  hasStream: boolean
 }) {
   const [open, setOpen] = useState(false)
 
@@ -44,6 +57,9 @@ export default function BottomNav({
     if (it.needs === "music") return hasMusic
     if (it.needs === "album") return hasAlbum
     if (it.needs === "visual") return hasVisual
+    if (it.needs === "project") return hasProject
+    if (it.needs === "movie") return hasMovie
+    if (it.needs === "stream") return hasStream
     return true
   })
 

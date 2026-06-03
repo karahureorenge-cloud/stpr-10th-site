@@ -42,15 +42,22 @@ export default async function TenthLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [musicCount, albumCount, visualCount] = await Promise.all([
-    getCount("songs"),
-    getCount("albums"),
-    getCount("visuals"),
-  ])
+  const [musicCount, albumCount, visualCount, projectCount, movieCount, streamCount] =
+    await Promise.all([
+      getCount("songs"),
+      getCount("albums"),
+      getCount("visuals"),
+      getCount("projects"),
+      getCount("movies"),
+      getCount("streams"),
+    ])
   const flags = {
     hasMusic: musicCount > 0,
     hasAlbum: albumCount > 0,
     hasVisual: visualCount > 0,
+    hasProject: projectCount > 0,
+    hasMovie: movieCount > 0,
+    hasStream: streamCount > 0,
   }
 
   return (

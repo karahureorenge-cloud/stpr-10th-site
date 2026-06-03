@@ -545,6 +545,55 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "sort_order", label: "並び順", type: "number" },
     ],
   },
+
+  projects: {
+    key: "projects",
+    label: "企画（PROJECT）",
+    titleField: "title",
+    listColumns: ["title", "category", "publish_date"],
+    fields: [
+      { name: "slug", label: "スラッグ（URL）", type: "text", required: true, placeholder: "10th-project" },
+      { name: "title", label: "タイトル", type: "text", required: true },
+      { name: "category", label: "カテゴリ", type: "text", placeholder: "企画 / キャンペーン 等" },
+      { name: "publish_date", label: "公開日", type: "date" },
+      { name: "period_start", label: "期間（開始）", type: "date" },
+      { name: "period_end", label: "期間（終了）", type: "date" },
+      { name: "thumbnail", label: "サムネイル画像", type: "image", help: "画像ファイルを選択するとアップロードして公開URLを自動入力します。" },
+      { name: "images", label: "画像ギャラリー（複数）", type: "image", multiple: true },
+      { name: "url", label: "外部URL", type: "text" },
+      { name: "description", label: "説明", type: "textarea" },
+    ],
+  },
+
+  movies: {
+    key: "movies",
+    label: "動画（MOVIE）",
+    titleField: "title",
+    listColumns: ["title", "category", "publish_date"],
+    fields: [
+      { name: "title", label: "タイトル", type: "text", required: true },
+      { name: "category", label: "カテゴリ", type: "text", placeholder: "MV / ダイジェスト 等" },
+      { name: "publish_date", label: "公開日", type: "date" },
+      { name: "thumbnail", label: "サムネイル画像", type: "image", help: "画像ファイルを選択するとアップロードして公開URLを自動入力します。" },
+      { name: "url", label: "外部URL（YouTube 等）", type: "text" },
+      { name: "description", label: "説明", type: "textarea" },
+    ],
+  },
+
+  streams: {
+    key: "streams",
+    label: "配信（STREAM）",
+    titleField: "title",
+    listColumns: ["title", "category", "publish_date"],
+    fields: [
+      { name: "title", label: "タイトル", type: "text", required: true },
+      { name: "category", label: "カテゴリ", type: "text", placeholder: "生配信 / アーカイブ 等" },
+      { name: "publish_date", label: "配信日", type: "date" },
+      { name: "thumbnail", label: "サムネイル画像", type: "image", help: "画像ファイルを選択するとアップロードして公開URLを自動入力します。" },
+      { name: "url", label: "外部URL（配信ページ）", type: "text" },
+      { name: "description", label: "説明", type: "textarea" },
+    ],
+  },
 }
 
 export const TABLE_KEYS = Object.keys(TABLES)

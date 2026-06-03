@@ -36,6 +36,9 @@ import type { Album, AlbumEdition, AlbumBonus, AlbumTrack } from "@/data/albums"
 import type { Magazine } from "@/data/magazines"
 import type { Media, MediaType } from "@/data/media"
 import type { Visual } from "@/data/visuals"
+import type { Project } from "@/data/projects"
+import type { Movie } from "@/data/movies"
+import type { Stream } from "@/data/streams"
 
 // 読み取り用クライアント（モジュール内で 1 度だけ生成）。
 let _client: ReturnType<typeof createBrowserClient> | null = null
@@ -382,6 +385,88 @@ export async function getMedia(): Promise<Media[]> {
     .order("created_at", { ascending: true })
   if (error || !data) return []
   return (data as Row[]).map(toMedia)
+}
+
+// === 企画（PROJECT）===
+function toProject(r: Record<string, unknown>): Project {
+  return {
+    slug: String(r.slug),
+    title: String(r.title),
+    url: u(r.url as string | null),
+    publishDate: u(r.publish_date as string | null),
+    thumbnail: u(r.thumbnail as string | null),
+    description: u(r.description as string | null),
+    category: u(r.category as string | null),
+    images: strArr(r.images),
+    periodStart: u(r.period_start as string | null),
+    periodEnd: u(r.period_end as string | null),
+  }
+}
+
+export async function getProjects(): Promise<Project[]> {
+  const { data, error } = await read()
+    .from("projects")
+    .select("*")
+    .order("publish_date", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+  if (error || !data) return []
+  return (data as Row[]).map(toProject)
+}
+
+export async function getProjectBySlug(slug: string): Promise<Project | undefined> {
+  const { data, error } = await read()
+    .from("projects")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle()
+  if (error || !data) return undefined
+  return toProject(data as Row)
+}
+
+// === 動画（MOVIE）===
+function toMovie(r: Record<string, unknown>): Movie {
+  return {
+    id: String(r.id),
+    title: String(r.title),
+    url: u(r.url as string | null),
+    publishDate: u(r.publish_date as string | null),
+    thumbnail: u(r.thumbnail as string | null),
+    description: u(r.description as string | null),
+    category: u(r.category as string | null),
+  }
+}
+
+export async function getMovies(): Promise<Movie[]> {
+  const { data, error } = await read()
+    .from("movies")
+    .select("*")
+    .order("publish_date", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+  if (error || !data) return []
+  return (data as Row[]).map(toMovie)
+}
+
+// === 配信（STREAM）===
+function toStream(r: Record<string, unknown>): Stream {
+  return {
+    id: String(r.id),
+    title: String(r.title),
+    url: u(r.url as string | null),
+    publishDate: u(r.publish_date as string | null),
+    thumbnail: u(r.thumbnail as string | null),
+    description: u(r.description as string | null),
+    category: u(r.category as string | null),
+  }
+}
+
+export async function getStreams(): Promise<Stream[]> {
+  const { data, error } = await read()
+    .from("streams")
+    .select("*")
+    .order("publish_date", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+  if (error || !data) return []
+  return (data as Row[]).map(toStream)
 }
 
 /** 指定テーブルの行数（head count のみ・データ本体は取得しない）。失敗時は 0。 */
