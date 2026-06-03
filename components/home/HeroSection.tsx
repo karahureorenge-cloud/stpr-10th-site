@@ -111,16 +111,7 @@ export default function HeroSection() {
         className="relative z-10 flex flex-col items-center px-6"
         style={{ paddingTop: "5%" }}
       >
-        <div style={{ animation: "fadeUp 0.8s ease-out both" }}>
-          <Image
-            src="/logo-10th.png"
-            alt="すとぷり 10th Anniversary"
-            width={360}
-            height={200}
-            priority
-            className="h-auto w-[160px] object-contain sm:w-[200px] md:w-[240px] lg:w-[320px]"
-          />
-        </div>
+        <div style={{ animation: "fadeUp 0.8s ease-out both" }} />
       </div>
 
       {/* 下部の白フェード（直後の白背景エリアとシームレスに繋ぐ） */}
