@@ -1,16 +1,24 @@
-// 楽曲情報。実データは帰宅後に投入する。
+// 楽曲情報（microCMS スキーマ準拠 / 0003_full_schema.sql 対応）。
 
-export type SongType = "original" | "cover"
+export type SongType = "ORIGINAL" | "COVER" | "歌ってみた"
 
 export type Song = {
   slug: string
   title: string
+  artist?: string
   type: SongType
-  releaseDate?: string
-  youtubeId?: string // YouTube の v= 以降の ID
+  publishedDate?: string // 自由文字列
+  duration?: string
+  genre?: string
+  youtubeId?: string // v= 以降のID
+  youtubeUrl?: string // フルURL
+  streamingUrl?: string
   albumSlug?: string
+  lyrics?: string
+  credit?: string
   memberIds?: string[]
   description?: string
+  isActive?: boolean
 }
 
 export const SONGS: Song[] = [

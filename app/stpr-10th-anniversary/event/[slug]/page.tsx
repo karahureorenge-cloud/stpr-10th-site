@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { formatPeriod } from "@/lib/utils"
 import { getEventBySlug } from "@/lib/repo"
 import SafeImage from "@/components/common/SafeImage"
 
@@ -20,7 +21,7 @@ export default async function EventDetailPage({
         style={{ aspectRatio: "16/9" }}
       >
         <SafeImage
-          src={event.image}
+          src={event.keyVisual}
           alt={event.title}
           fill
           fallbackLabel="EVENT"
@@ -40,13 +41,15 @@ export default async function EventDetailPage({
 
         <dl className="flex flex-col gap-2 text-sm">
           <div className="flex gap-3">
-            <dt className="w-16 text-gold-600">日程</dt>
-            <dd className="text-[#3a2540]">{event.dateLabel}</dd>
+            <dt className="w-16 shrink-0 text-gold-600">日程</dt>
+            <dd className="text-[#3a2540]">
+              {formatPeriod(event.periodStart, event.periodEnd)}
+            </dd>
           </div>
-          {event.location && (
+          {event.hashtag && (
             <div className="flex gap-3">
-              <dt className="w-16 text-gold-600">場所</dt>
-              <dd className="text-[#3a2540]">{event.location}</dd>
+              <dt className="w-16 shrink-0 text-gold-600">タグ</dt>
+              <dd className="text-[#3a2540]">{event.hashtag}</dd>
             </div>
           )}
         </dl>

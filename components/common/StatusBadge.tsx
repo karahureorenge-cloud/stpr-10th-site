@@ -1,6 +1,10 @@
 import type { LiveStatus } from "@/data/lives"
 
-type Props = { status: LiveStatus }
+type Props = {
+  status: LiveStatus
+  /** sm: 一覧の横並びリスト用 / md: グリッドカード用（既定） */
+  size?: "sm" | "md"
+}
 
 // 既存ファンサイトと同じ配色・ラベル。
 const CONFIG: Record<LiveStatus, { label: string; className: string }> = {
@@ -10,11 +14,12 @@ const CONFIG: Record<LiveStatus, { label: string; className: string }> = {
 }
 
 /** ライブ等の状態バッジ */
-export default function StatusBadge({ status }: Props) {
+export default function StatusBadge({ status, size = "md" }: Props) {
   const { label, className } = CONFIG[status]
+  const sizeCls = size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[10px]"
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase text-white ${className}`}
+      className={`inline-flex items-center rounded-full font-bold uppercase tracking-[0.12em] text-white ${sizeCls} ${className}`}
     >
       {label}
     </span>

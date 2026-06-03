@@ -31,13 +31,14 @@ function parseField(field: Field, formData: FormData): unknown {
         .filter((v) => v.length > 0)
     }
 
-    case "json": {
+    case "json":
+    case "repeater": {
       const s = String(raw ?? "").trim()
       if (!s) return []
       try {
         return JSON.parse(s)
       } catch {
-        throw new Error(`「${field.label}」の JSON が不正です。`)
+        throw new Error(`「${field.label}」の入力が不正です。`)
       }
     }
 

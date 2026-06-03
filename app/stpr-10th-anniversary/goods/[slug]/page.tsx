@@ -27,7 +27,7 @@ export default async function GoodsDetailPage({
           style={{ aspectRatio: "1/1" }}
         >
           <SafeImage
-            src={goods.image}
+            src={goods.keyVisual}
             alt={goods.title}
             fill
             fallbackLabel="GOODS"
@@ -39,9 +39,16 @@ export default async function GoodsDetailPage({
 
         {/* 情報 */}
         <div className="flex flex-col gap-4">
-          <span className="w-fit rounded-full bg-gold-400/90 px-3 py-1 text-[11px] font-bold tracking-wider text-white">
-            {goods.category}
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-fit rounded-full bg-gold-400/90 px-3 py-1 text-[11px] font-bold tracking-wider text-white">
+              {goods.productType}
+            </span>
+            {goods.saleType && (
+              <span className="w-fit rounded-full bg-rose-400/90 px-3 py-1 text-[11px] font-bold tracking-wider text-white">
+                {goods.saleType}
+              </span>
+            )}
+          </div>
           <h1 className="font-serif text-2xl font-bold leading-snug text-[#3a2540]">
             {goods.title}
           </h1>
@@ -49,14 +56,26 @@ export default async function GoodsDetailPage({
           <dl className="flex flex-col gap-2 text-sm">
             {goods.releaseDate && (
               <div className="flex gap-3">
-                <dt className="w-16 text-gold-600">発売日</dt>
+                <dt className="w-16 shrink-0 text-gold-600">発売日</dt>
                 <dd className="text-[#3a2540]">{formatDate(goods.releaseDate)}</dd>
+              </div>
+            )}
+            {goods.salePeriod && (
+              <div className="flex gap-3">
+                <dt className="w-16 shrink-0 text-gold-600">販売期間</dt>
+                <dd className="text-[#3a2540]">{goods.salePeriod}</dd>
               </div>
             )}
             {goods.price && (
               <div className="flex gap-3">
-                <dt className="w-16 text-gold-600">価格</dt>
+                <dt className="w-16 shrink-0 text-gold-600">価格</dt>
                 <dd className="text-[#3a2540]">{goods.price}</dd>
+              </div>
+            )}
+            {goods.deliveryInfo && (
+              <div className="flex gap-3">
+                <dt className="w-16 shrink-0 text-gold-600">配送</dt>
+                <dd className="text-[#3a2540]">{goods.deliveryInfo}</dd>
               </div>
             )}
           </dl>
@@ -81,9 +100,9 @@ export default async function GoodsDetailPage({
             </p>
           )}
 
-          {goods.shopUrl && (
+          {goods.purchaseUrl && (
             <a
-              href={goods.shopUrl}
+              href={goods.purchaseUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-2 inline-flex w-fit items-center rounded-full bg-gold-400 px-8 py-3 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500"

@@ -7,12 +7,19 @@ const nextConfig: NextConfig = {
     root: fileURLToPath(new URL(".", import.meta.url)),
   },
   images: {
-    // YouTube サムネイルを next/image で読み込めるよう許可する。
     remotePatterns: [
+      // YouTube サムネイル
       {
         protocol: "https",
         hostname: "img.youtube.com",
         pathname: "/vi/**",
+      },
+      // Supabase Storage（media バケットの公開URL）
+      // 例: https://<project-ref>.supabase.co/storage/v1/object/public/media/...
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },

@@ -1,15 +1,21 @@
-// グッズ情報。実データは帰宅後に投入する。
+// グッズ情報（microCMS スキーマ準拠 / 0003_full_schema.sql 対応）。
 
 export type Goods = {
   slug: string
   title: string
-  category: string // "アクリル" | "フォトブック" | "缶バッジ" | "衣装" etc
+  productType: string // "アクリル" | "缶バッジ" 等
+  saleType?: string // "受注生産" / "数量限定" 等
   releaseDate?: string
+  salePeriod?: string // 販売期間の自由文字列
   price?: string
-  image?: string // public/images/goods/{slug}.jpg
-  shopUrl?: string
+  keyVisual?: string
+  lineupImages?: string[] // 複数画像URL
+  purchaseUrl?: string
+  deliveryInfo?: string
+  relatedLive?: string // 関連ライブ（slug）
   description?: string
-  memberIds?: string[] // 関連メンバー
+  memberIds?: string[]
+  isActive?: boolean
 }
 
 export const GOODS: Goods[] = [

@@ -2,52 +2,68 @@
 
 import { useMemo, useState } from "react"
 import type { Goods } from "@/data/goods"
+import { groupByYear } from "@/lib/utils"
+import type { SortOrder, ViewMode } from "@/lib/utils"
 import GoodsCard from "./GoodsCard"
+import ListControls from "@/components/common/ListControls"
+import FilterTabs from "@/components/common/FilterTabs"
+import GroupHeading from "@/components/common/GroupHeading"
 import EmptyState from "@/components/common/EmptyState"
 
-/** グッズ一覧（カテゴリタブフィルター付きグリッド） */
+/** グッズ一覧（カテゴリフィルタ / 年代別セクション / グリッド・リスト切替 / 並び替え） */
 export default function GoodsListView({ goods }: { goods: Goods[] }) {
-  // データ中に存在するカテゴリ一覧（重複排除・出現順）。
   const categories = useMemo(() => {
     const set: string[] = []
-    for (const g of goods) if (!set.includes(g.category)) set.push(g.category)
-    return set
+    for (const g of goods) if (!set.includes(g.productType)) set.push(g.productType)
+    return ["ALL", ...set]
   }, [goods])
 
-  const [active, setActive] = useState<string>("ALL")
-
-  const filtered = active === "ALL" ? goods : goods.filter((g) => g.category === active)
+  const [category, setCategory] = useState("ALL")
+  const [sort, setSort] = useState<SortOrder>("newest")
+  const [view, setView] = useState<ViewMode>("grid")
 
   if (goods.length === 0) {
     return <EmptyState label="グッズ情報を準備中です" />
   }
 
+  const filtered =
+    category === "ALL" ? goods : goods.filter((g) => g.productType === category)
+  const groups = groupByYear(filtered, (g) => g.releaseDate, sort)
+
   return (
-    <div className="flex flex-col gap-6">
-      {/* カテゴリタブ */}
-      <div className="flex flex-wrap gap-2">
-        {["ALL", ...categories].map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setActive(cat)}
-            className={`rounded-full border px-4 py-1.5 text-xs tracking-wider transition-colors ${
-              active === cat
-                ? "border-gold-400 bg-gold-400 text-white"
-                : "border-gold-200 bg-white/60 text-[#6a5570] hover:border-gold-300"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <FilterTabs options={categories} value={category} onChange={setCategory} />
+        <ListControls
+          sort={sort}
+          onSortChange={setSort}
+          view={view}
+          onViewChange={setView}
+        />
       </div>
 
-      {/* グリッド（PC 3列 / SP 2列） */}
-      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
-        {filtered.map((goods) => (
-          <GoodsCard key={goods.slug} goods={goods} />
-        ))}
-      </div>
+      {filtered.length === 0 ? (
+        <EmptyState label="該当するグッズがありません" />
+      ) : (
+        groups.map(({ year, items }) => (
+          <section key={year} className="mt-4">
+            <GroupHeading label={year} />
+            {view === "grid" ? (
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+                {items.map((g) => (
+                  <GoodsCard key={g.slug} goods={g} view="grid" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {items.map((g) => (
+                  <GoodsCard key={g.slug} goods={g} view="list" />
+                ))}
+              </div>
+            )}
+          </section>
+        ))
+      )}
     </div>
   )
 }

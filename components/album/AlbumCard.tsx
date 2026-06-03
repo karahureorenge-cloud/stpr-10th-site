@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { Album } from "@/data/albums"
-import { formatDate } from "@/lib/utils"
+import { formatDateDot } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 
 const BASE = "/stpr-10th-anniversary"
@@ -23,11 +23,11 @@ export default function AlbumCard({ album }: { album: Album }) {
         />
       </div>
       <div className="flex flex-col gap-1 p-4">
-        <h3 className="font-serif text-sm font-bold leading-snug text-[#3a2540]">
+        <h3 className="line-clamp-2 font-serif text-sm font-bold leading-snug text-[#3a2540]">
           {album.title}
         </h3>
         {album.releaseDate && (
-          <p className="text-xs text-[#9a8aa0]">{formatDate(album.releaseDate)}</p>
+          <p className="text-xs text-[#9a8aa0]">{formatDateDot(album.releaseDate)}</p>
         )}
       </div>
     </Link>

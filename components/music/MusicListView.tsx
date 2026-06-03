@@ -2,48 +2,63 @@
 
 import { useState } from "react"
 import type { Song } from "@/data/songs"
+import { groupByYear } from "@/lib/utils"
+import type { SortOrder, ViewMode } from "@/lib/utils"
 import SongCard from "./SongCard"
+import ListControls from "@/components/common/ListControls"
+import FilterTabs from "@/components/common/FilterTabs"
+import GroupHeading from "@/components/common/GroupHeading"
 import EmptyState from "@/components/common/EmptyState"
 
-type Tab = "ALL" | "ORIGINAL" | "COVER"
-const TABS: Tab[] = ["ALL", "ORIGINAL", "COVER"]
+const TABS = ["ALL", "ORIGINAL", "COVER", "歌ってみた"]
 
-/** ミュージック一覧（ALL / ORIGINAL / COVER タブ） */
+/** ミュージック一覧（ALL/ORIGINAL/COVER フィルタ / 年代別 / グリッド・リスト切替 / 並び替え） */
 export default function MusicListView({ songs }: { songs: Song[] }) {
-  const [tab, setTab] = useState<Tab>("ALL")
+  const [tab, setTab] = useState("ALL")
+  const [sort, setSort] = useState<SortOrder>("newest")
+  const [view, setView] = useState<ViewMode>("grid")
 
   if (songs.length === 0) {
     return <EmptyState label="楽曲情報を準備中です" />
   }
 
-  const filtered =
-    tab === "ALL"
-      ? songs
-      : songs.filter((s) => s.type === tab.toLowerCase())
+  const filtered = tab === "ALL" ? songs : songs.filter((s) => s.type === tab)
+  const groups = groupByYear(filtered, (s) => s.publishedDate, sort)
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex gap-2">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`rounded-full border px-4 py-1.5 font-display text-xs tracking-[0.15em] transition-colors ${
-              tab === t
-                ? "border-gold-400 bg-gold-400 text-white"
-                : "border-gold-200 bg-white/60 text-[#6a5570] hover:border-gold-300"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <FilterTabs options={TABS} value={tab} onChange={setTab} />
+        <ListControls
+          sort={sort}
+          onSortChange={setSort}
+          view={view}
+          onViewChange={setView}
+        />
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((song) => (
-          <SongCard key={song.slug} song={song} />
-        ))}
-      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState label="該当する楽曲がありません" />
+      ) : (
+        groups.map(({ year, items }) => (
+          <section key={year} className="mt-4">
+            <GroupHeading label={year} />
+            {view === "grid" ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {items.map((s) => (
+                  <SongCard key={s.slug} song={s} view="grid" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {items.map((s) => (
+                  <SongCard key={s.slug} song={s} view="list" />
+                ))}
+              </div>
+            )}
+          </section>
+        ))
+      )}
     </div>
   )
 }
