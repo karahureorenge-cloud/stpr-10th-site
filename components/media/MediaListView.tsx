@@ -84,8 +84,8 @@ export default function MediaListView({
           <thead>
             <tr className="border-b border-gold-200/70 text-[11px] uppercase tracking-wider text-gold-600">
               <th className="px-4 py-3 font-medium">番組名</th>
-              <th className="px-4 py-3 font-medium">放送局</th>
-              <th className="px-4 py-3 font-medium">放送日</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">放送局</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">放送日</th>
               <th className="px-4 py-3 font-medium">内容</th>
             </tr>
           </thead>
@@ -102,8 +102,8 @@ export default function MediaListView({
                   <td className="px-4 py-3 font-medium text-[#3a2540]">
                     {m.programName}
                   </td>
-                  <td className="px-4 py-3 text-[#6a5570]">{m.station}</td>
-                  <td className="px-4 py-3 text-[#6a5570]">{m.dateLabel}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-[#6a5570]">{m.station}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-[#6a5570]">{m.dateLabel}</td>
                   <td className="px-4 py-3 text-[#9a8aa0]">{m.content ?? "—"}</td>
                 </tr>
               ))

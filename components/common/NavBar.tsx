@@ -23,9 +23,22 @@ const NAV_ITEMS: { label: string; segment: string }[] = [
  * - backdrop-blur + 半透明白背景
  * - アクティブ項目はゴールドのボーダーボトム
  * - SP（md 未満）では非表示。代わりに画面下部の BottomNav を使用する。
+ * - MUSIC / ALBUM はデータがある場合のみ表示（hasMusic / hasAlbum）。
  */
-export default function NavBar() {
+export default function NavBar({
+  hasMusic = true,
+  hasAlbum = true,
+}: {
+  hasMusic?: boolean
+  hasAlbum?: boolean
+}) {
   const pathname = usePathname()
+
+  const items = NAV_ITEMS.filter((item) => {
+    if (item.segment === "music") return hasMusic
+    if (item.segment === "album") return hasAlbum
+    return true
+  })
 
   const isActive = (segment: string) => {
     const href = segment ? `${BASE}/${segment}` : BASE
@@ -36,7 +49,7 @@ export default function NavBar() {
   return (
     <nav className="sticky top-0 z-[100] hidden border-b border-gold-200/60 bg-white/70 backdrop-blur-md md:block">
       <ul className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-3 py-1 sm:gap-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const href = item.segment ? `${BASE}/${item.segment}` : BASE
           const active = isActive(item.segment)
           return (

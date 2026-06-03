@@ -99,13 +99,13 @@ export default function BottomNav({
             style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
           >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-gold-200" />
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="flex flex-wrap justify-center gap-2">
               {items.map((it) => (
                 <li key={it.label}>
                   <Link
                     href={it.id ? `${BASE}#${it.id}` : BASE}
                     onClick={() => setOpen(false)}
-                    className="block rounded-xl border border-gold-300/70 bg-gradient-to-r from-rose-100 to-gold-100 px-3 py-3 text-center font-display text-xs tracking-[0.12em] text-gold-700 transition-colors active:from-rose-200 active:to-gold-200"
+                    className="block min-w-[92px] whitespace-nowrap rounded-xl border border-gold-300/70 bg-gradient-to-r from-rose-100 to-gold-100 px-4 py-3 text-center font-display text-xs tracking-[0.12em] text-gold-700 transition-colors active:from-rose-200 active:to-gold-200"
                   >
                     {it.label}
                   </Link>

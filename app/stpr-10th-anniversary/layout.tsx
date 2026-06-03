@@ -21,7 +21,7 @@ export default async function TenthLayout({
 
   return (
     <div className="theme-10th theme-10th-bg flex min-h-screen flex-col font-serif">
-      <NavBar />
+      <NavBar hasMusic={musicCount > 0} hasAlbum={albumCount > 0} />
       <main className="flex-1">{children}</main>
       <Footer />
       <BottomNav hasMusic={musicCount > 0} hasAlbum={albumCount > 0} />
