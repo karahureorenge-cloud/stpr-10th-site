@@ -179,34 +179,9 @@ export default async function TopPage() {
         )}
       </Section>
 
-      {/* 8. MUSIC（データがある場合のみ表示） */}
-      {songs.length > 0 && (
-        <Section id="music" subtitle="MUSIC" title="ミュージック" tone="white">
-          <MusicListView songs={songs} showControls={false} />
-        </Section>
-      )}
-
-      {/* 9. ALBUM（データがある場合のみ表示） */}
-      {albums.length > 0 && (
-        <Section id="album" subtitle="ALBUM" title="アルバム" tone="pearl">
-          <AlbumListView albums={albums} showControls={false} />
-        </Section>
-      )}
-
-      {/* 10. MAGAZINE */}
-      <Section id="magazine" subtitle="MAGAZINE" title="雑誌" tone="white">
-        <MagazineListView magazines={magazines} />
-      </Section>
-
-      {/* 11. MEDIA（最新5件 + もっと見る） */}
-      <Section id="media" subtitle="MEDIA" title="メディア" tone="pearl">
-        <MediaListView media={media.slice(0, 5)} showControls={false} />
-        {media.length > 5 && <MoreLink href={`${BASE}/media`} />}
-      </Section>
-
-      {/* 12. PROJECT（最新3件 + もっと見る・0件なら非表示） */}
+      {/* 7. PROJECT（最新3件 + もっと見る・0件なら非表示） */}
       {projects.length > 0 && (
-        <Section id="project" subtitle="PROJECT" title="企画" tone="white">
+        <Section id="project" subtitle="PROJECT" title="企画" tone="pearl">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {latestProjects.map((p) => (
               <LinkCard
@@ -225,9 +200,9 @@ export default async function TopPage() {
         </Section>
       )}
 
-      {/* 13. MOVIE（最新3件 + もっと見る・0件なら非表示） */}
+      {/* 8. MOVIE（最新3件 + もっと見る・0件なら非表示） */}
       {movies.length > 0 && (
-        <Section id="movie" subtitle="MOVIE" title="動画" tone="pearl">
+        <Section id="movie" subtitle="MOVIE" title="動画" tone="white">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {latestMovies.map((m) => (
               <LinkCard
@@ -247,9 +222,23 @@ export default async function TopPage() {
         </Section>
       )}
 
-      {/* 14. STREAM（最新3件 + もっと見る・0件なら非表示） */}
+      {/* 9. MUSIC（データがある場合のみ表示） */}
+      {songs.length > 0 && (
+        <Section id="music" subtitle="MUSIC" title="ミュージック" tone="pearl">
+          <MusicListView songs={songs} showControls={false} />
+        </Section>
+      )}
+
+      {/* 10. ALBUM（データがある場合のみ表示） */}
+      {albums.length > 0 && (
+        <Section id="album" subtitle="ALBUM" title="アルバム" tone="white">
+          <AlbumListView albums={albums} showControls={false} />
+        </Section>
+      )}
+
+      {/* 11. STREAM（最新3件 + もっと見る・0件なら非表示） */}
       {streams.length > 0 && (
-        <Section id="stream" subtitle="STREAM" title="配信" tone="white">
+        <Section id="stream" subtitle="STREAM" title="配信" tone="pearl">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {latestStreams.map((s) => (
               <LinkCard
@@ -268,6 +257,17 @@ export default async function TopPage() {
           {streams.length > latestStreams.length && <MoreLink href={`${BASE}/stream`} />}
         </Section>
       )}
+
+      {/* 12. MAGAZINE */}
+      <Section id="magazine" subtitle="MAGAZINE" title="雑誌" tone="white">
+        <MagazineListView magazines={magazines} />
+      </Section>
+
+      {/* 13. MEDIA（最新5件 + もっと見る） */}
+      <Section id="media" subtitle="MEDIA" title="メディア" tone="pearl">
+        <MediaListView media={media.slice(0, 5)} showControls={false} />
+        {media.length > 5 && <MoreLink href={`${BASE}/media`} />}
+      </Section>
     </div>
   )
 }
