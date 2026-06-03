@@ -507,6 +507,11 @@ function VenueBlock({ venue }: { venue: Venue }) {
                   {vg.note && (
                     <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{vg.note}</p>
                   )}
+                  {vg.goodsImages && vg.goodsImages.length > 0 && (
+                    <div className="mt-3">
+                      <ImageGallery images={vg.goodsImages} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
