@@ -8,7 +8,7 @@ export type Member = {
   color: string
   bgColor: string
   icon?: string // public/images/members/{id}-icon.jpg（丸アイコン）
-  visual10th?: string // public/images/members/{id}-visual.jpg（カード表面）
+  visual10th?: string // public/images/members/{id}-visual.png（カード表面）
   miniChara?: string // public/images/members/{id}-mini.png（カード裏面）
   catchphrase?: string
 }
@@ -21,7 +21,7 @@ export const MEMBERS: Member[] = [
     color: "#C0392B",
     bgColor: "#FDE8E8",
     icon: "/images/members/rinu-icon.jpg",
-    visual10th: "/images/members/rinu-visual.jpg",
+    visual10th: "/images/members/rinu-visual.png",
     miniChara: "/images/members/rinu-mini.png",
   },
   {
@@ -31,7 +31,7 @@ export const MEMBERS: Member[] = [
     color: "#D4A017",
     bgColor: "#FDF6DC",
     icon: "/images/members/root-icon.jpg",
-    visual10th: "/images/members/root-visual.jpg",
+    visual10th: "/images/members/root-visual.png",
     miniChara: "/images/members/root-mini.png",
   },
   {
@@ -41,7 +41,7 @@ export const MEMBERS: Member[] = [
     color: "#2980B9",
     bgColor: "#E8F4FD",
     icon: "/images/members/colon-icon.jpg",
-    visual10th: "/images/members/colon-visual.jpg",
+    visual10th: "/images/members/colon-visual.png",
     miniChara: "/images/members/colon-mini.png",
   },
   {
@@ -51,7 +51,7 @@ export const MEMBERS: Member[] = [
     color: "#E91E8C",
     bgColor: "#FDE8F4",
     icon: "/images/members/satomi-icon.jpg",
-    visual10th: "/images/members/satomi-visual.jpg",
+    visual10th: "/images/members/satomi-visual.png",
     miniChara: "/images/members/satomi-mini.png",
   },
   {
@@ -61,7 +61,7 @@ export const MEMBERS: Member[] = [
     color: "#E07B20",
     bgColor: "#FDF0E0",
     icon: "/images/members/jel-icon.jpg",
-    visual10th: "/images/members/jel-visual.jpg",
+    visual10th: "/images/members/jel-visual.png",
     miniChara: "/images/members/jel-mini.png",
   },
   {
@@ -71,7 +71,7 @@ export const MEMBERS: Member[] = [
     color: "#7B52AB",
     bgColor: "#F0EBF8",
     icon: "/images/members/nanamori-icon.jpg",
-    visual10th: "/images/members/nanamori-visual.jpg",
+    visual10th: "/images/members/nanamori-visual.png",
     miniChara: "/images/members/nanamori-mini.png",
   },
 ]
