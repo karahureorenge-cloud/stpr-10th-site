@@ -171,6 +171,25 @@ export function venuesSummary(venues: Venue[]): string {
   return venues.map(formatVenueName).join(" / ")
 }
 
+/** カードのアクセント縦線用カラーパレット（ピンク・ラベンダー・スカイブルー・ゴールド・ローズ）。 */
+export const ACCENT_PALETTE = [
+  "rgba(245, 134, 164, 0.9)", // ピンク
+  "rgba(168, 149, 204, 0.9)", // ラベンダー
+  "rgba(142, 200, 224, 0.9)", // スカイブルー
+  "rgba(232, 200, 120, 0.9)", // ゴールド
+  "rgba(232, 122, 122, 0.9)", // ローズ
+] as const
+
+/**
+ * シード文字列（カードの slug やタイトル）から決定的にアクセントカラーを選ぶ。
+ * 文字コードの合計 % パレット数 なので、同じカードは常に同じ色になる。
+ */
+export function accentColorFromSeed(seed: string): string {
+  let sum = 0
+  for (let i = 0; i < seed.length; i++) sum += seed.charCodeAt(i)
+  return ACCENT_PALETTE[sum % ACCENT_PALETTE.length]
+}
+
 // =========================================================================
 // HISTORY 年表（buildTimeline）
 //   lives / events / goods / songs / albums を年表アイテムへ集約する。
