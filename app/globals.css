@@ -108,13 +108,22 @@
     box-shadow: 0 0 40px rgba(212, 168, 83, 0.6);
   }
 }
-/* 時計の針をなめらかに回す（HERO 時計盤用） */
-@keyframes clockSpin {
-  from {
-    transform: rotate(0deg);
+/* スクロール誘導の縦ライン（HERO 下部）。上から伸びて下へ抜ける。 */
+@keyframes scrollLine {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0;
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+    opacity: 0;
   }
 }
 

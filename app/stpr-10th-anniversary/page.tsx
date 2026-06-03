@@ -1,71 +1,45 @@
 import HeroSection from "@/components/home/HeroSection"
 import CategoryGrid from "@/components/home/CategoryGrid"
-import SectionHeading from "@/components/common/SectionHeading"
-import MemberCard from "@/components/members/MemberCard"
-import LiveCard from "@/components/live/LiveCard"
-import GoodsCard from "@/components/goods/GoodsCard"
-import EmptyState from "@/components/common/EmptyState"
-import { MEMBERS } from "@/data/members"
-import { getLives, getGoods } from "@/lib/repo"
+import { T } from "@/lib/theme"
 
-// 管理画面の編集が即時反映されるよう常に動的レンダリング。
-export const dynamic = "force-dynamic"
-
-export default async function TopPage() {
-  // 注目ライブ/グッズ（先頭数件）。データが無ければ EmptyState を表示。
-  const [lives, goods] = await Promise.all([getLives(), getGoods()])
-  const pickupLives = lives.slice(0, 3)
-  const pickupGoods = goods.slice(0, 3)
-
+/**
+ * 10周年特設サイト TOP。
+ * 主役ロゴの HERO とベントー型カテゴリグリッドの2部構成。
+ * 地のグラデーション背景は layout（theme-10th-bg）が供給する。
+ */
+export default function TopPage() {
   return (
     <>
+      {/* HERO */}
       <HeroSection />
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-20 px-6 py-20">
-        {/* カテゴリ */}
-        <section className="flex flex-col gap-6">
-          <SectionHeading subtitle="CONTENTS" title="コンテンツ" />
-          <CategoryGrid />
-        </section>
-
-        {/* メンバー */}
-        <section className="flex flex-col gap-6">
-          <SectionHeading subtitle="MEMBERS" title="メンバー" />
-          <div className="grid grid-cols-3 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {MEMBERS.map((m) => (
-              <MemberCard key={m.id} member={m} />
-            ))}
-          </div>
-        </section>
-
-        {/* 注目ライブ */}
-        <section className="flex flex-col gap-6">
-          <SectionHeading subtitle="PICK UP LIVE" title="注目のライブ" />
-          {pickupLives.length === 0 ? (
-            <EmptyState label="ライブ情報を準備中です" />
-          ) : (
-            <div className="theme-strawberry grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
-              {pickupLives.map((live, i) => (
-                <LiveCard key={live.slug} live={live} index={i} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* 注目グッズ */}
-        <section className="flex flex-col gap-6">
-          <SectionHeading subtitle="PICK UP GOODS" title="注目のグッズ" />
-          {pickupGoods.length === 0 ? (
-            <EmptyState label="グッズ情報を準備中です" />
-          ) : (
-            <div className="theme-strawberry grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-              {pickupGoods.map((goods, i) => (
-                <GoodsCard key={goods.slug} goods={goods} index={i} />
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+      {/* CATEGORY GRID */}
+      <section className="px-5 pb-[100px] pt-20">
+        <div className="mb-12 text-center">
+          <p
+            style={{
+              fontFamily: "var(--font-cinzel), serif",
+              fontSize: "11px",
+              letterSpacing: "0.35em",
+              color: T.gold,
+              marginBottom: "8px",
+            }}
+          >
+            CONTENTS
+          </p>
+          <h2
+            style={{
+              fontFamily: "var(--font-noto-serif-jp), serif",
+              fontSize: "22px",
+              fontWeight: 700,
+              color: T.text,
+            }}
+          >
+            10周年のすべて
+          </h2>
+        </div>
+        <CategoryGrid />
+      </section>
     </>
   )
 }
