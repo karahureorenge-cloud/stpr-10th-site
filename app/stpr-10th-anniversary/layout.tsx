@@ -1,7 +1,35 @@
+import type { Metadata } from "next"
 import NavBar from "@/components/common/NavBar"
 import BottomNav from "@/components/common/BottomNav"
 import Footer from "@/components/common/Footer"
 import { getCount } from "@/lib/repo"
+import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site"
+
+const OG_IMAGE = "/images/hero-bg.webp"
+
+/**
+ * 10周年特設サイトのデフォルトメタデータ（OGP / Twitter Card）。
+ * 各ページの title / description / openGraph はこれを上書きできる。
+ * 相対パスの og:image はルート layout の metadataBase で絶対URL化される。
+ */
+export const metadata: Metadata = {
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    locale: "ja_JP",
+    images: [{ url: OG_IMAGE, width: 1800, height: 1069, alt: SITE_NAME }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
+}
 
 /**
  * 10周年特設サイト共通レイアウト。

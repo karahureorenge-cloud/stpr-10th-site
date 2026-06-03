@@ -41,11 +41,13 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     locale: "ja_JP",
+    images: [{ url: "/images/hero-bg.webp", width: 1800, height: 1069, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: ["/images/hero-bg.webp"],
   },
 }
 
