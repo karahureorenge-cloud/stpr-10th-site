@@ -10,7 +10,7 @@ import FilterTabs from "@/components/common/FilterTabs"
 import GroupHeading from "@/components/common/GroupHeading"
 import EmptyState from "@/components/common/EmptyState"
 
-const TABS = ["ALL", "ORIGINAL", "COVER", "歌ってみた"]
+const TABS = ["ALL", "ORIGINAL", "Cover"]
 
 /** ミュージック一覧（ALL/ORIGINAL/COVER フィルタ / 年代別 / グリッド・リスト切替 / 並び替え）
  *  showControls=false（TOP 用）でフィルタ・並び替え・表示切替 UI を隠す。 */

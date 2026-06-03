@@ -1,6 +1,6 @@
 // 楽曲情報（microCMS スキーマ準拠 / 0003_full_schema.sql 対応）。
 
-export type SongType = "ORIGINAL" | "COVER" | "歌ってみた"
+export type SongType = "ORIGINAL" | "Cover"
 
 export type Song = {
   slug: string
