@@ -190,6 +190,20 @@ export function accentColorFromSeed(seed: string): string {
   return ACCENT_PALETTE[sum % ACCENT_PALETTE.length]
 }
 
+/** カードのシール風の傾き候補（度）。0 を含めず常に少し傾ける。 */
+const TILT_ANGLES = [-2.5, -2, -1.5, -1, 1, 1.5, 2, 2.5] as const
+
+/**
+ * シード文字列から決定的に傾き角度（度）を選ぶ。
+ * 文字コードの合計 % 角度数 なので、同じカードは常に同じ角度になる。
+ * CSS 変数 --tilt に `${rotationFromSeed(slug)}deg` として渡して使う。
+ */
+export function rotationFromSeed(seed: string): number {
+  let sum = 0
+  for (let i = 0; i < seed.length; i++) sum += seed.charCodeAt(i)
+  return TILT_ANGLES[sum % TILT_ANGLES.length]
+}
+
 // =========================================================================
 // HISTORY 年表（buildTimeline）
 //   lives / events / goods / songs / albums を年表アイテムへ集約する。

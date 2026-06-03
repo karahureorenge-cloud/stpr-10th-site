@@ -152,6 +152,18 @@
   animation: fadeUp 0.8s ease-out both;
 }
 
+/* シール風カードの傾き（EventCard の sp-sticker と同等の演出）。
+   傾き角度はインライン CSS 変数 --tilt（slug をシードに決定）で与える。
+   ホバーでまっすぐ + 少し浮き上がり + 拡大。
+   .card-tilt を二重指定して sp-card:hover や Tailwind の transform より優先させる。 */
+.card-tilt {
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.3s ease, box-shadow 0.4s ease;
+}
+.card-tilt.card-tilt:hover {
+  transform: rotate(0deg) translateY(-4px) scale(1.02);
+}
+
 /* =========================================================================
  * テーマクラス
  * 10周年共通レイアウトのルート要素に付与する。

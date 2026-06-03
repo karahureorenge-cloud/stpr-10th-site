@@ -1,6 +1,7 @@
 import Link from "next/link"
+import type { CSSProperties } from "react"
 import type { Song } from "@/data/songs"
-import { resolveYoutubeThumbnail, formatDateDot, accentColorFromSeed } from "@/lib/utils"
+import { resolveYoutubeThumbnail, formatDateDot, accentColorFromSeed, rotationFromSeed } from "@/lib/utils"
 import type { ViewMode } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import TypeBadge from "@/components/common/TypeBadge"
@@ -56,7 +57,8 @@ export default function SongCard({
   return (
     <Link
       href={href}
-      className="group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white p-3 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg"
+      className="card-tilt group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white p-3 shadow-md hover:shadow-lg"
+      style={{ "--tilt": `${rotationFromSeed(song.slug)}deg` } as CSSProperties}
     >
       {/* 左側の縦線（slug をシードにカラーパレットから決定的に選択） */}
       <span

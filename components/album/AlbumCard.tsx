@@ -1,7 +1,7 @@
 import Link from "next/link"
 import type { CSSProperties } from "react"
 import type { Album } from "@/data/albums"
-import { formatDateDot, accentColorFromSeed } from "@/lib/utils"
+import { formatDateDot, accentColorFromSeed, rotationFromSeed } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import "@/components/group/strawberry-prince/strawberry-prince.css"
 
@@ -22,7 +22,8 @@ export default function AlbumCard({ album }: { album: Album }) {
     <div className="theme-strawberry">
       <Link
         href={`${BASE}/album/${album.slug}`}
-        className="sp-card sp-shimmer-on-hover sp-sticker relative block group p-3"
+        className="sp-card sp-shimmer-on-hover card-tilt relative block group p-3"
+        style={{ "--tilt": `${rotationFromSeed(album.slug)}deg` } as CSSProperties}
       >
         {/* 左側の縦線（slug をシードにカラーパレットから決定的に選択） */}
         <span
