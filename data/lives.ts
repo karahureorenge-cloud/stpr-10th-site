@@ -43,6 +43,16 @@ export type TicketInfo = {
   status?: string // "受付中" / "受付終了" 等
 }
 
+/** 会場ごとのグッズ販売情報 */
+export type VenueGoods = {
+  venueName?: string
+  saleSchedule?: string // 販売日時
+  ticketInfo?: string // 整理券の有無・申込方法
+  ticketPeriod?: string // 整理券申込期間
+  payment?: string // 決済方法
+  note?: string // 備考（福袋情報など）
+}
+
 /** ライブ物販情報 */
 export type LiveGoodsInfo = {
   saleType?: string
@@ -88,6 +98,9 @@ export type Live = {
   ticketLineup?: TicketLineup[]
   ticketInfo?: TicketInfo[]
   goodsInfo?: LiveGoodsInfo[]
+  goodsImages?: string[] // ライブグッズ画像（公開URL[]）
+  venueGoods?: VenueGoods[] // 会場ごとのグッズ販売情報
+  setlist?: SetlistItem[] // セットリスト
   ppvInfo?: PpvInfo[]
   liveViewing?: LiveViewing[]
   fcInfo?: string[] // 画像URL[]

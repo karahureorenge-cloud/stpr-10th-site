@@ -17,6 +17,7 @@ import type {
 } from "@/data/lives"
 import SafeImage from "@/components/common/SafeImage"
 import StatusBadge from "@/components/common/StatusBadge"
+import ImageGallery from "@/components/common/ImageGallery"
 import EventSection from "@/components/event/EventSection"
 
 const BASE = "/stpr-10th-anniversary"
@@ -275,6 +276,58 @@ export default async function LiveDetailPage({
         </section>
       )}
 
+      {/* ライブグッズ（複数画像・ライトボックス） */}
+      {live.goodsImages && live.goodsImages.length > 0 && (
+        <section className={SECTION}>
+          <h2 className={SECTION_H2}>ライブグッズ</h2>
+          <ImageGallery images={live.goodsImages} />
+        </section>
+      )}
+
+      {/* 会場グッズ販売情報（アコーディオン） */}
+      {live.venueGoods && live.venueGoods.length > 0 && (
+        <EventSection title="会場グッズ販売情報" count={live.venueGoods.length}>
+          <div className="space-y-4">
+            {live.venueGoods.map((vg, i) => (
+              <div key={i} className={BLOCK}>
+                {vg.venueName && (
+                  <h3 className="mb-2 font-bold text-gold-700">{vg.venueName}</h3>
+                )}
+                <div className="space-y-1 text-sm text-[#6a5570]">
+                  {vg.saleSchedule && (
+                    <p>
+                      <span className="text-[#9a8aa0]">販売日時：</span>
+                      <span className="whitespace-pre-wrap">{vg.saleSchedule}</span>
+                    </p>
+                  )}
+                  {vg.ticketInfo && (
+                    <p>
+                      <span className="text-[#9a8aa0]">整理券：</span>
+                      <span className="whitespace-pre-wrap">{vg.ticketInfo}</span>
+                    </p>
+                  )}
+                  {vg.ticketPeriod && (
+                    <p>
+                      <span className="text-[#9a8aa0]">整理券申込期間：</span>
+                      {vg.ticketPeriod}
+                    </p>
+                  )}
+                  {vg.payment && (
+                    <p>
+                      <span className="text-[#9a8aa0]">決済方法：</span>
+                      {vg.payment}
+                    </p>
+                  )}
+                </div>
+                {vg.note && (
+                  <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{vg.note}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </EventSection>
+      )}
+
       {/* FC情報 */}
       {live.fcInfo && live.fcInfo.length > 0 && (
         <section className={SECTION}>
@@ -309,6 +362,25 @@ export default async function LiveDetailPage({
               <VenueBlock key={i} venue={v} />
             ))}
           </div>
+        </EventSection>
+      )}
+
+      {/* セットリスト（アコーディオン・デフォルト折りたたみ） */}
+      {live.setlist && live.setlist.length > 0 && (
+        <EventSection title="セトリ" count={live.setlist.length}>
+          <ol className="rounded-xl bg-gold-50/40 p-2">
+            {[...live.setlist]
+              .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
+              .map((s, i) => (
+                <li key={i} className="flex items-center gap-3 rounded p-1.5">
+                  <span className="w-8 shrink-0 text-right text-xs text-[#9a8aa0]">
+                    {s.trackNumber != null ? String(s.trackNumber).padStart(2, "0") : "－"}
+                  </span>
+                  <span className="flex-1 text-sm text-[#3a2540]">{s.title || "?"}</span>
+                  {s.memo && <span className="text-xs text-[#9a8aa0]">{s.memo}</span>}
+                </li>
+              ))}
+          </ol>
         </EventSection>
       )}
     </div>
