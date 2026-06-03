@@ -2,12 +2,10 @@
 
 import { useState } from "react"
 import type { Song } from "@/data/songs"
-import { groupByYear } from "@/lib/utils"
 import type { SortOrder, ViewMode } from "@/lib/utils"
 import SongCard from "./SongCard"
 import ListControls from "@/components/common/ListControls"
 import FilterTabs from "@/components/common/FilterTabs"
-import GroupHeading from "@/components/common/GroupHeading"
 import EmptyState from "@/components/common/EmptyState"
 
 const TABS = ["ALL", "ORIGINAL", "Cover"]
@@ -29,8 +27,12 @@ export default function MusicListView({
     return <EmptyState label="楽曲情報を準備中です" />
   }
 
-  const filtered = tab === "ALL" ? songs : songs.filter((s) => s.type === tab)
-  const groups = groupByYear(filtered, (s) => s.publishedDate, sort)
+  const filtered = (tab === "ALL" ? songs : songs.filter((s) => s.type === tab))
+    .slice()
+    .sort((a, b) => {
+      const cmp = (a.publishedDate ?? "").localeCompare(b.publishedDate ?? "")
+      return sort === "newest" ? -cmp : cmp
+    })
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,25 +50,18 @@ export default function MusicListView({
 
       {filtered.length === 0 ? (
         <EmptyState label="該当する楽曲がありません" />
+      ) : view === "grid" ? (
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((s) => (
+            <SongCard key={s.slug} song={s} view="grid" />
+          ))}
+        </div>
       ) : (
-        groups.map(({ year, items }) => (
-          <section key={year} className="mt-4">
-            <GroupHeading label={year} />
-            {view === "grid" ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((s) => (
-                  <SongCard key={s.slug} song={s} view="grid" />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {items.map((s) => (
-                  <SongCard key={s.slug} song={s} view="list" />
-                ))}
-              </div>
-            )}
-          </section>
-        ))
+        <div className="mt-4 flex flex-col gap-2">
+          {filtered.map((s) => (
+            <SongCard key={s.slug} song={s} view="list" />
+          ))}
+        </div>
       )}
     </div>
   )

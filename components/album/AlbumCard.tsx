@@ -24,6 +24,19 @@ export default function AlbumCard({ album }: { album: Album }) {
         href={`${BASE}/album/${album.slug}`}
         className="sp-card sp-shimmer-on-hover sp-sticker relative block group p-3"
       >
+        {/* 左側のピンク縦線（EventCard と同様） */}
+        <span
+          aria-hidden
+          className="absolute"
+          style={{
+            left: 4,
+            top: "18%",
+            bottom: "18%",
+            width: 3,
+            background: "rgba(245, 134, 164, 0.9)",
+            borderRadius: 2,
+          }}
+        />
         <div className="relative aspect-square overflow-hidden rounded-xl bg-white/40">
           <SafeImage
             src={album.cover}
