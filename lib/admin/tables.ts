@@ -417,7 +417,7 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "slug", label: "スラッグ（URL）", type: "text", required: true },
       { name: "title", label: "タイトル", type: "text", required: true },
       { name: "artist", label: "アーティスト", type: "text", placeholder: "すとぷり / 莉犬 等" },
-      { name: "type", label: "種別", type: "select", required: true, options: ["ORIGINAL", "COVER", "歌ってみた"] },
+      { name: "type", label: "種別", type: "select", required: true, options: ["ORIGINAL", "Cover"] },
       { name: "published_date", label: "公開日（文字列）", type: "text", placeholder: "2026-06-04 もしくは 2026年6月4日" },
       { name: "duration", label: "再生時間", type: "text", placeholder: "3:45" },
       { name: "genre", label: "ジャンル", type: "text" },
