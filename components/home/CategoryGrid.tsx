@@ -2,54 +2,38 @@
 
 import { T } from "@/lib/theme"
 
-type Size = "large" | "medium" | "small"
-
 type Category = {
   id: string
   label: string
   ja: string
-  size: Size
 }
 
-// ベントーグリッド用の定義。PC では large=2x2 / medium=1x1 / small=1x1。
+// 全カード同サイズの 4 列グリッド。並び順は表示レイアウトに準拠。
+// [ LIVE ][ GOODS ][ EVENT ][ MUSIC ]
+// [ ALBUM ][ MAGAZINE ][ MEDIA ][ MEMBERS ]
 const CATEGORIES: Category[] = [
-  { id: "live", label: "LIVE", ja: "ライブ", size: "large" },
-  { id: "event", label: "EVENT", ja: "イベント", size: "medium" },
-  { id: "goods", label: "GOODS", ja: "グッズ", size: "medium" },
-  { id: "members", label: "MEMBERS", ja: "メンバー", size: "large" },
-  { id: "music", label: "MUSIC", ja: "ミュージック", size: "medium" },
-  { id: "album", label: "ALBUM", ja: "アルバム", size: "small" },
-  { id: "magazine", label: "MAGAZINE", ja: "雑誌", size: "small" },
-  { id: "media", label: "MEDIA", ja: "メディア", size: "small" },
+  { id: "live", label: "LIVE", ja: "ライブ" },
+  { id: "goods", label: "GOODS", ja: "グッズ" },
+  { id: "event", label: "EVENT", ja: "イベント" },
+  { id: "music", label: "MUSIC", ja: "ミュージック" },
+  { id: "album", label: "ALBUM", ja: "アルバム" },
+  { id: "magazine", label: "MAGAZINE", ja: "雑誌" },
+  { id: "media", label: "MEDIA", ja: "メディア" },
+  { id: "members", label: "MEMBERS", ja: "メンバー" },
 ]
 
-// サイズ別のレイアウト。高さは全カード 200px で統一（grid の auto-rows）。
-// ベントー感は large（LIVE/MEMBERS）を md で横2列ぶち抜きにすることで維持する。
-const SIZE_CLASS: Record<Size, string> = {
-  large: "md:col-span-2",
-  medium: "",
-  small: "",
-}
-const LABEL_CLASS: Record<Size, string> = {
-  large: "text-[15px] md:text-[22px]",
-  medium: "text-[15px] md:text-[16px]",
-  small: "text-[13px]",
-}
-const JA_CLASS: Record<Size, string> = {
-  large: "text-[12px] md:text-[14px]",
-  medium: "text-[12px]",
-  small: "text-[12px]",
-}
-
-/** トップのカテゴリグリッド（ベントーレイアウト）。各ページへの入り口。 */
+/**
+ * トップのカテゴリグリッド。各セクション（同一ページのアンカー）への入り口。
+ * 全カード同サイズ。SP/タブレット 2 列、PC 4 列。高さは 120px 固定。
+ */
 export default function CategoryGrid() {
   return (
-    <div className="mx-auto grid max-w-[900px] auto-rows-[200px] grid-cols-2 gap-4 px-5 md:grid-cols-3">
+    <div className="mx-auto grid max-w-[900px] grid-cols-2 gap-4 px-5 md:grid-cols-4">
       {CATEGORIES.map((c) => (
         <a
           key={c.id}
           href={`#${c.id}`}
-          className={`flex h-full flex-col items-center justify-center rounded-[20px] p-6 no-underline ${SIZE_CLASS[c.size]}`}
+          className="flex h-[120px] flex-col items-center justify-center rounded-[20px] p-4 no-underline"
           style={{
             background: "rgba(255,255,255,0.6)",
             backdropFilter: "blur(12px)",
@@ -69,7 +53,7 @@ export default function CategoryGrid() {
         >
           {/* 英語ラベル */}
           <span
-            className={`font-semibold ${LABEL_CLASS[c.size]}`}
+            className="text-[16px] font-semibold"
             style={{
               fontFamily: "var(--font-cinzel), serif",
               letterSpacing: "0.2em",
@@ -82,7 +66,7 @@ export default function CategoryGrid() {
 
           {/* 日本語ラベル */}
           <span
-            className={JA_CLASS[c.size]}
+            className="text-[12px]"
             style={{
               fontFamily: "var(--font-noto-serif-jp), serif",
               color: T.muted,
