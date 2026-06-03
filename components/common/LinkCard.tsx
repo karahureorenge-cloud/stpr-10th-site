@@ -1,6 +1,11 @@
 import Link from "next/link"
 import type { CSSProperties } from "react"
-import { formatDateDot, accentColorFromSeed, rotationFromSeed } from "@/lib/utils"
+import {
+  formatDateDot,
+  accentColorFromSeed,
+  rotationFromSeed,
+  resolveYoutubeThumbnail,
+} from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 
 /**
@@ -31,6 +36,8 @@ export default function LinkCard({
 }) {
   // slug が無いカードは title をシードにして決定的な傾き・色を得る。
   const tiltSeed = seed || title
+  // thumbnail 未設定でも href が YouTube URL なら hqdefault を自動取得。
+  const thumb = thumbnail || resolveYoutubeThumbnail(undefined, href)
   const className =
     "card-tilt group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white p-3 shadow-md hover:shadow-lg"
   const style = { "--tilt": `${rotationFromSeed(tiltSeed)}deg` } as CSSProperties
@@ -52,7 +59,7 @@ export default function LinkCard({
       />
       <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-50">
         <SafeImage
-          src={thumbnail}
+          src={thumb}
           alt={title}
           fill
           fallbackLabel={fallbackLabel}
@@ -60,7 +67,9 @@ export default function LinkCard({
           sizes="(min-width: 768px) 33vw, 100vw"
         />
       </div>
-      <p className="mt-3 line-clamp-2 text-sm font-bold leading-snug text-[#3a2540]">{title}</p>
+      <p className="mt-3 line-clamp-2 break-words text-sm font-bold leading-snug text-[#3a2540]">
+        {title}
+      </p>
       {date && (
         <p className="mt-1.5 text-xs font-semibold text-[#9a8aa0]">{formatDateDot(date)}</p>
       )}

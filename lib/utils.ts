@@ -85,9 +85,10 @@ export function getDaysUntil(dateStr?: string): number | null {
 
 /**
  * YouTube の動画 ID からサムネイル URL を生成する。
+ * maxresdefault は動画によっては存在しないため、必ず用意される hqdefault を使う。
  */
 export function getYoutubeThumbnail(youtubeId: string): string {
-  return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
+  return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
 }
 
 /**
