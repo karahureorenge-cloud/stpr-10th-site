@@ -1,14 +1,12 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { SONGS } from "@/data/songs"
-import { getSongBySlug, getAlbumBySlug, getMemberById, formatDate } from "@/lib/utils"
+import { getMemberById, formatDate } from "@/lib/utils"
+import { getSongBySlug, getAlbumBySlug } from "@/lib/repo"
 import SafeImage from "@/components/common/SafeImage"
 
 const BASE = "/stpr-10th-anniversary"
 
-export function generateStaticParams() {
-  return SONGS.map((s) => ({ slug: s.slug }))
-}
+export const dynamic = "force-dynamic"
 
 export default async function SongDetailPage({
   params,
@@ -16,10 +14,10 @@ export default async function SongDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const song = getSongBySlug(slug)
+  const song = await getSongBySlug(slug)
   if (!song) notFound()
 
-  const album = song.albumSlug ? getAlbumBySlug(song.albumSlug) : undefined
+  const album = song.albumSlug ? await getAlbumBySlug(song.albumSlug) : undefined
   const members = (song.memberIds ?? [])
     .map(getMemberById)
     .filter((m): m is NonNullable<typeof m> => Boolean(m))

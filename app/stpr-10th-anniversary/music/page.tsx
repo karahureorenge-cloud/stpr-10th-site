@@ -1,10 +1,14 @@
 import PageContainer from "@/components/common/PageContainer"
 import MusicListView from "@/components/music/MusicListView"
+import { getSongs } from "@/lib/repo"
 
-export default function MusicPage() {
+export const dynamic = "force-dynamic"
+
+export default async function MusicPage() {
+  const songs = await getSongs()
   return (
     <PageContainer subtitle="MUSIC" title="ミュージック">
-      <MusicListView />
+      <MusicListView songs={songs} />
     </PageContainer>
   )
 }

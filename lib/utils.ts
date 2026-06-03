@@ -1,12 +1,9 @@
 // 純粋関数ユーティリティ。
-// データ取得は data/ のハードコード定数から行う（DB・API なし）。
+// データ取得（Supabase 読み取り）は lib/repo.ts に分離している。
+// メンバーは固定データのため data/members.ts を直接参照する。
 
-import { LIVES, type Live, type LiveStatus } from "@/data/lives"
-import { GOODS, type Goods } from "@/data/goods"
-import { EVENTS, type Event } from "@/data/events"
-import { SONGS, type Song } from "@/data/songs"
-import { ALBUMS, type Album } from "@/data/albums"
 import { MEMBERS, type Member } from "@/data/members"
+import type { LiveStatus } from "@/data/lives"
 
 /**
  * ライブのステータスを日付から判定する。
@@ -51,40 +48,7 @@ export function getYoutubeThumbnail(youtubeId: string): string {
   return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
 }
 
-// === slug / id からのデータ取得 ===
-
-export function getLiveBySlug(slug: string): Live | undefined {
-  return LIVES.find((l) => l.slug === slug)
-}
-
-export function getGoodsBySlug(slug: string): Goods | undefined {
-  return GOODS.find((g) => g.slug === slug)
-}
-
-export function getEventBySlug(slug: string): Event | undefined {
-  return EVENTS.find((e) => e.slug === slug)
-}
-
-export function getSongBySlug(slug: string): Song | undefined {
-  return SONGS.find((s) => s.slug === slug)
-}
-
-export function getAlbumBySlug(slug: string): Album | undefined {
-  return ALBUMS.find((a) => a.slug === slug)
-}
-
+/** メンバー（固定データ）を id から取得する。 */
 export function getMemberById(id: string): Member | undefined {
   return MEMBERS.find((m) => m.id === id)
-}
-
-/**
- * ライブを開催日の新しい順（startDate 降順）に並べた配列を返す。
- * startDate が無いものは末尾に回す。
- */
-export function getLivesSortedByDateDesc(): Live[] {
-  return [...LIVES].sort((a, b) => {
-    if (!a.startDate) return 1
-    if (!b.startDate) return -1
-    return b.startDate.localeCompare(a.startDate)
-  })
 }

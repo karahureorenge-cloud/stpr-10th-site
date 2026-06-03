@@ -1,24 +1,24 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { GOODS } from "@/data/goods"
+import type { Goods } from "@/data/goods"
 import GoodsCard from "./GoodsCard"
 import EmptyState from "@/components/common/EmptyState"
 
 /** グッズ一覧（カテゴリタブフィルター付きグリッド） */
-export default function GoodsListView() {
+export default function GoodsListView({ goods }: { goods: Goods[] }) {
   // データ中に存在するカテゴリ一覧（重複排除・出現順）。
   const categories = useMemo(() => {
     const set: string[] = []
-    for (const g of GOODS) if (!set.includes(g.category)) set.push(g.category)
+    for (const g of goods) if (!set.includes(g.category)) set.push(g.category)
     return set
-  }, [])
+  }, [goods])
 
   const [active, setActive] = useState<string>("ALL")
 
-  const filtered = active === "ALL" ? GOODS : GOODS.filter((g) => g.category === active)
+  const filtered = active === "ALL" ? goods : goods.filter((g) => g.category === active)
 
-  if (GOODS.length === 0) {
+  if (goods.length === 0) {
     return <EmptyState label="グッズ情報を準備中です" />
   }
 

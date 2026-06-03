@@ -1,10 +1,10 @@
-import { getLivesSortedByDateDesc } from "@/lib/utils"
+import { getLives } from "@/lib/repo"
 import LiveCard from "./LiveCard"
 import EmptyState from "@/components/common/EmptyState"
 
 /** ライブ一覧（新しい順グリッド） */
-export default function LiveListView() {
-  const lives = getLivesSortedByDateDesc()
+export default async function LiveListView() {
+  const lives = await getLives()
 
   if (lives.length === 0) {
     return <EmptyState label="ライブ情報を準備中です" />

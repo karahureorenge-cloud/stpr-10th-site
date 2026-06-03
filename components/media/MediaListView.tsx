@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MEDIA, type MediaType } from "@/data/media"
+import type { Media, MediaType } from "@/data/media"
 import EmptyState from "@/components/common/EmptyState"
 
 const TABS: { key: MediaType; label: string }[] = [
@@ -10,14 +10,14 @@ const TABS: { key: MediaType; label: string }[] = [
 ]
 
 /** メディア一覧（TV / RADIO タブ・表形式） */
-export default function MediaListView() {
+export default function MediaListView({ media }: { media: Media[] }) {
   const [tab, setTab] = useState<MediaType>("tv")
 
-  if (MEDIA.length === 0) {
+  if (media.length === 0) {
     return <EmptyState label="メディア情報を準備中です" />
   }
 
-  const filtered = MEDIA.filter((m) => m.type === tab)
+  const filtered = media.filter((m) => m.type === tab)
 
   return (
     <div className="flex flex-col gap-6">

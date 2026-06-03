@@ -1,17 +1,19 @@
-import { MAGAZINES } from "@/data/magazines"
+import { getMagazines } from "@/lib/repo"
 import { formatDate } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import EmptyState from "@/components/common/EmptyState"
 
 /** 雑誌一覧（カード形式・詳細ページなし） */
-export default function MagazineListView() {
-  if (MAGAZINES.length === 0) {
+export default async function MagazineListView() {
+  const magazines = await getMagazines()
+
+  if (magazines.length === 0) {
     return <EmptyState label="雑誌情報を準備中です" />
   }
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {MAGAZINES.map((mag) => {
+      {magazines.map((mag) => {
         const inner = (
           <>
             <div

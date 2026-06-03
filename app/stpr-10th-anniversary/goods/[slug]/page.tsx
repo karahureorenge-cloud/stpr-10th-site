@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation"
-import { GOODS } from "@/data/goods"
-import { getGoodsBySlug, getMemberById, formatDate } from "@/lib/utils"
+import { getMemberById, formatDate } from "@/lib/utils"
+import { getGoodsBySlug } from "@/lib/repo"
 import SafeImage from "@/components/common/SafeImage"
 
-export function generateStaticParams() {
-  return GOODS.map((g) => ({ slug: g.slug }))
-}
+export const dynamic = "force-dynamic"
 
 export default async function GoodsDetailPage({
   params,
@@ -13,7 +11,7 @@ export default async function GoodsDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const goods = getGoodsBySlug(slug)
+  const goods = await getGoodsBySlug(slug)
   if (!goods) notFound()
 
   const members = (goods.memberIds ?? [])

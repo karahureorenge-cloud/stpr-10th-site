@@ -1,15 +1,13 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ALBUMS } from "@/data/albums"
-import { getAlbumBySlug, getSongBySlug, formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/utils"
+import { getAlbumBySlug, getSongBySlug } from "@/lib/repo"
 import SafeImage from "@/components/common/SafeImage"
 import SectionHeading from "@/components/common/SectionHeading"
 
 const BASE = "/stpr-10th-anniversary"
 
-export function generateStaticParams() {
-  return ALBUMS.map((a) => ({ slug: a.slug }))
-}
+export const dynamic = "force-dynamic"
 
 export default async function AlbumDetailPage({
   params,
@@ -17,8 +15,16 @@ export default async function AlbumDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const album = getAlbumBySlug(slug)
+  const album = await getAlbumBySlug(slug)
   if (!album) notFound()
+
+  // 収録曲を slug から解決（順序維持）。
+  const tracks = await Promise.all(
+    album.trackSlugs.map(async (trackSlug) => ({
+      trackSlug,
+      song: await getSongBySlug(trackSlug),
+    })),
+  )
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
@@ -61,8 +67,7 @@ export default async function AlbumDetailPage({
       <div className="mt-12 flex flex-col gap-5">
         <SectionHeading subtitle="TRACK LIST" title="収録曲" variant="compact" />
         <ol className="flex flex-col overflow-hidden rounded-2xl border border-gold-200/70 bg-white/55 backdrop-blur-sm">
-          {album.trackSlugs.map((trackSlug, i) => {
-            const song = getSongBySlug(trackSlug)
+          {tracks.map(({ trackSlug, song }, i) => {
             return (
               <li
                 key={trackSlug}

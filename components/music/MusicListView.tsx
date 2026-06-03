@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { SONGS } from "@/data/songs"
+import type { Song } from "@/data/songs"
 import SongCard from "./SongCard"
 import EmptyState from "@/components/common/EmptyState"
 
@@ -9,17 +9,17 @@ type Tab = "ALL" | "ORIGINAL" | "COVER"
 const TABS: Tab[] = ["ALL", "ORIGINAL", "COVER"]
 
 /** ミュージック一覧（ALL / ORIGINAL / COVER タブ） */
-export default function MusicListView() {
+export default function MusicListView({ songs }: { songs: Song[] }) {
   const [tab, setTab] = useState<Tab>("ALL")
 
-  if (SONGS.length === 0) {
+  if (songs.length === 0) {
     return <EmptyState label="楽曲情報を準備中です" />
   }
 
   const filtered =
     tab === "ALL"
-      ? SONGS
-      : SONGS.filter((s) => s.type === tab.toLowerCase())
+      ? songs
+      : songs.filter((s) => s.type === tab.toLowerCase())
 
   return (
     <div className="flex flex-col gap-6">

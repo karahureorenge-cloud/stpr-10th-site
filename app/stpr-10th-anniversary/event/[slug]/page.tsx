@@ -1,11 +1,8 @@
 import { notFound } from "next/navigation"
-import { EVENTS } from "@/data/events"
-import { getEventBySlug } from "@/lib/utils"
+import { getEventBySlug } from "@/lib/repo"
 import SafeImage from "@/components/common/SafeImage"
 
-export function generateStaticParams() {
-  return EVENTS.map((e) => ({ slug: e.slug }))
-}
+export const dynamic = "force-dynamic"
 
 export default async function EventDetailPage({
   params,
@@ -13,7 +10,7 @@ export default async function EventDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const event = getEventBySlug(slug)
+  const event = await getEventBySlug(slug)
   if (!event) notFound()
 
   return (

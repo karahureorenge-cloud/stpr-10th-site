@@ -6,13 +6,16 @@ import LiveCard from "@/components/live/LiveCard"
 import GoodsCard from "@/components/goods/GoodsCard"
 import EmptyState from "@/components/common/EmptyState"
 import { MEMBERS } from "@/data/members"
-import { GOODS } from "@/data/goods"
-import { getLivesSortedByDateDesc } from "@/lib/utils"
+import { getLives, getGoods } from "@/lib/repo"
 
-export default function TopPage() {
+// 管理画面の編集が即時反映されるよう常に動的レンダリング。
+export const dynamic = "force-dynamic"
+
+export default async function TopPage() {
   // 注目ライブ/グッズ（先頭数件）。データが無ければ EmptyState を表示。
-  const pickupLives = getLivesSortedByDateDesc().slice(0, 3)
-  const pickupGoods = GOODS.slice(0, 3)
+  const [lives, goods] = await Promise.all([getLives(), getGoods()])
+  const pickupLives = lives.slice(0, 3)
+  const pickupGoods = goods.slice(0, 3)
 
   return (
     <>

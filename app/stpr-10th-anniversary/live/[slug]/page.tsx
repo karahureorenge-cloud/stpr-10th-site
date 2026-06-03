@@ -1,13 +1,11 @@
 import { notFound } from "next/navigation"
-import { LIVES } from "@/data/lives"
-import { getLiveBySlug, getLiveStatus } from "@/lib/utils"
+import { getLiveStatus } from "@/lib/utils"
+import { getLiveBySlug } from "@/lib/repo"
 import SafeImage from "@/components/common/SafeImage"
 import StatusBadge from "@/components/common/StatusBadge"
 import SectionHeading from "@/components/common/SectionHeading"
 
-export function generateStaticParams() {
-  return LIVES.map((l) => ({ slug: l.slug }))
-}
+export const dynamic = "force-dynamic"
 
 export default async function LiveDetailPage({
   params,
@@ -15,7 +13,7 @@ export default async function LiveDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const live = getLiveBySlug(slug)
+  const live = await getLiveBySlug(slug)
   if (!live) notFound()
 
   const status = live.startDate
