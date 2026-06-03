@@ -18,11 +18,14 @@ export default async function AlbumDetailPage({
   const album = await getAlbumBySlug(slug)
   if (!album) notFound()
 
-  // 収録曲を slug から解決（順序維持）。
+  // 収録曲を songSlug から解決（trackNumber 順）。
+  const orderedTracks = [...(album.tracks ?? [])].sort(
+    (a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0),
+  )
   const tracks = await Promise.all(
-    album.trackSlugs.map(async (trackSlug) => ({
-      trackSlug,
-      song: await getSongBySlug(trackSlug),
+    orderedTracks.map(async (t) => ({
+      trackSlug: t.songSlug ?? "",
+      song: t.songSlug ? await getSongBySlug(t.songSlug) : undefined,
     })),
   )
 
@@ -47,18 +50,81 @@ export default async function AlbumDetailPage({
 
         {/* 情報 */}
         <div className="flex flex-col gap-4">
+          {album.albumType && (
+            <span className="w-fit rounded-full bg-gold-400/90 px-3 py-1 text-[11px] font-bold tracking-wider text-white">
+              {album.albumType}
+            </span>
+          )}
           <h1 className="font-serif text-2xl font-bold leading-snug text-[#3a2540]">
             {album.title}
           </h1>
-          {album.releaseDate && (
-            <p className="text-sm text-[#6a5570]">
-              発売日: {formatDate(album.releaseDate)}
-            </p>
-          )}
+
+          <dl className="flex flex-col gap-2 text-sm">
+            {album.artist && (
+              <div className="flex gap-3">
+                <dt className="w-20 shrink-0 text-gold-600">アーティスト</dt>
+                <dd className="text-[#3a2540]">{album.artist}</dd>
+              </div>
+            )}
+            {album.releaseDate && (
+              <div className="flex gap-3">
+                <dt className="w-20 shrink-0 text-gold-600">発売日</dt>
+                <dd className="text-[#3a2540]">{formatDate(album.releaseDate)}</dd>
+              </div>
+            )}
+            {album.label && (
+              <div className="flex gap-3">
+                <dt className="w-20 shrink-0 text-gold-600">レーベル</dt>
+                <dd className="text-[#3a2540]">{album.label}</dd>
+              </div>
+            )}
+            {album.totalDuration && (
+              <div className="flex gap-3">
+                <dt className="w-20 shrink-0 text-gold-600">総再生時間</dt>
+                <dd className="text-[#3a2540]">{album.totalDuration}</dd>
+              </div>
+            )}
+          </dl>
+
           {album.description && (
             <p className="whitespace-pre-wrap text-sm leading-7 text-[#6a5570]">
               {album.description}
             </p>
+          )}
+
+          {(album.purchaseUrl || album.streamingUrl || album.xfdUrl) && (
+            <div className="flex flex-wrap gap-2">
+              {album.purchaseUrl && (
+                <a
+                  href={album.purchaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-fit items-center rounded-full bg-gold-400 px-6 py-2.5 font-display text-xs tracking-[0.15em] text-white transition-colors hover:bg-gold-500"
+                >
+                  購入 →
+                </a>
+              )}
+              {album.streamingUrl && (
+                <a
+                  href={album.streamingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-fit items-center rounded-full border border-gold-300 bg-white/80 px-6 py-2.5 font-display text-xs tracking-[0.15em] text-gold-700 transition-colors hover:bg-white"
+                >
+                  ストリーミング →
+                </a>
+              )}
+              {album.xfdUrl && (
+                <a
+                  href={album.xfdUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-fit items-center rounded-full border border-gold-300 bg-white/80 px-6 py-2.5 font-display text-xs tracking-[0.15em] text-gold-700 transition-colors hover:bg-white"
+                >
+                  試聴 →
+                </a>
+              )}
+            </div>
           )}
         </div>
       </div>

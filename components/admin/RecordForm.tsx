@@ -4,10 +4,13 @@ import Link from "next/link"
 import { useActionState } from "react"
 import type { Field } from "@/lib/admin/tables"
 import type { FormState } from "@/app/admin/crud-actions"
+import ImageField from "./ImageField"
+import RepeaterField from "./RepeaterField"
 
 type Props = {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>
   fields: Field[]
+  table: string
   initial?: Record<string, unknown>
   submitLabel: string
   cancelHref: string
@@ -38,6 +41,7 @@ function toInputValue(field: Field, value: unknown): string {
 export default function RecordForm({
   action,
   fields,
+  table,
   initial,
   submitLabel,
   cancelHref,
@@ -65,7 +69,7 @@ export default function RecordForm({
                 defaultValue={inputValue}
                 placeholder={field.placeholder}
                 rows={3}
-                className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none focus:border-gold-400"
+                className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
               />
             )}
 
@@ -76,7 +80,24 @@ export default function RecordForm({
                 placeholder={field.placeholder}
                 rows={5}
                 spellCheck={false}
-                className="rounded-xl border border-gold-200 bg-white px-3 py-2 font-mono text-xs outline-none focus:border-gold-400"
+                className="rounded-xl border border-gold-200 bg-white px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
+              />
+            )}
+
+            {field.type === "image" && (
+              <ImageField
+                name={field.name}
+                table={table}
+                initialValue={value == null ? "" : String(value)}
+              />
+            )}
+
+            {field.type === "repeater" && (
+              <RepeaterField
+                name={field.name}
+                table={table}
+                itemFields={field.itemFields ?? []}
+                initialValue={value}
               />
             )}
 
@@ -84,7 +105,7 @@ export default function RecordForm({
               <select
                 name={field.name}
                 defaultValue={inputValue || field.options?.[0] || ""}
-                className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none focus:border-gold-400"
+                className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
               >
                 {field.options?.map((opt) => (
                   <option key={opt} value={opt}>
@@ -115,7 +136,7 @@ export default function RecordForm({
                 name={field.name}
                 defaultValue={inputValue}
                 placeholder={field.placeholder}
-                className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none focus:border-gold-400"
+                className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
               />
             )}
 

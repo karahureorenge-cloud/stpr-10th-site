@@ -1,5 +1,5 @@
 import { getMagazines } from "@/lib/repo"
-import { formatDate } from "@/lib/utils"
+import { formatDateDot } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import EmptyState from "@/components/common/EmptyState"
 
@@ -39,7 +39,7 @@ export default async function MagazineListView() {
               )}
               {mag.releaseDate && (
                 <p className="mt-auto text-[11px] text-[#9a8aa0]">
-                  発売: {formatDate(mag.releaseDate)}
+                  発売: {formatDateDot(mag.releaseDate)}
                 </p>
               )}
             </div>

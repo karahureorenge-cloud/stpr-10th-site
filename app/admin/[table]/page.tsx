@@ -1,18 +1,59 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import type { ReactNode } from "react"
 import AdminHeader from "@/components/admin/AdminHeader"
 import DeleteButton from "@/components/admin/DeleteButton"
-import { getTableConfig } from "@/lib/admin/tables"
+import StatusBadge from "@/components/common/StatusBadge"
+import TypeBadge from "@/components/common/TypeBadge"
+import { getTableConfig, type Field } from "@/lib/admin/tables"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { formatDateDot } from "@/lib/utils"
+import type { LiveStatus } from "@/data/lives"
 
 export const dynamic = "force-dynamic"
 
-/** セル表示用に値を文字列化する。 */
-function display(value: unknown): string {
-  if (value == null || value === "") return "—"
-  if (Array.isArray(value)) return value.length ? value.join(", ") : "—"
-  if (typeof value === "boolean") return value ? "はい" : "いいえ"
-  return String(value)
+const STATUS_VALUES = new Set(["coming", "ongoing", "finished"])
+
+/** セル表示用に値を整形する。列の意味に応じてバッジ・日付・真偽を描き分ける。 */
+function renderCell(col: string, value: unknown, field?: Field): ReactNode {
+  if (value == null || value === "") return <span className="text-[#c9bccd]">—</span>
+
+  // ステータス列はライブ状態バッジで表示。
+  if (col === "status" && typeof value === "string" && STATUS_VALUES.has(value)) {
+    return <StatusBadge status={value as LiveStatus} size="sm" />
+  }
+
+  // 真偽値はピルで表示。
+  if (field?.type === "boolean" || typeof value === "boolean") {
+    return value ? (
+      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-[11px] font-bold text-green-700">
+        はい
+      </span>
+    ) : (
+      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-500">
+        いいえ
+      </span>
+    )
+  }
+
+  // 種別・カテゴリはタイプバッジで表示。
+  if (
+    (field?.type === "select" || col === "category" || col === "event_type") &&
+    typeof value === "string"
+  ) {
+    return <TypeBadge label={value} size="sm" />
+  }
+
+  // 日付はドット区切りに整形。
+  if (field?.type === "date" && typeof value === "string") {
+    return <span className="whitespace-nowrap text-[#6a5570]">{formatDateDot(value)}</span>
+  }
+
+  if (Array.isArray(value)) {
+    return <span className="text-[#6a5570]">{value.length ? value.join(", ") : "—"}</span>
+  }
+
+  return <span className="text-[#3a2540]">{String(value)}</span>
 }
 
 export default async function AdminTableListPage({
@@ -43,21 +84,36 @@ export default async function AdminTableListPage({
     <>
       <AdminHeader />
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <Link
               href="/admin"
-              className="text-xs tracking-wider text-gold-500 hover:text-gold-700"
+              className="text-xs tracking-wider text-gold-500 transition-colors hover:text-gold-700"
             >
               ← ダッシュボード
             </Link>
-            <h1 className="mt-1 font-serif text-xl font-bold text-[#3a2540]">
-              {cfg.label}
-            </h1>
+            <div className="mt-2 flex items-center gap-3">
+              <span
+                aria-hidden
+                className="h-8 w-1 shrink-0 rounded-sm"
+                style={{ background: "linear-gradient(180deg, #D4A853 0%, #F472B6 100%)" }}
+              />
+              <div className="flex flex-col leading-tight">
+                <span className="font-display text-[11px] uppercase tracking-[0.3em] text-gold-600">
+                  {table}
+                </span>
+                <h1 className="font-serif text-xl font-bold text-[#3a2540]">
+                  {cfg.label}
+                  <span className="ml-2 text-sm font-normal text-[#9a8aa0]">
+                    {rows.length} 件
+                  </span>
+                </h1>
+              </div>
+            </div>
           </div>
           <Link
             href={`/admin/${table}/new`}
-            className="rounded-full bg-gold-400 px-6 py-2.5 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500"
+            className="rounded-full bg-gold-400 px-6 py-2.5 font-display text-sm tracking-[0.15em] text-white shadow-sm transition-colors hover:bg-gold-500"
           >
             ＋ 新規追加
           </Link>
@@ -73,10 +129,10 @@ export default async function AdminTableListPage({
           </p>
         )}
 
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-gold-200 bg-white/80">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-gold-200/70 bg-white/80 shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gold-200 text-[11px] uppercase tracking-wider text-gold-600">
+              <tr className="border-b border-gold-200/70 bg-gold-50/50 text-[11px] uppercase tracking-wider text-gold-600">
                 {cfg.listColumns.map((col) => (
                   <th key={col} className="px-4 py-3 font-medium">
                     {cfg.fields.find((f) => f.name === col)?.label ?? col}
@@ -90,7 +146,7 @@ export default async function AdminTableListPage({
                 <tr>
                   <td
                     colSpan={cfg.listColumns.length + 1}
-                    className="px-4 py-10 text-center text-[#9a8aa0]"
+                    className="px-4 py-12 text-center text-[#9a8aa0]"
                   >
                     データがありません。「＋ 新規追加」から登録してください。
                   </td>
@@ -98,17 +154,24 @@ export default async function AdminTableListPage({
               ) : (
                 rows.map((row) => {
                   const id = String(row.id)
-                  const title = display(row[cfg.titleField])
+                  const title = String(row[cfg.titleField] ?? "")
                   return (
                     <tr
                       key={id}
-                      className="border-b border-gold-100 last:border-0"
+                      className="border-b border-gold-100/70 transition-colors last:border-0 hover:bg-gold-50/40"
                     >
-                      {cfg.listColumns.map((col) => (
-                        <td key={col} className="px-4 py-3 text-[#3a2540]">
-                          {display(row[col])}
-                        </td>
-                      ))}
+                      {cfg.listColumns.map((col) => {
+                        const field = cfg.fields.find((f) => f.name === col)
+                        const isTitle = col === cfg.titleField
+                        return (
+                          <td
+                            key={col}
+                            className={`px-4 py-3 ${isTitle ? "font-bold text-[#3a2540]" : ""}`}
+                          >
+                            {renderCell(col, row[col], field)}
+                          </td>
+                        )
+                      })}
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <Link

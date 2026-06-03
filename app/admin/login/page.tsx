@@ -26,7 +26,7 @@ export default async function AdminLoginPage({
               name="password"
               required
               autoFocus
-              className="rounded-xl border border-gold-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-gold-400"
+              className="rounded-xl border border-gold-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
             />
           </label>
 

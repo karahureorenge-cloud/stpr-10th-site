@@ -5,14 +5,34 @@
 // メンバー（MEMBERS）は固定データのため data/members.ts を継続使用する。
 
 import { createBrowserClient } from "@/lib/supabase/client"
-import type { Live, Venue } from "@/data/lives"
+import type {
+  Live,
+  Venue,
+  TicketInfo,
+  TicketLineup,
+  LiveGoodsInfo,
+  PpvInfo,
+  LiveViewing,
+  LiveStatus,
+} from "@/data/lives"
 import type { Goods } from "@/data/goods"
-import type { Event } from "@/data/events"
+import type {
+  Event,
+  EventStore,
+  EventMenu,
+  EventGoods,
+  EventBroadcast,
+  EventPost,
+  EventCampaign,
+  EventMedia,
+  EventEpisode,
+  EventTournament,
+  EventCustom,
+} from "@/data/events"
 import type { Song, SongType } from "@/data/songs"
-import type { Album } from "@/data/albums"
+import type { Album, AlbumEdition, AlbumBonus, AlbumTrack } from "@/data/albums"
 import type { Magazine } from "@/data/magazines"
 import type { Media, MediaType } from "@/data/media"
-import type { LiveStatus } from "@/data/lives"
 
 // 読み取り用クライアント（モジュール内で 1 度だけ生成）。
 let _client: ReturnType<typeof createBrowserClient> | null = null
@@ -26,21 +46,50 @@ function u<T>(v: T | null | undefined): T | undefined {
   return v == null ? undefined : v
 }
 
+// text[] / jsonb 配列を安全に配列へ。
+function strArr(v: unknown): string[] {
+  return Array.isArray(v) ? (v as string[]) : []
+}
+function jsonArr<T>(v: unknown): T[] {
+  return Array.isArray(v) ? (v as T[]) : []
+}
+
 // === マッピング（DB row → ドメイン型） ===
 
 function toLive(r: Record<string, unknown>): Live {
   return {
     slug: String(r.slug),
     title: String(r.title),
-    dateLabel: String(r.date_label ?? ""),
-    startDate: u(r.start_date as string | null),
-    endDate: u(r.end_date as string | null),
-    venues: (Array.isArray(r.venues) ? r.venues : []) as Venue[],
+    liveType: u(r.live_type as string | null),
     status: (r.status as LiveStatus) ?? "coming",
+    periodStart: u(r.period_start as string | null),
+    periodEnd: u(r.period_end as string | null),
     keyVisual: u(r.key_visual as string | null),
-    ticketUrl: u(r.ticket_url as string | null),
+    members: strArr(r.members),
+    hashtag: u(r.hashtag as string | null),
     description: u(r.description as string | null),
     note: u(r.note as string | null),
+    venues: jsonArr<Venue>(r.venues),
+    ticketLineup: jsonArr<TicketLineup>(r.ticket_lineup),
+    ticketInfo: jsonArr<TicketInfo>(r.ticket_info),
+    goodsInfo: jsonArr<LiveGoodsInfo>(r.goods_info),
+    ppvInfo: jsonArr<PpvInfo>(r.ppv_info),
+    liveViewing: jsonArr<LiveViewing>(r.live_viewing),
+    fcInfo: strArr(r.fc_info),
+    upgradeGoodsInfo: strArr(r.upgrade_goods_info),
+    officialSiteUrl: u(r.official_site_url as string | null),
+    officialPlaylistUrl: u(r.official_playlist_url as string | null),
+    officialReportUrl: u(r.official_report_url as string | null),
+    unofficialReportUrl: u(r.unofficial_report_url as string | null),
+    relatedLives: strArr(r.related_lives),
+    relatedAlbums: strArr(r.related_albums),
+    relatedEvents: strArr(r.related_events),
+    hasReport: u(r.has_report as boolean | null),
+    reportPublishedAt: u(r.report_published_at as string | null),
+    reportLeadTitle: u(r.report_lead_title as string | null),
+    reportContent: u(r.report_content as string | null),
+    reportThumbnail: u(r.report_thumbnail as string | null),
+    reportGallery: u(r.report_gallery as string | null),
     is10th: u(r.is_10th as boolean | null),
   }
 }
@@ -49,13 +98,19 @@ function toGoods(r: Record<string, unknown>): Goods {
   return {
     slug: String(r.slug),
     title: String(r.title),
-    category: String(r.category ?? ""),
+    productType: String(r.product_type ?? ""),
+    saleType: u(r.sale_type as string | null),
     releaseDate: u(r.release_date as string | null),
+    salePeriod: u(r.sale_period as string | null),
     price: u(r.price as string | null),
-    image: u(r.image as string | null),
-    shopUrl: u(r.shop_url as string | null),
+    keyVisual: u(r.key_visual as string | null),
+    lineupImages: strArr(r.lineup_images),
+    purchaseUrl: u(r.purchase_url as string | null),
+    deliveryInfo: u(r.delivery_info as string | null),
+    relatedLive: u(r.related_live as string | null),
     description: u(r.description as string | null),
-    memberIds: (Array.isArray(r.member_ids) ? r.member_ids : []) as string[],
+    memberIds: strArr(r.member_ids),
+    isActive: u(r.is_active as boolean | null),
   }
 }
 
@@ -64,13 +119,29 @@ function toEvent(r: Record<string, unknown>): Event {
     slug: String(r.slug),
     title: String(r.title),
     eventType: String(r.event_type ?? ""),
-    dateLabel: String(r.date_label ?? ""),
-    startDate: u(r.start_date as string | null),
-    endDate: u(r.end_date as string | null),
-    location: u(r.location as string | null),
+    isOngoing: u(r.is_ongoing as boolean | null),
+    periodStart: u(r.period_start as string | null),
+    periodEnd: u(r.period_end as string | null),
+    keyVisual: u(r.key_visual as string | null),
     url: u(r.url as string | null),
-    image: u(r.image as string | null),
+    hashtag: u(r.hashtag as string | null),
+    parentEvent: u(r.parent_event as string | null),
     description: u(r.description as string | null),
+    memberIds: strArr(r.member_ids),
+    relatedLives: strArr(r.related_lives),
+    relatedAlbums: strArr(r.related_albums),
+    relatedSongs: strArr(r.related_songs),
+    storeInfo: jsonArr<EventStore>(r.store_info),
+    menuInfo: jsonArr<EventMenu>(r.menu_info),
+    goodsInfo: jsonArr<EventGoods>(r.goods_info),
+    broadcastInfo: jsonArr<EventBroadcast>(r.broadcast_info),
+    postSchedule: jsonArr<EventPost>(r.post_schedule),
+    campaignInfo: jsonArr<EventCampaign>(r.campaign_info),
+    mediaInfo: jsonArr<EventMedia>(r.media_info),
+    episodes: jsonArr<EventEpisode>(r.episodes),
+    tournamentInfo: jsonArr<EventTournament>(r.tournament_info),
+    customSection: jsonArr<EventCustom>(r.custom_section),
+    isActive: u(r.is_active as boolean | null),
   }
 }
 
@@ -78,12 +149,20 @@ function toSong(r: Record<string, unknown>): Song {
   return {
     slug: String(r.slug),
     title: String(r.title),
-    type: (r.type as SongType) ?? "original",
-    releaseDate: u(r.release_date as string | null),
+    artist: u(r.artist as string | null),
+    type: (r.type as SongType) ?? "ORIGINAL",
+    publishedDate: u(r.published_date as string | null),
+    duration: u(r.duration as string | null),
+    genre: u(r.genre as string | null),
     youtubeId: u(r.youtube_id as string | null),
+    youtubeUrl: u(r.youtube_url as string | null),
+    streamingUrl: u(r.streaming_url as string | null),
     albumSlug: u(r.album_slug as string | null),
-    memberIds: (Array.isArray(r.member_ids) ? r.member_ids : []) as string[],
+    lyrics: u(r.lyrics as string | null),
+    credit: u(r.credit as string | null),
+    memberIds: strArr(r.member_ids),
     description: u(r.description as string | null),
+    isActive: u(r.is_active as boolean | null),
   }
 }
 
@@ -91,10 +170,21 @@ function toAlbum(r: Record<string, unknown>): Album {
   return {
     slug: String(r.slug),
     title: String(r.title),
+    artist: u(r.artist as string | null),
+    albumType: u(r.album_type as string | null),
     releaseDate: u(r.release_date as string | null),
+    totalDuration: u(r.total_duration as string | null),
+    label: u(r.label as string | null),
     cover: u(r.cover as string | null),
-    trackSlugs: (Array.isArray(r.track_slugs) ? r.track_slugs : []) as string[],
+    summaryImage: u(r.summary_image as string | null),
+    purchaseUrl: u(r.purchase_url as string | null),
+    streamingUrl: u(r.streaming_url as string | null),
+    xfdUrl: u(r.xfd_url as string | null),
+    tracks: jsonArr<AlbumTrack>(r.tracks),
+    editions: jsonArr<AlbumEdition>(r.editions),
+    bonuses: jsonArr<AlbumBonus>(r.bonuses),
     description: u(r.description as string | null),
+    isActive: u(r.is_active as boolean | null),
   }
 }
 
@@ -131,7 +221,7 @@ export async function getLives(): Promise<Live[]> {
   const { data, error } = await read()
     .from("lives")
     .select("*")
-    .order("start_date", { ascending: false, nullsFirst: false })
+    .order("period_start", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
   if (error || !data) return []
   return (data as Row[]).map(toLive)
