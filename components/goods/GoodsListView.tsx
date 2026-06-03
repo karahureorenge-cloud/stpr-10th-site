@@ -42,7 +42,8 @@ export default function GoodsListView({
 
   const gridCls =
     view === "grid"
-      ? "grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4"
+      ? // LiveListView と同じ列数（SP 1 列）に統一し、カードサイズを揃える。
+        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
       : "grid grid-cols-1 gap-3"
 
   return (
