@@ -413,12 +413,19 @@ function TicketBlock({ ticket }: { ticket: TicketInfo }) {
 }
 
 function LiveGoodsBlock({ goods }: { goods: LiveGoodsInfo }) {
+  // image は単一URL（旧データ）/ URL配列（複数）の両対応。
+  const images = Array.isArray(goods.image)
+    ? goods.image.filter((s) => typeof s === "string" && s.length > 0)
+    : goods.image
+      ? [goods.image]
+      : []
   return (
     <div className="rounded-xl border border-gold-100/70 p-4">
       <h3 className="mb-3 font-bold text-gold-700">{goods.saleType}</h3>
-      {goods.image && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={goods.image} alt={goods.saleType ?? "グッズ"} className="mb-3 w-full rounded-lg" />
+      {images.length > 0 && (
+        <div className="mb-3">
+          <ImageGallery images={images} />
+        </div>
       )}
       <div className="space-y-1 text-sm text-[#6a5570]">
         {goods.salePeriod && <p>{goods.salePeriod}</p>}

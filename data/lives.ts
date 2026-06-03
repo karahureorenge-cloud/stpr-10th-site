@@ -59,7 +59,7 @@ export type VenueGoods = {
 /** ライブ物販情報 */
 export type LiveGoodsInfo = {
   saleType?: string
-  image?: string
+  image?: string | string[]
   salePeriod?: string
   deliveryInfo?: string
   info?: string

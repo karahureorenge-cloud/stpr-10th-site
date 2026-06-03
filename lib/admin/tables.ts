@@ -145,7 +145,7 @@ export const TABLES: Record<string, TableConfig> = {
         type: "repeater",
         itemFields: [
           { name: "saleType", label: "販売種別", type: "text" },
-          { name: "image", label: "画像", type: "image" },
+          { name: "image", label: "画像（複数）", type: "image", multiple: true },
           { name: "salePeriod", label: "受付期間", type: "text" },
           { name: "deliveryInfo", label: "配送情報", type: "text" },
           { name: "info", label: "詳細", type: "textarea" },
