@@ -100,6 +100,20 @@ export const TABLES: Record<string, TableConfig> = {
               { name: "scheduleText", label: "スケジュール", type: "text", placeholder: "開場16:00/開演17:00" },
             ],
           },
+          {
+            name: "venueGoods",
+            label: "会場グッズ販売情報",
+            type: "repeater",
+            itemFields: [
+              { name: "venueName", label: "会場名/ブース名", type: "text" },
+              { name: "saleSchedule", label: "販売日時", type: "textarea" },
+              { name: "ticketInfo", label: "整理券の有無・申込方法", type: "textarea" },
+              { name: "ticketPeriod", label: "整理券申込期間", type: "text" },
+              { name: "payment", label: "決済方法", type: "text" },
+              { name: "note", label: "備考", type: "textarea" },
+            ],
+          },
+          { name: "setlistNotes", label: "セトリ変更メモ", type: "textarea" },
         ],
       },
       {
@@ -165,19 +179,6 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "fc_info", label: "FC情報 画像", type: "image", multiple: true },
       { name: "upgrade_goods_info", label: "アップグレード物販 画像", type: "image", multiple: true },
       { name: "goods_images", label: "ライブグッズ画像（複数）", type: "image", multiple: true },
-      {
-        name: "venue_goods",
-        label: "会場グッズ販売情報",
-        type: "repeater",
-        itemFields: [
-          { name: "venueName", label: "会場名", type: "text" },
-          { name: "saleSchedule", label: "販売日時", type: "textarea", placeholder: "6/4 10:00〜 / 6/5 11:00〜 等" },
-          { name: "ticketInfo", label: "整理券の有無・申込方法", type: "textarea", placeholder: "公式LINEで事前申込 等" },
-          { name: "ticketPeriod", label: "整理券申込期間", type: "text" },
-          { name: "payment", label: "決済方法", type: "text", placeholder: "現金 / 各種キャッシュレス 等" },
-          { name: "note", label: "備考", type: "textarea", placeholder: "福袋情報 等" },
-        ],
-      },
       {
         name: "setlist",
         label: "セットリスト",

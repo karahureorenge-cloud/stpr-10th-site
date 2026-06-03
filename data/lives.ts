@@ -24,6 +24,8 @@ export type Venue = {
   prefecture?: string
   areaMapImage?: string
   shows?: Show[]
+  venueGoods?: VenueGoods[] // この会場のグッズ販売情報
+  setlistNotes?: string // この会場でのセトリ変更メモ
 }
 
 /** チケットラインナップ（名称・価格の早見） */

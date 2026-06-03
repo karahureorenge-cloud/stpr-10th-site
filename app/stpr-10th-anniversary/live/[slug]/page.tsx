@@ -60,6 +60,10 @@ export default async function LiveDetailPage({
     ? getLiveStatus(live.periodStart, live.periodEnd)
     : live.status
   const daysUntil = getDaysUntil(live.periodStart)
+  const hasBaseSetlist = !!(live.setlist && live.setlist.length > 0)
+  const venueSetlistNotes = live.venues.filter(
+    (v) => v.setlistNotes && v.setlistNotes.trim().length > 0,
+  )
 
   return (
     <div className="mx-auto max-w-6xl p-4 md:p-6">
@@ -284,50 +288,6 @@ export default async function LiveDetailPage({
         </section>
       )}
 
-      {/* 会場グッズ販売情報（アコーディオン） */}
-      {live.venueGoods && live.venueGoods.length > 0 && (
-        <EventSection title="会場グッズ販売情報" count={live.venueGoods.length}>
-          <div className="space-y-4">
-            {live.venueGoods.map((vg, i) => (
-              <div key={i} className={BLOCK}>
-                {vg.venueName && (
-                  <h3 className="mb-2 font-bold text-gold-700">{vg.venueName}</h3>
-                )}
-                <div className="space-y-1 text-sm text-[#6a5570]">
-                  {vg.saleSchedule && (
-                    <p>
-                      <span className="text-[#9a8aa0]">販売日時：</span>
-                      <span className="whitespace-pre-wrap">{vg.saleSchedule}</span>
-                    </p>
-                  )}
-                  {vg.ticketInfo && (
-                    <p>
-                      <span className="text-[#9a8aa0]">整理券：</span>
-                      <span className="whitespace-pre-wrap">{vg.ticketInfo}</span>
-                    </p>
-                  )}
-                  {vg.ticketPeriod && (
-                    <p>
-                      <span className="text-[#9a8aa0]">整理券申込期間：</span>
-                      {vg.ticketPeriod}
-                    </p>
-                  )}
-                  {vg.payment && (
-                    <p>
-                      <span className="text-[#9a8aa0]">決済方法：</span>
-                      {vg.payment}
-                    </p>
-                  )}
-                </div>
-                {vg.note && (
-                  <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{vg.note}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </EventSection>
-      )}
-
       {/* FC情報 */}
       {live.fcInfo && live.fcInfo.length > 0 && (
         <section className={SECTION}>
@@ -365,22 +325,38 @@ export default async function LiveDetailPage({
         </EventSection>
       )}
 
-      {/* セットリスト（アコーディオン・デフォルト折りたたみ） */}
-      {live.setlist && live.setlist.length > 0 && (
-        <EventSection title="セトリ" count={live.setlist.length}>
-          <ol className="rounded-xl bg-gold-50/40 p-2">
-            {[...live.setlist]
-              .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
-              .map((s, i) => (
-                <li key={i} className="flex items-center gap-3 rounded p-1.5">
-                  <span className="w-8 shrink-0 text-right text-xs text-[#9a8aa0]">
-                    {s.trackNumber != null ? String(s.trackNumber).padStart(2, "0") : "－"}
-                  </span>
-                  <span className="flex-1 text-sm text-[#3a2540]">{s.title || "?"}</span>
-                  {s.memo && <span className="text-xs text-[#9a8aa0]">{s.memo}</span>}
-                </li>
+      {/* セットリスト（基本セトリ + 各会場の変更メモ）: アコーディオン */}
+      {(hasBaseSetlist || venueSetlistNotes.length > 0) && (
+        <EventSection title="セトリ">
+          {hasBaseSetlist && (
+            <>
+              <p className="mb-2 text-xs font-bold text-[#9a8aa0]">基本セットリスト</p>
+              <ol className="rounded-xl bg-gold-50/40 p-2">
+                {[...live.setlist!]
+                  .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
+                  .map((s, i) => (
+                    <li key={i} className="flex items-center gap-3 rounded p-1.5">
+                      <span className="w-8 shrink-0 text-right text-xs text-[#9a8aa0]">
+                        {s.trackNumber != null ? String(s.trackNumber).padStart(2, "0") : "－"}
+                      </span>
+                      <span className="flex-1 text-sm text-[#3a2540]">{s.title || "?"}</span>
+                      {s.memo && <span className="text-xs text-[#9a8aa0]">{s.memo}</span>}
+                    </li>
+                  ))}
+              </ol>
+            </>
+          )}
+          {venueSetlistNotes.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-bold text-[#9a8aa0]">会場ごとの変更メモ</p>
+              {venueSetlistNotes.map((v, i) => (
+                <div key={i} className={BLOCK}>
+                  <h4 className="mb-1 text-sm font-bold text-gold-700">{v.venueName}</h4>
+                  <p className="whitespace-pre-wrap text-sm text-[#6a5570]">{v.setlistNotes}</p>
+                </div>
               ))}
-          </ol>
+            </div>
+          )}
         </EventSection>
       )}
     </div>
@@ -490,6 +466,49 @@ function VenueBlock({ venue }: { venue: Venue }) {
                 .map((show, i) => (
                   <ShowBlock key={i} show={show} />
                 ))}
+            </div>
+          </div>
+        )}
+        {venue.venueGoods && venue.venueGoods.length > 0 && (
+          <div className="mb-6">
+            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">GOODS / 会場グッズ販売情報</p>
+            <div className="space-y-3">
+              {venue.venueGoods.map((vg, i) => (
+                <div key={i} className="rounded-lg border border-gold-100/70 p-3">
+                  {vg.venueName && (
+                    <h4 className="mb-1.5 text-sm font-bold text-gold-700">{vg.venueName}</h4>
+                  )}
+                  <div className="space-y-1 text-sm text-[#6a5570]">
+                    {vg.saleSchedule && (
+                      <p>
+                        <span className="text-[#9a8aa0]">販売日時：</span>
+                        <span className="whitespace-pre-wrap">{vg.saleSchedule}</span>
+                      </p>
+                    )}
+                    {vg.ticketInfo && (
+                      <p>
+                        <span className="text-[#9a8aa0]">整理券：</span>
+                        <span className="whitespace-pre-wrap">{vg.ticketInfo}</span>
+                      </p>
+                    )}
+                    {vg.ticketPeriod && (
+                      <p>
+                        <span className="text-[#9a8aa0]">整理券申込期間：</span>
+                        {vg.ticketPeriod}
+                      </p>
+                    )}
+                    {vg.payment && (
+                      <p>
+                        <span className="text-[#9a8aa0]">決済方法：</span>
+                        {vg.payment}
+                      </p>
+                    )}
+                  </div>
+                  {vg.note && (
+                    <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{vg.note}</p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
