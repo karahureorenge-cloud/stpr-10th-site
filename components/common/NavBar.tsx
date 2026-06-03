@@ -18,6 +18,7 @@ const NAV_ITEMS: { label: string; segment: string }[] = [
   { label: "MEDIA", segment: "media" },
   { label: "MEMBERS", segment: "members" },
   { label: "HISTORY", segment: "history" },
+  { label: "ABOUT", segment: "about" },
 ]
 
 /**

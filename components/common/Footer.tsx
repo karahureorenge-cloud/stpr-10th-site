@@ -7,10 +7,10 @@ export default function Footer() {
           10TH ANNIVERSARY
         </p>
         <p className="mt-3 font-serif text-sm text-[#6a5570]">
-          すとぷり 10周年特設サイト
+          【非公式】すとぷり 10周年特設サイト
         </p>
         <p className="mt-6 text-[11px] tracking-wider text-[#9a8aa0]">
-          © STPR Inc.
+          © STPR非公式ファンサイト
         </p>
       </div>
     </footer>

@@ -18,6 +18,7 @@ const ITEMS: NavItem[] = [
   { label: "MAGAZINE", href: `${BASE}#magazine` },
   { label: "MEDIA", href: `${BASE}#media` },
   { label: "HISTORY", href: `${BASE}/history` },
+  { label: "ABOUT", href: `${BASE}/about` },
 ]
 
 /**
