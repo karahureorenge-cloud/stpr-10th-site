@@ -1,23 +1,13 @@
 import Link from "next/link"
-import type { CSSProperties } from "react"
 import type { Song } from "@/data/songs"
 import { resolveYoutubeThumbnail, formatDateDot } from "@/lib/utils"
 import type { ViewMode } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import TypeBadge from "@/components/common/TypeBadge"
-import "@/components/group/strawberry-prince/strawberry-prince.css"
 
 const BASE = "/stpr-10th-anniversary"
 
-const DATE_STYLE: CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--sp-text-accent)",
-  letterSpacing: "0.02em",
-  fontVariantNumeric: "tabular-nums",
-}
-
-/** 楽曲一覧のカード（グリッド / リスト 両対応）。EventCard と同じ sp-card スタイル。 */
+/** 楽曲一覧のカード（グリッド / リスト 両対応）。グリッドは白背景・ピンク枠・影のフラットカード。 */
 export default function SongCard({
   song,
   view = "grid",
@@ -62,35 +52,31 @@ export default function SongCard({
     )
   }
 
-  // グリッド: EventCard と同じ sp-card（角丸・ピンク枠・影・ホバー）。theme-strawberry 配下が必要。
+  // グリッド: 白背景・ピンク枠・影・角丸のフラットカード。
   return (
-    <div className="theme-strawberry">
-      <Link
-        href={href}
-        className="sp-card sp-shimmer-on-hover sp-sticker relative block group p-3"
-      >
-        <div className="relative aspect-video overflow-hidden rounded-xl bg-white/40">
-          <SafeImage
-            src={thumb}
-            alt={song.title}
-            fill
-            fallbackLabel="MUSIC"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(min-width: 768px) 33vw, 100vw"
-          />
-          <span className="absolute right-2 top-2 z-10">
-            <TypeBadge label={song.type} tone="rose" size="sm" />
-          </span>
-        </div>
-        <p className="mt-3 truncate text-sm font-bold" style={{ color: "var(--sp-text)" }}>
-          {song.title}
+    <Link
+      href={href}
+      className="group block overflow-hidden rounded-2xl border border-pink-200 bg-white p-3 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg"
+    >
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-50">
+        <SafeImage
+          src={thumb}
+          alt={song.title}
+          fill
+          fallbackLabel="MUSIC"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(min-width: 768px) 33vw, 100vw"
+        />
+        <span className="absolute right-2 top-2 z-10">
+          <TypeBadge label={song.type} tone="rose" size="sm" />
+        </span>
+      </div>
+      <p className="mt-3 truncate text-sm font-bold text-[#3a2540]">{song.title}</p>
+      {song.publishedDate && (
+        <p className="mt-1.5 text-xs font-semibold text-[#9a8aa0]">
+          {formatDateDot(song.publishedDate)}
         </p>
-        {song.publishedDate && (
-          <p className="mt-1.5" style={DATE_STYLE}>
-            {formatDateDot(song.publishedDate)}
-          </p>
-        )}
-      </Link>
-    </div>
+      )}
+    </Link>
   )
 }
