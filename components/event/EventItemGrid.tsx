@@ -14,61 +14,88 @@ export type EventGridItem = {
 }
 
 /**
- * メニュー・特典 / グッズ販売 用のサムネイルグリッド。
- * - PC では複数列で一覧表示（SP 2列 / sm 3列 / md 4列）
- * - 各アイテムをタップ/クリックでモーダル拡大表示し、画像・詳細を見られる
+ * メニュー・特典 / グッズ販売 用の表示。
+ * - 各アイテムの画像を「全部」小さいサムネイルで並べる（省略なし）。
+ * - サムネイルをタップ/クリックで画面いっぱいのライトボックス表示。
+ *   背景タップ・×ボタン・Esc で閉じる。
  */
 export default function EventItemGrid({ items }: { items: EventGridItem[] }) {
-  const [active, setActive] = useState<number | null>(null)
+  const [lightbox, setLightbox] = useState<string | null>(null)
 
   if (items.length === 0) return null
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+      <div className="flex flex-col gap-5">
         {items.map((it, i) => (
-          <button
+          <div
             key={i}
-            type="button"
-            onClick={() => setActive(i)}
-            className="group flex flex-col overflow-hidden rounded-xl border border-gold-100/70 bg-white/60 text-left transition-all hover:-translate-y-0.5 hover:border-gold-300 hover:shadow-sm"
+            className="rounded-2xl border border-gold-100/70 bg-white/40 p-4"
           >
-            <div className="relative aspect-square w-full bg-gold-50">
-              {it.images[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={it.images[0]}
-                  alt={it.title ?? ""}
-                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-[10px] text-[#9a8aa0]">
-                  NO IMAGE
-                </div>
-              )}
-              {it.images.length > 1 && (
-                <span className="absolute bottom-1 right-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] text-white">
-                  +{it.images.length - 1}
-                </span>
-              )}
-            </div>
             {it.title && (
-              <p className="truncate px-2 py-1.5 text-xs font-medium text-[#3a2540]">
+              <h3 className="mb-2 font-serif text-base font-bold text-[#3a2540]">
                 {it.title}
+              </h3>
+            )}
+
+            {/* 全画像を小さいサムネイルで並べる（省略しない） */}
+            {it.images.length > 0 && (
+              <div className="mb-2 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                {it.images.map((src, j) => (
+                  <button
+                    key={j}
+                    type="button"
+                    onClick={() => setLightbox(src)}
+                    aria-label={`${it.title ?? "画像"} ${j + 1} を拡大`}
+                    className="group relative aspect-square overflow-hidden rounded-lg border border-gold-200/70 bg-gold-50/40"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={`${it.title ?? "画像"} ${j + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {it.meta && it.meta.length > 0 && (
+              <div className="space-y-0.5 text-sm text-[#6a5570]">
+                {it.meta.map((m, k) => (
+                  <p key={k}>{m}</p>
+                ))}
+              </div>
+            )}
+            {it.description && (
+              <p className="mt-1 whitespace-pre-wrap text-sm text-[#6a5570]">
+                {it.description}
               </p>
             )}
-          </button>
+            {it.info && (
+              <p className="mt-1 whitespace-pre-wrap text-xs text-[#9a8aa0]">{it.info}</p>
+            )}
+            {it.linkUrl && (
+              <a
+                href={it.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-block rounded-xl bg-gold-400 px-4 py-2 text-xs text-white transition-colors hover:bg-gold-500"
+              >
+                {it.linkLabel ?? "リンク"} →
+              </a>
+            )}
+          </div>
         ))}
       </div>
 
-      {active != null && items[active] && (
-        <ItemModal item={items[active]} onClose={() => setActive(null)} />
-      )}
+      {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
     </>
   )
 }
 
-function ItemModal({ item, onClose }: { item: EventGridItem; onClose: () => void }) {
+/** 画面いっぱいのライトボックス（背景タップ / × / Esc で閉じる）。 */
+function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose()
@@ -84,65 +111,27 @@ function ItemModal({ item, onClose }: { item: EventGridItem; onClose: () => void
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-[#3a2540]/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={item.title ?? "詳細"}
+      aria-label="画像拡大表示"
     >
-      <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-4 shadow-xl md:p-6"
-        onClick={(e) => e.stopPropagation()}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="閉じる"
+        className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-2xl leading-none text-[#3a2540] shadow-lg transition-colors hover:bg-white"
       >
-        <div className="mb-3 flex items-start justify-between gap-3">
-          {item.title && (
-            <h3 className="font-serif text-lg font-bold text-[#3a2540]">{item.title}</h3>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="閉じる"
-            className="shrink-0 rounded-full border border-gold-200 px-3 py-1 text-xs text-[#6a5570] transition-colors hover:bg-gold-50"
-          >
-            閉じる
-          </button>
-        </div>
-
-        {item.images.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {item.images.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={src} alt={item.title ?? ""} className="w-full rounded-lg" />
-            ))}
-          </div>
-        )}
-
-        {item.meta && item.meta.length > 0 && (
-          <div className="mt-3 space-y-1 text-sm text-[#6a5570]">
-            {item.meta.map((m, i) => (
-              <p key={i}>{m}</p>
-            ))}
-          </div>
-        )}
-
-        {item.description && (
-          <p className="mt-3 whitespace-pre-wrap text-sm text-[#6a5570]">{item.description}</p>
-        )}
-        {item.info && (
-          <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{item.info}</p>
-        )}
-
-        {item.linkUrl && (
-          <a
-            href={item.linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-block rounded-xl bg-gold-400 px-4 py-2 text-xs text-white transition-colors hover:bg-gold-500"
-          >
-            {item.linkLabel ?? "リンク"} →
-          </a>
-        )}
-      </div>
+        ×
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        className="max-h-[90vh] max-w-[95vw] rounded-lg object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
     </div>
   )
 }
