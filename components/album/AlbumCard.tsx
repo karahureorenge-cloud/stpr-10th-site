@@ -1,7 +1,7 @@
 import Link from "next/link"
 import type { CSSProperties } from "react"
 import type { Album } from "@/data/albums"
-import { formatDateDot } from "@/lib/utils"
+import { formatDateDot, accentColorFromSeed } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import "@/components/group/strawberry-prince/strawberry-prince.css"
 
@@ -24,7 +24,7 @@ export default function AlbumCard({ album }: { album: Album }) {
         href={`${BASE}/album/${album.slug}`}
         className="sp-card sp-shimmer-on-hover sp-sticker relative block group p-3"
       >
-        {/* 左側のピンク縦線（EventCard と同様） */}
+        {/* 左側の縦線（slug をシードにカラーパレットから決定的に選択） */}
         <span
           aria-hidden
           className="absolute"
@@ -33,7 +33,7 @@ export default function AlbumCard({ album }: { album: Album }) {
             top: "18%",
             bottom: "18%",
             width: 3,
-            background: "rgba(245, 134, 164, 0.9)",
+            background: accentColorFromSeed(album.slug),
             borderRadius: 2,
           }}
         />
@@ -43,7 +43,7 @@ export default function AlbumCard({ album }: { album: Album }) {
             alt={album.title}
             fill
             fallbackLabel="ALBUM"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover"
             sizes="(min-width: 768px) 25vw, 50vw"
           />
         </div>

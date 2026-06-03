@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { Song } from "@/data/songs"
-import { resolveYoutubeThumbnail, formatDateDot } from "@/lib/utils"
+import { resolveYoutubeThumbnail, formatDateDot, accentColorFromSeed } from "@/lib/utils"
 import type { ViewMode } from "@/lib/utils"
 import SafeImage from "@/components/common/SafeImage"
 import TypeBadge from "@/components/common/TypeBadge"
@@ -58,7 +58,7 @@ export default function SongCard({
       href={href}
       className="group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white p-3 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg"
     >
-      {/* 左側のピンク縦線（EventCard と同様） */}
+      {/* 左側の縦線（slug をシードにカラーパレットから決定的に選択） */}
       <span
         aria-hidden
         className="absolute"
@@ -67,7 +67,7 @@ export default function SongCard({
           top: "18%",
           bottom: "18%",
           width: 3,
-          background: "rgba(245, 134, 164, 0.9)",
+          background: accentColorFromSeed(song.slug),
           borderRadius: 2,
         }}
       />
@@ -77,7 +77,7 @@ export default function SongCard({
           alt={song.title}
           fill
           fallbackLabel="MUSIC"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover"
           sizes="(min-width: 768px) 33vw, 100vw"
         />
         <span className="absolute right-2 top-2 z-10">
