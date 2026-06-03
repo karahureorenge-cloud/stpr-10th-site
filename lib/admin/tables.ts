@@ -12,6 +12,7 @@ export type FieldType =
   | "json" // 生 JSON → jsonb
   | "number"
   | "image" // Storage 画像（ファイル選択 → 公開URL）。保存値は text(URL)
+  | "imagelist" // 複数画像（ファイル選択を行追加）。保存値は text[]
   | "repeater" // 行の追加/削除ができる専用UI → jsonb 配列
 
 /** repeater の行内サブ項目（テキストエリア廃止のため専用UIで使う） */
@@ -155,8 +156,8 @@ export const TABLES: Record<string, TableConfig> = {
           { name: "info", label: "補足", type: "textarea" },
         ],
       },
-      { name: "fc_info", label: "FC情報 画像URL（カンマ区切り）", type: "csv" },
-      { name: "upgrade_goods_info", label: "アップグレード物販 画像URL（カンマ区切り）", type: "csv" },
+      { name: "fc_info", label: "FC情報 画像", type: "imagelist" },
+      { name: "upgrade_goods_info", label: "アップグレード物販 画像", type: "imagelist" },
       { name: "official_site_url", label: "公式サイトURL", type: "text" },
       { name: "official_playlist_url", label: "公式プレイリストURL", type: "text" },
       { name: "official_report_url", label: "公式レポートURL", type: "text" },
@@ -200,7 +201,7 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "sale_period", label: "販売期間（自由文字列）", type: "text", placeholder: "2026/06/04〜2026/06/30" },
       { name: "price", label: "価格", type: "text", placeholder: "¥1,500" },
       { name: "key_visual", label: "キービジュアル画像", type: "image", help: "画像ファイルを選択するとアップロードして公開URLを自動入力します。" },
-      { name: "lineup_images", label: "ラインナップ画像URL（カンマ区切り）", type: "csv" },
+      { name: "lineup_images", label: "ラインナップ画像", type: "imagelist" },
       { name: "purchase_url", label: "購入URL", type: "text" },
       { name: "delivery_info", label: "配送情報", type: "textarea" },
       { name: "related_live", label: "関連ライブ（スラッグ）", type: "text", placeholder: "anniv-tour-2026" },

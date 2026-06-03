@@ -1,0 +1,710 @@
+/* すとぷりサンドボックス v3 デザイントークン
+   コンセプト: 「白・光・透過・余白で作る、儚いのに明るいファンタジー王子様」
+   色を塗らず、空気が光ってるように見せる。装飾でなくガラスと光の重ねで作る。
+*/
+
+.theme-strawberry {
+  /* ベース：白とクリーム（v3.3：ほんのり桃寄りへ） */
+  --sp-base: #fff8fc;
+  --sp-cloud: #fdf7f4;
+  --sp-paper: #fff5f9;
+
+  /* パステル：滲むように使う */
+  --sp-pink-mist: #ffe6ee;
+  --sp-pink-veil: #ffd0e0;
+  --sp-blue-mist: #e0f0fa;
+  --sp-blue-veil: #c5e3f3;
+  --sp-lavender: #ecdef5;
+  --sp-mint: #d8efe5;
+  --sp-cream: #fff5dc;
+
+  /* シャンパンゴールド（黄色くしない） */
+  --sp-gold: #e8d4a3;
+  --sp-gold-soft: #f5e8c8;
+  --sp-gold-deep: #c9b07a;
+
+  /* 【v3.1 追加】より甘いピンク */
+  --sp-pink-candy: #f8a5c2;
+  --sp-pink-strawberry: #f586a4;
+  --sp-pink-whip: #ffeef4;
+
+  /* 【v3.1 追加】オーロラ系 */
+  --sp-aurora-1: #ffd6e8;
+  --sp-aurora-2: #d6e8ff;
+  --sp-aurora-3: #e8d6ff;
+
+  /* メンバーカラー（点アクセント・滲み用、彩度落とす） */
+  --sp-rinu:     #e87a7a;
+  --sp-root:     #a895cc;
+  --sp-jel:      #8ec8e0;
+  --sp-satomi:   #e8c878;
+  --sp-colon:    #e8a0bc;
+  --sp-nanamori: #e8a888;
+
+  /* メンバーカラーの RGB（rgba() で透過合成に使う） */
+  --sp-rinu-rgb:     232, 122, 122;
+  --sp-root-rgb:     168, 149, 204;
+  --sp-jel-rgb:      142, 200, 224;
+  --sp-satomi-rgb:   232, 200, 120;
+  --sp-colon-rgb:    232, 160, 188;
+  --sp-nanamori-rgb: 232, 168, 136;
+
+  /* テキスト（黒じゃない、深い紫紺） */
+  --sp-text: #3a2540;
+  --sp-text-soft: #6a5570;
+  --sp-text-accent: #8a4a7a;
+
+  /* 影と発光 */
+  --sp-shadow-soft: 0 8px 32px rgba(220, 180, 200, 0.15);
+  --sp-shadow-card: 0 12px 40px rgba(220, 180, 200, 0.18);
+  --sp-shadow-card-hover: 0 16px 48px rgba(220, 180, 200, 0.28);
+  --sp-glow-white: 0 0 40px rgba(255, 255, 255, 0.6);
+
+  /* 【v3.1 追加】ぷにっと用の影と多幸感の発光 */
+  --sp-shadow-puni:
+    0 4px 12px rgba(248, 165, 194, 0.25),
+    inset 0 -2px 4px rgba(245, 134, 164, 0.15),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  --sp-glow-candy: 0 0 24px rgba(248, 165, 194, 0.4);
+  --sp-glow-aurora: 0 0 40px rgba(255, 200, 230, 0.5);
+
+  /* 【v3.2 追加】シール／銀テープ／ホログラム／スタンプ */
+  --sp-shadow-sticker:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 4px rgba(150, 100, 130, 0.08),
+    0 6px 16px rgba(220, 180, 200, 0.15);
+
+  --sp-foil-gradient: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 230, 245, 0.4) 45%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 230, 245, 0.4) 55%,
+    transparent 70%
+  );
+
+  --sp-holo-gradient: linear-gradient(
+    135deg,
+    rgba(255, 200, 230, 0.5) 0%,
+    rgba(200, 230, 255, 0.5) 33%,
+    rgba(255, 240, 200, 0.5) 66%,
+    rgba(230, 200, 255, 0.5) 100%
+  );
+
+  --sp-stamp-shadow:
+    0 0 0 2px var(--sp-pink-strawberry),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+
+  color: var(--sp-text);
+}
+
+/* body 背景レイヤー — v3.3：キャンディピンクと左ピンクミストの発光を強化 */
+.theme-strawberry-bg {
+  background:
+    /* キャンディピンク発光（強化：0.25 → 0.40 / 0.30 → 0.45） */
+    radial-gradient(ellipse 50% 30% at 30% 15%, rgba(248, 165, 194, 0.40), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 70% 25%, rgba(255, 214, 232, 0.45), transparent 70%),
+    /* 上部の白光（維持） */
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 70%),
+    /* 左ピンクミスト（強化：var(--sp-pink-mist) → rgba 直書きで濃く） */
+    radial-gradient(ellipse 40% 50% at 20% 30%, rgba(255, 200, 220, 0.6), transparent 70%),
+    /* 右ブルーミスト + 下ラベンダー（維持） */
+    radial-gradient(ellipse 40% 50% at 80% 50%, var(--sp-blue-mist), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 80%, var(--sp-lavender), transparent 70%),
+    var(--sp-base);
+  background-attachment: fixed;
+}
+
+/* ガラスカード（共通） — v3.1：ホイップ色 + ぷっくり感 + ホバーでオーロラ発光 */
+.theme-strawberry .sp-card {
+  background: rgba(255, 247, 250, 0.55);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 230, 240, 0.85);
+  border-radius: 28px;
+  box-shadow:
+    var(--sp-shadow-card),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  transition: all 0.4s ease;
+}
+.theme-strawberry .sp-card:hover {
+  /* v3.3：弾み強化（-3px → -5px）、影を桃寄りに */
+  background: rgba(255, 247, 250, 0.78);
+  box-shadow:
+    0 12px 32px rgba(245, 134, 164, 0.18),
+    var(--sp-glow-aurora);
+  transform: translateY(-5px);
+}
+
+/* ガラスのミニ版（SNS ピル等） */
+.theme-strawberry .sp-pill {
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+.theme-strawberry .sp-pill:hover {
+  background: rgba(255, 255, 255, 0.78);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(220, 180, 200, 0.2);
+}
+
+/* 見出し下の細い区切り線（v3.1：ストロベリーピンクに変更） */
+.theme-strawberry .sp-gold-rule {
+  height: 1px;
+  width: 60px;
+  background-color: var(--sp-pink-strawberry);
+  opacity: 0.7;
+  margin-top: 12px;
+}
+
+/* v3.1：メンバーカード名前下用の細い線（30px） */
+.theme-strawberry .sp-member-rule {
+  height: 1px;
+  width: 30px;
+  background-color: var(--sp-pink-strawberry);
+  opacity: 0.7;
+  margin: 6px auto 0;
+}
+
+/* メンバーカード — 左上に滲むメンバーカラー（色は inline で --m を渡す）
+   v3.1：角丸 28px、ぷっくり内側ハイライト */
+.theme-strawberry .sp-member-card {
+  position: relative;
+  background:
+    radial-gradient(ellipse 60% 50% at 0% 0%,
+      rgba(var(--sp-m-rgb, 220, 180, 200), 0.32),
+      transparent 60%),
+    rgba(255, 247, 250, 0.55);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 230, 240, 0.85);
+  border-radius: 28px;
+  box-shadow:
+    var(--sp-shadow-card),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  transition: all 0.4s ease;
+}
+.theme-strawberry .sp-member-card:hover {
+  box-shadow:
+    var(--sp-shadow-card-hover),
+    var(--sp-glow-aurora);
+  transform: translateY(-3px);
+}
+.theme-strawberry .sp-member-card .sp-member-heart {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.theme-strawberry .sp-member-card:hover .sp-member-heart {
+  opacity: 1;
+}
+
+/* MEMBERSHIP / FAN CLUB のリッチカード（v3.1：オーロラ発光を追加） */
+.theme-strawberry .sp-premium-card {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%,
+      rgba(255, 245, 235, 0.7),
+      rgba(255, 230, 240, 0.4));
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--sp-gold-soft);
+  border-radius: 28px;
+  box-shadow:
+    var(--sp-shadow-card),
+    var(--sp-glow-aurora),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.theme-strawberry .sp-cta-button {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--sp-gold-deep);
+  color: var(--sp-gold-deep);
+  transition: all 0.3s ease;
+}
+.theme-strawberry .sp-cta-button:hover {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 20px rgba(201, 176, 122, 0.35);
+}
+
+/* v3.1：ぷにっとボタン（HERO 公式リンク、MEMBERSHIP CTA 用） */
+.theme-strawberry .sp-puni-button {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 220, 235, 0.7) 50%,
+    rgba(255, 200, 220, 0.7) 100%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 230, 240, 0.9);
+  border-radius: 9999px;
+  color: var(--sp-text-accent);
+  font-weight: 600;
+  box-shadow: var(--sp-shadow-puni);
+  transition: all 0.3s ease;
+}
+.theme-strawberry .sp-puni-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    var(--sp-shadow-puni),
+    var(--sp-glow-candy);
+}
+
+/* KV ガラスフレーム */
+.theme-strawberry .sp-kv-frame {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(220, 180, 200, 0.25);
+  transition: all 0.5s ease;
+}
+.theme-strawberry .sp-kv-frame:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 56px rgba(220, 180, 200, 0.32);
+}
+.theme-strawberry .sp-kv-frame::before,
+.theme-strawberry .sp-kv-frame::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 35%;
+  pointer-events: none;
+  z-index: 1;
+}
+.theme-strawberry .sp-kv-frame::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.18), transparent);
+}
+.theme-strawberry .sp-kv-frame::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255,255,255,0.15), transparent);
+}
+
+/* タブナビ（v3.1：アクティブ下線をストロベリーピンクに、ホバーでふわっと浮く） */
+.theme-strawberry .sp-tab {
+  color: var(--sp-text-soft);
+  font-weight: 400;
+  padding: 1rem 0.5rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transform: translateY(0);
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.25s ease;
+}
+.theme-strawberry .sp-tab:hover {
+  color: var(--sp-text-accent);
+  transform: translateY(-1px);
+}
+.theme-strawberry .sp-tab[data-active='true'] {
+  color: var(--sp-text-accent);
+  font-weight: 600;
+  /* v3.2：銀テ風グラデの下線 */
+  border-bottom-color: var(--sp-pink-strawberry); /* fallback */
+  border-image: linear-gradient(
+    90deg,
+    var(--sp-pink-strawberry),
+    var(--sp-pink-candy)
+  ) 1;
+}
+
+/* アニメーション（呼吸）— v3.3：チカチカ感強化 */
+@keyframes sp-breath {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+@keyframes sp-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sp-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(2px, -3px); }
+}
+
+.theme-strawberry .sp-breath { animation: sp-breath 4s ease-in-out infinite; }
+.theme-strawberry .sp-fade-in { animation: sp-fade-in 1.2s ease-out both; }
+.theme-strawberry .sp-drift { animation: sp-drift 8s ease-in-out infinite; }
+
+/* v3.1：キラっと光るホバー演出 */
+@keyframes sp-shimmer {
+  0%, 100% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50%      { box-shadow: 0 0 24px rgba(255, 230, 245, 0.7); }
+}
+.theme-strawberry .sp-shimmer-on-hover:hover {
+  animation: sp-shimmer 1.2s ease-in-out infinite;
+}
+
+/* v3.1：オーロラがゆっくり揺らぐ */
+@keyframes sp-aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1);       opacity: 0.5; }
+  33%      { transform: translate(2%, -1%) scale(1.05); opacity: 0.7; }
+  66%      { transform: translate(-1%, 2%) scale(0.98); opacity: 0.6; }
+}
+.theme-strawberry .sp-aurora-layer {
+  animation: sp-aurora-drift 20s ease-in-out infinite;
+}
+
+/* =========================================================================
+ * v3.2：推し活物販感の追加レイヤー
+ * ========================================================================= */
+
+/* シール質感（v3.3：傾きを ±1.2deg に強化、3 の倍数番目は -0.6deg で
+   バラつき。ホバーでフラット + 軽く拡大）。
+   v3.4：inset 影で「ぷっくり」感を強化し、浮遊影を 24px に拡張。 */
+.theme-strawberry .sp-sticker {
+  box-shadow:
+    var(--sp-shadow-sticker),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(245, 134, 164, 0.1),
+    0 8px 24px rgba(220, 180, 200, 0.18);
+  transform: rotate(-1.2deg);
+  transition: transform 0.3s ease, box-shadow 0.4s ease, background 0.4s ease;
+}
+.theme-strawberry .sp-sticker:nth-child(even) {
+  transform: rotate(1.2deg);
+}
+.theme-strawberry .sp-sticker:nth-child(3n) {
+  transform: rotate(-0.6deg);
+}
+.theme-strawberry .sp-sticker:hover {
+  transform: rotate(0deg) translateY(-4px) scale(1.02);
+}
+
+/* v3.3：陳列っぽくカードごとに影の色を僅かに変える
+   v3.4：ぷっくり inset を全カードに統一 */
+.theme-strawberry .sp-sticker:nth-child(1) {
+  box-shadow:
+    var(--sp-shadow-sticker),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(245, 134, 164, 0.1),
+    0 8px 24px rgba(248, 165, 194, 0.20);
+}
+.theme-strawberry .sp-sticker:nth-child(2) {
+  box-shadow:
+    var(--sp-shadow-sticker),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(141, 200, 224, 0.1),
+    0 8px 24px rgba(141, 200, 224, 0.16);
+}
+.theme-strawberry .sp-sticker:nth-child(3) {
+  box-shadow:
+    var(--sp-shadow-sticker),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(245, 134, 164, 0.1),
+    0 8px 24px rgba(255, 200, 220, 0.22);
+}
+.theme-strawberry .sp-sticker:nth-child(4) {
+  box-shadow:
+    var(--sp-shadow-sticker),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(232, 212, 163, 0.1),
+    0 8px 24px rgba(232, 212, 163, 0.18);
+}
+
+/* 銀テのキラ反射（ホバー中だけ一瞬走らせる） */
+@keyframes sp-foil-sweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.theme-strawberry .sp-foil-on-hover {
+  position: relative;
+  overflow: hidden;
+}
+.theme-strawberry .sp-foil-on-hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--sp-foil-gradient);
+  background-size: 200% 100%;
+  background-position: -200% 0;
+  pointer-events: none;
+  /* v3.5：常時 0 に無効化（page.tsx 側でクラスも外しているが、念のため
+     CSS でも視覚的に消す。class 定義と sp-foil-sweep keyframes は残置。） */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.theme-strawberry .sp-foil-on-hover:hover::after {
+  opacity: 0;
+  animation: none;
+}
+
+/* スタンプ風バッジ（NEW / LATEST / OFFICIAL FAN CLUB 等）
+   v3.3：押した感を強める。padding と font サイズアップ、傾き強化、二重影付。 */
+.theme-strawberry .sp-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  border: 2.5px solid var(--sp-pink-strawberry);
+  color: var(--sp-pink-strawberry);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.85);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transform: rotate(-5deg);
+  opacity: 1;
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.5),
+    0 2px 4px rgba(245, 134, 164, 0.2);
+}
+
+/* ホログラム小バッジ（カード隅の控えめ装飾） */
+@keyframes sp-holo-shift {
+  0%, 100% { background-position: 0% 0%; }
+  50%      { background-position: 100% 100%; }
+}
+.theme-strawberry .sp-holo-badge {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sp-holo-gradient);
+  background-size: 200% 200%;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 6px rgba(220, 180, 200, 0.3);
+  /* v3.3：揺れを早くしてはっきり見える */
+  animation: sp-holo-shift 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* v3.3：銀テープ風セクション境界線（main 内のセクション間に挿入）
+   v3.4：ペンライト風の光が定期的に左→右に走るアニメを追加 */
+.theme-strawberry .sp-section-divider {
+  position: relative;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--sp-pink-mist) 15%,
+    var(--sp-pink-strawberry) 30%,
+    var(--sp-aurora-2) 50%,
+    var(--sp-pink-strawberry) 70%,
+    var(--sp-pink-mist) 85%,
+    transparent 100%
+  );
+  border: none;
+  margin: 32px 0;
+  opacity: 0.6;
+  overflow: hidden;
+}
+.theme-strawberry .sp-section-divider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.9),
+    transparent
+  );
+  animation: sp-light-sweep 8s ease-in-out infinite;
+}
+@keyframes sp-light-sweep {
+  0%, 100% { left: -30%; }
+  50%      { left: 130%; }
+}
+
+/* =========================================================================
+ * v3.4：推し活物販感の追加レイヤー
+ * ========================================================================= */
+
+/* アクキー風の厚みカード（MEMBER 内側で使用） */
+.theme-strawberry .sp-acrylic {
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 247, 250, 0.45) 50%,
+    rgba(255, 230, 245, 0.55) 100%);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 1px 0 0 rgba(255, 255, 255, 0.4),
+    0 2px 0 rgba(245, 200, 220, 0.3),
+    0 4px 0 rgba(245, 200, 220, 0.2),
+    0 12px 36px rgba(220, 180, 200, 0.25);
+}
+
+/* ホロバッジのバリエーション（メンバーカード用：イニシャル中央配置） */
+.theme-strawberry .sp-holo-badge--member {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* スタンプの色バリエーション */
+.theme-strawberry .sp-stamp--blue {
+  border-color: var(--sp-aurora-2);
+  color: var(--sp-aurora-2);
+}
+.theme-strawberry .sp-stamp--gold {
+  border-color: var(--sp-gold-deep);
+  color: var(--sp-gold-deep);
+}
+.theme-strawberry .sp-stamp--mint {
+  border-color: var(--sp-mint);
+  color: var(--sp-mint);
+}
+
+/* SOLD OUT / 再販希望 用の小さなクラス（現データでは未使用、互換確保） */
+.theme-strawberry .sp-stamp--sold {
+  opacity: 0.7;
+  color: var(--sp-text-soft);
+  border-color: var(--sp-text-soft);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ファンコメント吹き出し */
+.theme-strawberry .sp-fan-comment {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255, 200, 220, 0.7);
+  border-radius: 18px 18px 18px 4px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--sp-text-accent);
+  font-weight: 600;
+  box-shadow: var(--sp-shadow-soft);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: sp-fan-comment-float 6s ease-in-out infinite;
+}
+@keyframes sp-fan-comment-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* HERO の銀テープ（斜めに漂う光の帯）— 角度別 3 バリアント */
+.theme-strawberry .sp-silver-tape {
+  position: absolute;
+  width: 240px;
+  height: 8px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--sp-pink-mist),
+    var(--sp-aurora-1),
+    var(--sp-aurora-2),
+    transparent
+  );
+  filter: blur(2px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.theme-strawberry .sp-silver-tape--a {
+  animation: sp-tape-drift-a 12s ease-in-out infinite;
+}
+.theme-strawberry .sp-silver-tape--b {
+  animation: sp-tape-drift-b 14s ease-in-out infinite;
+}
+.theme-strawberry .sp-silver-tape--c {
+  animation: sp-tape-drift-c 10s ease-in-out infinite;
+}
+@keyframes sp-tape-drift-a {
+  0%, 100% { transform: translateX(0)    rotate(-15deg); opacity: 0.4; }
+  50%      { transform: translateX(40px) rotate(-15deg); opacity: 0.7; }
+}
+@keyframes sp-tape-drift-b {
+  0%, 100% { transform: translateX(0)     rotate(8deg);  opacity: 0.4; }
+  50%      { transform: translateX(-30px) rotate(8deg);  opacity: 0.65; }
+}
+@keyframes sp-tape-drift-c {
+  0%, 100% { transform: translateX(0)    rotate(-22deg); opacity: 0.35; }
+  50%      { transform: translateX(50px) rotate(-22deg); opacity: 0.6; }
+}
+
+/* コンフェッティ（HERO の小三角片） */
+.theme-strawberry .sp-confetti {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: sp-confetti-twirl 7s ease-in-out infinite;
+}
+@keyframes sp-confetti-twirl {
+  0%, 100% { transform: translateY(0)    rotate(var(--sp-conf-rot, 0deg)); opacity: 0.6; }
+  50%      { transform: translateY(-4px) rotate(calc(var(--sp-conf-rot, 0deg) + 12deg)); opacity: 0.9; }
+}
+
+/* v3.5：モバイルではスタンプを縮小してカード本体を圧迫しないように */
+@media (max-width: 768px) {
+  .theme-strawberry .sp-stamp {
+    padding: 3px 10px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    border-width: 2px;
+  }
+}
+
+/* チェキ風レイアウト（メンバーカードの内側にネスト） */
+.theme-strawberry .sp-cheki-frame {
+  background: rgba(255, 250, 252, 0.85);
+  padding: 12px 12px 24px 12px;
+  border-radius: 8px;
+  box-shadow: var(--sp-shadow-sticker), var(--sp-shadow-card);
+}
+
+/* =========================================================================
+ * サブページ用テーマ上書き
+ *   /group/Strawberry_Prince/{music,goods,live,event,history} は既存の
+ *   汎用コンポーネント（MusicView / AlbumSidebar / HistoryView 等）を
+ *   そのまま使っているため、Tailwind のデフォルトクラス（bg-white /
+ *   text-gray-* / accent 系）が混入する。それらを strawberry トークンに
+ *   上書きして「同じテイスト」に統一する。
+ *
+ *   セレクタは .theme-strawberry main の配下に限定。スラッシュ変種
+ *   （bg-white/40 等）は別クラス名なので一切影響しない＝MainContent の
+ *   ガラスカードや画像背景は無傷。日付・タイプの色味も保たれる。
+ * ========================================================================= */
+.theme-strawberry main .bg-white {
+  background: rgba(255, 247, 250, 0.65);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 230, 240, 0.85);
+  border-radius: 28px;
+}
+.theme-strawberry main .shadow-sm,
+.theme-strawberry main .shadow-md {
+  box-shadow: var(--sp-shadow-card);
+}
+.theme-strawberry main .shadow-lg {
+  box-shadow: var(--sp-shadow-card-hover);
+}
+.theme-strawberry main .text-gray-400 { color: var(--sp-text-soft); }
+.theme-strawberry main .text-gray-500 { color: var(--sp-text-soft); }
+.theme-strawberry main .text-gray-600 { color: var(--sp-text-soft); }
+.theme-strawberry main .text-gray-700 { color: var(--sp-text); }
+.theme-strawberry main .text-gray-800 { color: var(--sp-text); }
+.theme-strawberry main .text-gray-900 { color: var(--sp-text); }
+.theme-strawberry main .bg-accent-50  { background: rgba(255, 230, 245, 0.40); }
+.theme-strawberry main .bg-accent-100 { background: rgba(255, 214, 232, 0.50); }
+.theme-strawberry main .bg-accent-600 {
+  background: linear-gradient(135deg,
+    rgba(245, 134, 164, 0.95),
+    rgba(248, 165, 194, 0.90));
+}
+.theme-strawberry main .text-accent-500,
+.theme-strawberry main .text-accent-600,
+.theme-strawberry main .text-accent-700 { color: var(--sp-text-accent); }
+.theme-strawberry main .border-accent-400,
+.theme-strawberry main .border-accent-500,
+.theme-strawberry main .border-accent-600 {
+  border-color: rgba(245, 134, 164, 0.5);
+}
+.theme-strawberry main .border-gray-200,
+.theme-strawberry main .border-gray-300 {
+  border-color: rgba(255, 230, 240, 0.85);
+}

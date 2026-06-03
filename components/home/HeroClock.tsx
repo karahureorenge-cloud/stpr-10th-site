@@ -26,12 +26,16 @@ const ROMAN = [
  */
 export default function HeroClock() {
   const [now, setNow] = useState<Date | null>(null)
+  const [mounted, setMounted] = useState(false)
 
-  // マウント後に時刻を反映する。setState はタイマーのコールバック内で行い、
-  // エフェクト本体での同期的な setState を避ける。
+  // マウント後にのみ時刻を反映し、針・文字盤（三角関数）を描画する。
+  // Math.cos/sin の値はサーバー(Node)とブラウザで末尾桁が異なりうるため、
+  // SSR では計算結果を出さず静的プレースホルダーにしてハイドレーション不一致を避ける。
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>
+    // 同期的な setState を避けるため、タイマーのコールバック内で状態を更新する。
     const startId = setTimeout(() => {
+      setMounted(true)
       setNow(new Date())
       intervalId = setInterval(() => setNow(new Date()), 1000)
     }, 0)
@@ -41,7 +45,10 @@ export default function HeroClock() {
     }
   }, [])
 
-  // 各針の回転角（度）。null（未マウント）時は 0 で静止表示。
+  // マウント前（= SSR / 初回クライアントレンダー）は静的プレースホルダー。
+  if (!mounted) return <ClockPlaceholder />
+
+  // 各針の回転角（度）。null 時は 0 で静止表示。
   const sec = now ? now.getSeconds() : 0
   const min = now ? now.getMinutes() : 0
   const hour = now ? now.getHours() % 12 : 0
@@ -158,6 +165,66 @@ export default function HeroClock() {
       </g>
 
       {/* 中心 */}
+      <circle cx="100" cy="100" r="4" fill="#A07830" />
+      <circle cx="100" cy="100" r="1.5" fill="#FFFDF7" />
+    </svg>
+  )
+}
+
+/**
+ * マウント前の静的プレースホルダー。
+ * 三角関数を一切使わず、外周リング・文字盤・中心と 12時位置の針だけを
+ * 固定座標で描く（SSR とクライアントで完全一致する）。
+ */
+function ClockPlaceholder() {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className="h-full w-full"
+      role="img"
+      aria-label="10周年の時計盤"
+    >
+      <defs>
+        <radialGradient id="clockFace" cx="50%" cy="45%" r="60%">
+          <stop offset="0%" stopColor="#FFFDF7" />
+          <stop offset="100%" stopColor="#FDF4F0" />
+        </radialGradient>
+        <linearGradient id="clockRim" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#F5E6B8" />
+          <stop offset="50%" stopColor="#D4A853" />
+          <stop offset="100%" stopColor="#A07830" />
+        </linearGradient>
+      </defs>
+
+      <circle cx="100" cy="100" r="95" fill="url(#clockRim)" />
+      <circle cx="100" cy="100" r="86" fill="url(#clockFace)" />
+      <circle
+        cx="100"
+        cy="100"
+        r="86"
+        fill="none"
+        stroke="#D4A853"
+        strokeWidth="0.5"
+        opacity="0.6"
+      />
+
+      {/* 三日月モチーフ（中央上・固定座標） */}
+      <path
+        d="M100 40 a14 14 0 1 0 8 25 a11 11 0 1 1 -8 -25 Z"
+        fill="#F5E6B8"
+        opacity="0.9"
+      />
+
+      {/* 12時位置の針（固定） */}
+      <line
+        x1="100"
+        y1="100"
+        x2="100"
+        y2="55"
+        stroke="#D4A853"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
       <circle cx="100" cy="100" r="4" fill="#A07830" />
       <circle cx="100" cy="100" r="1.5" fill="#FFFDF7" />
     </svg>

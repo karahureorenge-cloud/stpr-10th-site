@@ -44,9 +44,9 @@ export default async function TopPage() {
           {pickupLives.length === 0 ? (
             <EmptyState label="ライブ情報を準備中です" />
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {pickupLives.map((live) => (
-                <LiveCard key={live.slug} live={live} />
+            <div className="theme-strawberry grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
+              {pickupLives.map((live, i) => (
+                <LiveCard key={live.slug} live={live} index={i} />
               ))}
             </div>
           )}
@@ -58,9 +58,9 @@ export default async function TopPage() {
           {pickupGoods.length === 0 ? (
             <EmptyState label="グッズ情報を準備中です" />
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
-              {pickupGoods.map((goods) => (
-                <GoodsCard key={goods.slug} goods={goods} />
+            <div className="theme-strawberry grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+              {pickupGoods.map((goods, i) => (
+                <GoodsCard key={goods.slug} goods={goods} index={i} />
               ))}
             </div>
           )}

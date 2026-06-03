@@ -4,6 +4,11 @@ import { getMedia } from "@/lib/repo"
 
 export const dynamic = "force-dynamic"
 
+export const metadata = {
+  title: "メディア",
+  description: "すとぷり 10周年のメディア出演（TV/ラジオ）情報。",
+}
+
 export default async function MediaPage() {
   const media = await getMedia()
   return (

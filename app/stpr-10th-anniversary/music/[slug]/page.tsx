@@ -1,12 +1,34 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { getMemberById, formatDate, extractYoutubeId } from "@/lib/utils"
+import { extractYoutubeId, getYoutubeThumbnail } from "@/lib/utils"
 import { getSongBySlug, getAlbumBySlug } from "@/lib/repo"
-import SafeImage from "@/components/common/SafeImage"
 
 const BASE = "/stpr-10th-anniversary"
 
 export const dynamic = "force-dynamic"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const song = await getSongBySlug(slug)
+  if (!song) return { title: "楽曲が見つかりません" }
+  const description =
+    song.description?.slice(0, 100) ||
+    [song.artist, song.type].filter(Boolean).join(" / ") ||
+    `${song.title}の楽曲情報`
+  const ytId = song.youtubeId || extractYoutubeId(song.youtubeUrl)
+  const images = ytId ? [getYoutubeThumbnail(ytId)] : []
+  return {
+    title: song.title,
+    description,
+    openGraph: { title: song.title, description, images },
+    twitter: { card: "summary_large_image", title: song.title, description, images },
+  }
+}
 
 export default async function SongDetailPage({
   params,
@@ -18,143 +40,125 @@ export default async function SongDetailPage({
   if (!song) notFound()
 
   const album = song.albumSlug ? await getAlbumBySlug(song.albumSlug) : undefined
-  const members = (song.memberIds ?? [])
-    .map(getMemberById)
-    .filter((m): m is NonNullable<typeof m> => Boolean(m))
-
   const youtubeId = song.youtubeId || extractYoutubeId(song.youtubeUrl)
+  const thumbnailUrl = youtubeId ? getYoutubeThumbnail(youtubeId) : undefined
+
+  const infoRows = [
+    { label: "アーティスト", value: song.artist },
+    { label: "公開日", value: song.publishedDate },
+    { label: "再生時間", value: song.duration },
+    { label: "ジャンル", value: song.genre },
+  ].filter((r) => r.value)
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
-      {/* YouTube 埋め込み（あれば）。無ければサムネ/プレースホルダー。 */}
-      <div
-        className="relative w-full overflow-hidden rounded-3xl border border-gold-200/70"
-        style={{ aspectRatio: "16/9" }}
-      >
-        {youtubeId ? (
-          <iframe
-            className="absolute inset-0 h-full w-full"
-            src={`https://www.youtube.com/embed/${youtubeId}`}
-            title={song.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : (
-          <SafeImage
-            src={undefined}
-            alt={song.title}
-            fill
-            fallbackLabel="MUSIC"
-            className="object-cover"
-          />
-        )}
-      </div>
+    <div className="mx-auto max-w-5xl p-4 md:p-6">
+      {/* パンくず */}
+      <nav className="mb-4 flex flex-wrap items-center gap-2 text-sm text-[#9a8aa0]">
+        <Link href={`${BASE}/music`} className="transition-colors hover:text-gold-600">
+          MUSIC
+        </Link>
+        <span className="text-gold-200">›</span>
+        <span className="font-medium text-[#3a2540]">{song.title}</span>
+      </nav>
 
-      <div className="mt-8 flex flex-col gap-4">
-        <span className="w-fit rounded-full bg-rose-400/90 px-3 py-1 text-[11px] font-bold tracking-wider text-white">
-          {song.type}
-        </span>
-        <h1 className="font-serif text-2xl font-bold leading-snug text-[#3a2540]">
-          {song.title}
-        </h1>
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* サムネイル / YouTube 埋め込み */}
+        <div className="overflow-hidden rounded-2xl border border-gold-200/70">
+          {youtubeId ? (
+            <div className="relative aspect-video w-full">
+              <iframe
+                className="absolute inset-0 h-full w-full"
+                src={`https://www.youtube.com/embed/${youtubeId}`}
+                title={song.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : thumbnailUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={thumbnailUrl} alt={song.title} className="aspect-video w-full object-cover" />
+          ) : (
+            <div className="flex aspect-video w-full items-center justify-center bg-gold-50 text-sm text-[#9a8aa0]">
+              サムネイルなし
+            </div>
+          )}
+        </div>
 
-        <dl className="flex flex-col gap-2 text-sm">
-          {song.artist && (
-            <div className="flex gap-3">
-              <dt className="w-20 shrink-0 text-gold-600">アーティスト</dt>
-              <dd className="text-[#3a2540]">{song.artist}</dd>
-            </div>
-          )}
-          {song.publishedDate && (
-            <div className="flex gap-3">
-              <dt className="w-20 shrink-0 text-gold-600">配信日</dt>
-              <dd className="text-[#3a2540]">{formatDate(song.publishedDate)}</dd>
-            </div>
-          )}
-          {song.duration && (
-            <div className="flex gap-3">
-              <dt className="w-20 shrink-0 text-gold-600">再生時間</dt>
-              <dd className="text-[#3a2540]">{song.duration}</dd>
-            </div>
-          )}
-          {song.genre && (
-            <div className="flex gap-3">
-              <dt className="w-20 shrink-0 text-gold-600">ジャンル</dt>
-              <dd className="text-[#3a2540]">{song.genre}</dd>
-            </div>
-          )}
-          {album && (
-            <div className="flex gap-3">
-              <dt className="w-20 shrink-0 text-gold-600">アルバム</dt>
-              <dd>
+        {/* 情報：タイプ・タイトル・各種メタ・配信/YouTube リンク */}
+        <div>
+          <span
+            className={`rounded-full px-2 py-1 text-xs font-bold ${
+              song.type === "ORIGINAL"
+                ? "bg-gold-100 text-gold-700"
+                : "bg-rose-100 text-rose-600"
+            }`}
+          >
+            {song.type}
+          </span>
+          <h1 className="mb-4 mt-2 font-serif text-3xl font-bold text-[#3a2540]">{song.title}</h1>
+
+          <div className="mb-6 space-y-2">
+            {infoRows.map((r) => (
+              <div key={r.label} className="flex gap-4">
+                <span className="w-24 shrink-0 text-xs text-[#9a8aa0]">{r.label}</span>
+                <span className="text-sm text-[#3a2540]">{r.value}</span>
+              </div>
+            ))}
+            {album && (
+              <div className="flex items-center gap-4">
+                <span className="w-24 shrink-0 text-xs text-[#9a8aa0]">収録アルバム</span>
                 <Link
                   href={`${BASE}/album/${album.slug}`}
-                  className="text-gold-700 underline-offset-2 hover:underline"
+                  className="group flex items-center gap-2 text-sm text-gold-700 hover:underline"
                 >
-                  {album.title}
+                  <span>{album.title}</span>
+                  <span className="text-xs text-[#9a8aa0] group-hover:text-gold-700">→</span>
                 </Link>
-              </dd>
-            </div>
-          )}
-        </dl>
-
-        {members.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {members.map((m) => (
-              <span
-                key={m.id}
-                className="rounded-full px-3 py-1 text-xs font-medium text-white"
-                style={{ backgroundColor: m.color }}
-              >
-                {m.name}
-              </span>
-            ))}
+              </div>
+            )}
           </div>
-        )}
 
-        {song.description && (
-          <p className="whitespace-pre-wrap text-sm leading-7 text-[#6a5570]">
-            {song.description}
-          </p>
-        )}
-
-        {song.lyrics && (
-          <div className="rounded-2xl border border-gold-200/70 bg-white/55 p-4 backdrop-blur-sm">
-            <p className="mb-2 font-display text-xs tracking-wider text-gold-600">LYRICS</p>
-            <p className="whitespace-pre-wrap text-sm leading-7 text-[#3a2540]">
-              {song.lyrics}
-            </p>
-          </div>
-        )}
-
-        {song.credit && (
-          <p className="whitespace-pre-wrap text-xs leading-6 text-[#9a8aa0]">
-            {song.credit}
-          </p>
-        )}
-
-        <div className="mt-2 flex flex-wrap gap-3">
-          {youtubeId && (
-            <a
-              href={song.youtubeUrl || `https://www.youtube.com/watch?v=${youtubeId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit items-center rounded-full border border-gold-300 bg-white/80 px-6 py-2.5 font-display text-xs tracking-[0.15em] text-gold-700 transition-colors hover:bg-white"
-            >
-              YouTube で見る →
-            </a>
-          )}
           {song.streamingUrl && (
             <a
               href={song.streamingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex w-fit items-center rounded-full bg-gold-400 px-6 py-2.5 font-display text-xs tracking-[0.15em] text-white transition-colors hover:bg-gold-500"
+              className="mb-3 block w-full rounded-xl bg-gold-400 py-3 text-center text-sm text-white transition-colors hover:bg-gold-500"
             >
-              ストリーミング →
+              配信サイトで聴く
+            </a>
+          )}
+          {song.youtubeUrl && (
+            <a
+              href={song.youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full rounded-xl bg-red-500 py-3 text-center text-sm text-white transition-colors hover:bg-red-600"
+            >
+              YouTubeで見る
             </a>
           )}
         </div>
+      </div>
+
+      {/* クレジット・歌詞 */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {song.credit && (
+          <div className="rounded-2xl border border-gold-200/70 bg-white/55 p-6 shadow-sm backdrop-blur-sm">
+            <h2 className="mb-4 font-serif font-bold text-[#3a2540]">クレジット</h2>
+            <pre className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-[#6a5570]">
+              {song.credit}
+            </pre>
+          </div>
+        )}
+        {song.lyrics && (
+          <div className="rounded-2xl border border-gold-200/70 bg-white/55 p-6 shadow-sm backdrop-blur-sm">
+            <h2 className="mb-4 font-serif font-bold text-[#3a2540]">歌詞</h2>
+            <pre className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-[#6a5570]">
+              {song.lyrics}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   )

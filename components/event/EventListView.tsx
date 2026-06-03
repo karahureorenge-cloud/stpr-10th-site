@@ -23,7 +23,7 @@ const EVENT_TYPE_ORDER = [
   "その他",
 ]
 
-/** イベント一覧（eventType 別セクション / グリッド・リスト切替 / 並び替え） */
+/** イベント一覧（eventType 別セクション / 並び替え / 表示切替）。カードはSP groupデザイン移植。 */
 export default function EventListView({ events }: { events: Event[] }) {
   const [sort, setSort] = useState<SortOrder>("newest")
   const [view, setView] = useState<ViewMode>("grid")
@@ -40,7 +40,6 @@ export default function EventListView({ events }: { events: Event[] }) {
     typeMap.get(t)!.push(e)
   }
 
-  // 表示順: spec 順 → 残りはアルファベット順。
   const orderedTypes = [
     ...EVENT_TYPE_ORDER.filter((t) => typeMap.has(t)),
     ...[...typeMap.keys()].filter((t) => !EVENT_TYPE_ORDER.includes(t)).sort(),
@@ -52,8 +51,22 @@ export default function EventListView({ events }: { events: Event[] }) {
       return sort === "newest" ? -cmp : cmp
     })
 
+  const sortedGroups = orderedTypes.map((type) => ({
+    type,
+    items: sortItems(typeMap.get(type)!),
+  }))
+
+  // global index（sp-stamp / holo / 左バー色を fansite と同じ基準で再現）。
+  const indexBySlug = new Map<string, number>()
+  sortedGroups.flatMap((g) => g.items).forEach((e, i) => indexBySlug.set(e.slug, i))
+
+  const gridCls =
+    view === "grid"
+      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
+      : "grid grid-cols-1 gap-3"
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="theme-strawberry flex flex-col gap-2">
       <ListControls
         sort={sort}
         onSortChange={setSort}
@@ -61,27 +74,20 @@ export default function EventListView({ events }: { events: Event[] }) {
         onViewChange={setView}
       />
 
-      {orderedTypes.map((type) => {
-        const items = sortItems(typeMap.get(type)!)
-        return (
-          <section key={type} className="mt-6">
-            <GroupHeading label={type} />
-            {view === "grid" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((e) => (
-                  <EventCard key={e.slug} event={e} view="grid" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {items.map((e) => (
-                  <EventCard key={e.slug} event={e} view="list" />
-                ))}
-              </div>
-            )}
-          </section>
-        )
-      })}
+      {sortedGroups.map(({ type, items }) => (
+        <section key={type} className="mt-6">
+          <GroupHeading label={type} />
+          <div className={gridCls}>
+            {items.map((e) => (
+              <EventCard
+                key={e.slug}
+                event={e}
+                index={indexBySlug.get(e.slug) ?? 0}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }

@@ -1,113 +1,118 @@
 import Link from "next/link"
+import type { CSSProperties } from "react"
 import type { Event } from "@/data/events"
-import { getLiveStatus, formatPeriod } from "@/lib/utils"
-import type { ViewMode } from "@/lib/utils"
-import SafeImage from "@/components/common/SafeImage"
-import TypeBadge from "@/components/common/TypeBadge"
+import { formatDateDot } from "@/lib/utils"
+import "@/components/group/strawberry-prince/strawberry-prince.css"
 
 const BASE = "/stpr-10th-anniversary"
 
-// イベント用の状態ラベル（既存ファンサイトの EventListView と同じ日本語表記）。
-const EVENT_STATUS = {
-  coming: { label: "開催予定", className: "bg-slate-500" },
-  ongoing: { label: "開催中", className: "bg-green-500 animate-pulse" },
-  finished: { label: "終了", className: "bg-gray-500/80" },
-} as const
+/* メンバーカラーを 6 色巡回（LIVE と被らないよう +3 オフセットで使う） */
+const MEMBER_RGB_CYCLE = [
+  "232, 122, 122",
+  "168, 149, 204",
+  "142, 200, 224",
+  "232, 200, 120",
+  "232, 160, 188",
+  "232, 168, 136",
+] as const
 
-function EventStatusBadge({ event, size }: { event: Event; size: "sm" | "md" }) {
-  // isOngoing 明示時は「開催中」、それ以外は日付から判定（解釈不能なら表示しない）。
-  if (!event.isOngoing && !event.periodStart) return null
-  const state = event.isOngoing
-    ? "ongoing"
-    : getLiveStatus(event.periodStart, event.periodEnd)
-  const s = EVENT_STATUS[state]
-  const sizeCls = size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[10px]"
-  return (
-    <span
-      className={`inline-flex items-center rounded-full font-bold tracking-[0.12em] text-white ${sizeCls} ${s.className}`}
-    >
-      {s.label}
-    </span>
-  )
+const DATE_STYLE: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "var(--sp-text-accent)",
+  letterSpacing: "0.02em",
+  fontVariantNumeric: "tabular-nums",
 }
 
-/** イベント一覧のカード（グリッド / リスト 両対応） */
+/**
+ * イベントカード（既存ファンサイト すとぷりグループページから完全移植）。
+ * sp-card / sp-sticker / sp-stamp / sp-holo-badge をそのまま使用。
+ * データソースのみ Supabase（10th 型）に差し替え（keyVisual は文字列URL）。
+ */
 export default function EventCard({
   event,
-  view = "list",
+  index = 0,
 }: {
   event: Event
-  view?: ViewMode
+  index?: number
 }) {
-  const href = `${BASE}/event/${event.slug}`
-
-  if (view === "grid") {
-    return (
-      <Link
-        href={href}
-        className="group flex flex-col overflow-hidden rounded-2xl border border-gold-200/70 bg-white/55 backdrop-blur-sm transition-all hover:-translate-y-1.5 hover:shadow-[0_12px_32px_rgba(212,168,83,0.22)]"
-      >
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/9" }}>
-          <SafeImage
-            src={event.keyVisual}
-            alt={event.title}
-            fill
-            fallbackLabel="EVENT"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(min-width: 768px) 33vw, 100vw"
-          />
-          <span className="absolute left-3 top-3">
-            <TypeBadge label={event.eventType} />
-          </span>
-          <span className="absolute right-3 top-3">
-            <EventStatusBadge event={event} size="md" />
-          </span>
-        </div>
-        <div className="flex flex-1 flex-col gap-1 p-5">
-          <h3 className="line-clamp-2 font-serif text-base font-bold leading-snug text-[#3a2540]">
-            {event.title}
-          </h3>
-          <p className="text-sm text-[#6a5570]">
-            {formatPeriod(event.periodStart, event.periodEnd)}
-          </p>
-          {event.description && (
-            <p className="line-clamp-2 pt-1 text-xs text-[#9a8aa0]">{event.description}</p>
-          )}
-        </div>
-      </Link>
-    )
-  }
+  const idx = index
+  const eventType = event.eventType
+  const memberRgb = MEMBER_RGB_CYCLE[(idx + 3) % MEMBER_RGB_CYCLE.length]
+  const dateRange = `${formatDateDot(event.periodStart)}${
+    event.periodEnd && event.periodEnd !== event.periodStart
+      ? ` 〜 ${formatDateDot(event.periodEnd)}`
+      : ""
+  }`
 
   return (
     <Link
-      href={href}
-      className="group flex items-center gap-3 overflow-hidden rounded-2xl border border-gold-200/70 bg-white/55 p-3 backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(212,168,83,0.22)]"
+      href={`${BASE}/event/${event.slug}`}
+      className="sp-card sp-shimmer-on-hover sp-sticker relative block group p-3"
     >
-      <div
-        className="relative w-32 shrink-0 self-center overflow-hidden rounded-xl sm:w-40"
-        style={{ aspectRatio: "16/9" }}
-      >
-        <SafeImage
-          src={event.keyVisual}
-          alt={event.title}
-          fill
-          fallbackLabel="EVENT"
-          className="object-cover"
-          sizes="160px"
+      {/* メンバーカラーの左アクセントバー */}
+      <span
+        aria-hidden
+        className="absolute"
+        style={{
+          left: 4,
+          top: "18%",
+          bottom: "18%",
+          width: 3,
+          background: `rgba(${memberRgb}, 0.9)`,
+          borderRadius: 2,
+        }}
+      />
+      {idx === 0 && (
+        <span className="sp-stamp absolute z-10" style={{ top: 10, left: 10 }}>
+          NEW
+        </span>
+      )}
+      {event.isOngoing && idx !== 0 && (
+        <span className="sp-stamp absolute z-10" style={{ top: 10, left: 10 }}>
+          ONGOING
+        </span>
+      )}
+      {/* 上位 3 つに小ホロバッジ */}
+      {idx < 3 && (
+        <span
+          aria-hidden
+          className="sp-holo-badge"
+          style={{ top: 8, right: 8, width: 18, height: 18 }}
         />
+      )}
+      <div className="aspect-video rounded-xl overflow-hidden bg-white/40">
+        {event.keyVisual && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={event.keyVisual}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+          />
+        )}
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex flex-wrap items-center gap-1.5">
-          <TypeBadge label={event.eventType} size="sm" />
-          <EventStatusBadge event={event} size="sm" />
-        </div>
-        <h3 className="truncate font-serif text-sm font-bold text-[#3a2540] group-hover:text-gold-700">
-          {event.title}
-        </h3>
-        <p className="truncate text-xs text-[#9a8aa0]">
-          {formatPeriod(event.periodStart, event.periodEnd)}
+      <p
+        className="mt-3 text-sm font-bold truncate"
+        style={{ color: "var(--sp-text)" }}
+      >
+        {event.title}
+      </p>
+      <p className="mt-1.5" style={DATE_STYLE}>
+        {dateRange}
+      </p>
+      {eventType && (
+        <p
+          className="mt-0.5"
+          style={{
+            fontSize: 10,
+            color: "var(--sp-text-soft, #b88aa6)",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+          }}
+        >
+          {eventType}
         </p>
-      </div>
+      )}
     </Link>
   )
 }

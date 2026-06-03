@@ -5,7 +5,12 @@ import { useActionState } from "react"
 import type { Field } from "@/lib/admin/tables"
 import type { FormState } from "@/app/admin/crud-actions"
 import ImageField from "./ImageField"
+import ImageListField from "./ImageListField"
 import RepeaterField from "./RepeaterField"
+
+// 複数コントロールを内包し、<label> で包むと余白クリックが内部の最初の
+// ボタン（行削除等）を発火させてしまう型。これらは <div> でラップする。
+const BLOCK_TYPES = new Set(["repeater", "image", "imagelist"])
 
 type Props = {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>
@@ -49,15 +54,28 @@ export default function RecordForm({
   const [state, formAction, pending] = useActionState(action, {})
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form
+      action={formAction}
+      className="flex flex-col gap-5"
+      onKeyDown={(e) => {
+        // テキスト入力で Enter を押しても submit させない（誤送信防止）。
+        // textarea は改行を許可するため対象外。
+        if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+          e.preventDefault()
+        }
+      }}
+    >
       {fields.map((field) => {
         const value = initial ? initial[field.name] : undefined
         const inputValue = toInputValue(field, value)
         const checked =
           field.type === "boolean" ? Boolean(value) : undefined
 
+        // ブロック型は label ではなく div でラップ（誤クリック対策）。
+        const Wrapper = BLOCK_TYPES.has(field.type) ? "div" : "label"
+
         return (
-          <label key={field.name} className="flex flex-col gap-1.5">
+          <Wrapper key={field.name} className="flex flex-col gap-1.5">
             <span className="text-xs font-medium tracking-wider text-gold-700">
               {field.label}
               {field.required && <span className="ml-1 text-rose-500">*</span>}
@@ -90,6 +108,10 @@ export default function RecordForm({
                 table={table}
                 initialValue={value == null ? "" : String(value)}
               />
+            )}
+
+            {field.type === "imagelist" && (
+              <ImageListField name={field.name} table={table} initialValue={value} />
             )}
 
             {field.type === "repeater" && (
@@ -143,7 +165,7 @@ export default function RecordForm({
             {field.help && (
               <span className="text-[11px] text-[#9a8aa0]">{field.help}</span>
             )}
-          </label>
+          </Wrapper>
         )
       })}
 

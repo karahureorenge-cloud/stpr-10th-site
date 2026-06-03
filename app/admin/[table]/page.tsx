@@ -180,6 +180,12 @@ export default async function AdminTableListPage({
                           >
                             編集
                           </Link>
+                          <Link
+                            href={`/admin/${table}/new?from=${id}`}
+                            className="rounded-full border border-gold-300 px-3 py-1 text-xs text-gold-700 transition-colors hover:bg-gold-50"
+                          >
+                            複製
+                          </Link>
                           <DeleteButton tableKey={table} id={id} label={title} />
                         </div>
                       </td>

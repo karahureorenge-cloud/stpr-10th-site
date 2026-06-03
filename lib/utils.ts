@@ -66,6 +66,20 @@ export function formatPeriod(start?: string, end?: string): string {
 }
 
 /**
+ * 今日から指定日までの残り日数。過去/不正な日付なら null。
+ * カウントダウン表示用（force-dynamic ページでサーバー描画）。
+ */
+export function getDaysUntil(dateStr?: string): number | null {
+  if (!dateStr) return null
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(dateStr)
+  if (!m) return null
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const target = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  return Math.round((target.getTime() - today.getTime()) / 86400000)
+}
+
+/**
  * YouTube の動画 ID からサムネイル URL を生成する。
  */
 export function getYoutubeThumbnail(youtubeId: string): string {

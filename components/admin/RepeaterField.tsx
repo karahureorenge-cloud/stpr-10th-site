@@ -41,7 +41,7 @@ function SubFieldInput({
 }) {
   if (field.type === "image") {
     return (
-      <label className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1">
         <span className="text-[11px] font-medium text-gold-700">{field.label}</span>
         <ImageField
           table={table}
@@ -49,7 +49,7 @@ function SubFieldInput({
           value={typeof value === "string" ? value : ""}
           onChange={(url) => onChange(url)}
         />
-      </label>
+      </div>
     )
   }
 
@@ -211,7 +211,14 @@ export default function RepeaterField({
   const cleaned = rows.filter((r) => !isEmptyRow(r))
 
   return (
-    <>
+    <div
+      onKeyDown={(e) => {
+        // 行内テキスト入力での Enter による submit を防ぐ（textarea は除外）。
+        if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+          e.preventDefault()
+        }
+      }}
+    >
       <RowsEditor
         rows={rows}
         onChange={setRows}
@@ -219,6 +226,6 @@ export default function RepeaterField({
         table={table}
       />
       <input type="hidden" name={name} value={JSON.stringify(cleaned)} />
-    </>
+    </div>
   )
 }
