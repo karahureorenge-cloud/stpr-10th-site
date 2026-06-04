@@ -36,10 +36,12 @@ export default function LinkCard({
   const colorSeed = seed || title
   // thumbnail 未設定でも href が YouTube URL なら hqdefault を自動取得。
   const thumb = thumbnail || resolveYoutubeThumbnail(undefined, href)
-  // EventCard と同じシール風の傾き（sp-sticker）。傾き角度は nth-child で決まる。
-  // 背景は半透明白（bg-white/75）＋ backdrop-blur-md（blur(12px)）でグラスモーフィズム。
-  const className =
-    "sp-sticker group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white/75 p-3 shadow-md backdrop-blur-md hover:shadow-lg"
+  // EventCard（グリッド表示）と完全に同一のクラス。
+  // sp-card が背景(rgba(255,247,250,0.55))・blur(20px)・枠線・角丸28px・影・
+  // ホバー挙動を、sp-sticker がシール風の傾きを、sp-shimmer-on-hover が
+  // ホバー時のシマーを担う。背景/枠線/影/角丸は CSS 側で定義されるため
+  // Tailwind では指定しない。
+  const className = "sp-card sp-shimmer-on-hover sp-sticker relative block group p-3"
 
   const inner = (
     <>
@@ -56,7 +58,7 @@ export default function LinkCard({
           borderRadius: 2,
         }}
       />
-      <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-50">
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-white/40">
         <SafeImage
           src={thumb}
           alt={title}
