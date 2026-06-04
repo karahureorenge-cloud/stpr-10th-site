@@ -1,6 +1,7 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Noto_Serif_JP, Cinzel, Cormorant_Garamond } from "next/font/google"
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site"
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister"
 import "./globals.css"
 
 // 和文見出し: Noto Serif JP
@@ -49,6 +50,22 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: ["/images/hero-bg.webp"],
   },
+  // PWA: ホーム画面追加用の manifest と iOS 向けアイコン/設定。
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "すとぷり10th",
+  },
+  icons: {
+    icon: "/logo-10th.png",
+    apple: "/logo-10th.png",
+  },
+}
+
+// PWA: テーマ色（ローズピンク）と背景色（パールホワイト）。
+export const viewport: Viewport = {
+  themeColor: "#F472B6",
 }
 
 export default function RootLayout({
@@ -61,7 +78,10 @@ export default function RootLayout({
       lang="ja"
       className={`${notoSerifJP.variable} ${cinzel.variable} ${cormorant.variable} h-full`}
     >
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <ServiceWorkerRegister />
+        {children}
+      </body>
     </html>
   )
 }
