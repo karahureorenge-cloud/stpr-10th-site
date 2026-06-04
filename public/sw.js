@@ -6,7 +6,7 @@
  * next-pwa は Turbopack 非対応のため、軽量な自前 SW で実装している。
  */
 
-const CACHE_VERSION = "stpr-10th-v1"
+const CACHE_VERSION = "stpr-10th-v2"
 const OFFLINE_URL = "/stpr-10th-anniversary"
 
 // インストール時にプリキャッシュするシェル。
@@ -44,6 +44,24 @@ self.addEventListener("fetch", (event) => {
 
   // admin 配下はキャッシュしない（常に最新・要認証）。
   if (url.pathname.startsWith("/admin")) return
+
+  // ビルド成果物（/_next/）は network-first。
+  // cache-first にすると新デプロイ後も古い JS/CSS チャンクを配り続け、
+  // UI が更新されない（例: 旧レイアウトのナビが表示される）ため。
+  if (url.pathname.startsWith("/_next/")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const copy = response.clone()
+            caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy))
+          }
+          return response
+        })
+        .catch(() => caches.match(request).then((cached) => cached || Response.error())),
+    )
+    return
+  }
 
   // ページ遷移: network-first（取得成功時にキャッシュ更新、失敗時はキャッシュ）。
   if (request.mode === "navigate") {

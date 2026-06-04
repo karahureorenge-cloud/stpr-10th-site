@@ -24,7 +24,7 @@ const ITEMS: NavItem[] = [
   { label: "PROJECT", href: `${BASE}/project`, needs: "project" },
   { label: "MOVIE", href: `${BASE}/movie`, needs: "movie" },
   { label: "STREAM", href: `${BASE}/stream`, needs: "stream" },
-  { label: "HISTORY", href: `${BASE}/history` },
+  { label: "SCHEDULE", href: `${BASE}/history` },
   { label: "SEARCH", href: `${BASE}/search` },
   { label: "ABOUT", href: `${BASE}/about` },
 ]

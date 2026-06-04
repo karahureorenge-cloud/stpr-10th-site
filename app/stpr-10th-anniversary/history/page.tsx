@@ -7,8 +7,8 @@ import { buildTimeline } from "@/lib/utils"
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
-  title: "歩み",
-  description: "すとぷり 10周年の年表。ライブ・イベント・グッズ・雑誌・メディアを年ごとに集約。",
+  title: "スケジュール",
+  description: "すとぷり 10周年のスケジュール。ライブ・イベント・グッズ・雑誌・メディアを年ごと・カレンダーで集約。",
 }
 
 export default async function HistoryPage() {
@@ -23,7 +23,7 @@ export default async function HistoryPage() {
   const items = buildTimeline({ lives, events, goods, magazines, media })
 
   return (
-    <PageContainer subtitle="HISTORY" title="歩み">
+    <PageContainer subtitle="SCHEDULE" title="スケジュール">
       <HistoryView items={items} />
     </PageContainer>
   )
