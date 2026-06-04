@@ -31,43 +31,30 @@ function splitYmd(s: string): { y: number; m: number; d: number } | null {
   return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) }
 }
 
-/** 開始日〜終了日（含む）を YYYY-MM-DD の配列に展開（最大 120 日でガード）。 */
-function expandDates(start: string, end?: string): string[] {
-  if (!end || end === start) return [start]
-  const s = splitYmd(start)
-  const e = splitYmd(end)
-  if (!s || !e) return [start]
-  const out: string[] = []
-  let cur = new Date(s.y, s.m - 1, s.d)
-  const last = new Date(e.y, e.m - 1, e.d)
-  let guard = 0
-  while (cur <= last && guard < 120) {
-    out.push(`${cur.getFullYear()}-${pad(cur.getMonth() + 1)}-${pad(cur.getDate())}`)
-    cur = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 1)
-    guard++
-  }
-  return out
-}
-
 /**
  * HISTORY 月カレンダービュー（外部ライブラリ不使用の自前実装）。
- * - 各日付にライブ・イベント・グッズ等のチップを表示。
- * - 前月/翌月ナビ。期間（endDate）があるアイテムは各日に表示。
+ * - 各日付にライブ・イベント・グッズ等のチップを表示。期間イベントも開始日のみ表示。
+ * - 今日の日付はゴールドの枠線でハイライト。
+ * - 日付クリックで「その日に始まる出来事」+「🔥 開催中（期間が重なるもの）」を下部表示。
  * - 初期表示はアイテムが存在する月（最も早い日付の月）。
  */
 export default function HistoryCalendar({ items }: Props) {
-  // 日付（YYYY-MM-DD）→ アイテム配列。
+  // 日付（YYYY-MM-DD）→ アイテム配列。期間イベントは開始日のみに置く。
   const byDate = useMemo(() => {
     const map = new Map<string, TimelineItem[]>()
     for (const it of items) {
-      for (const d of expandDates(it.date, it.endDate)) {
-        const arr = map.get(d)
-        if (arr) arr.push(it)
-        else map.set(d, [it])
-      }
+      const arr = map.get(it.date)
+      if (arr) arr.push(it)
+      else map.set(it.date, [it])
     }
     return map
   }, [items])
+
+  // 今日（YYYY-MM-DD）。クライアントの現在時刻で算出。
+  const today = useMemo(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  }, [])
 
   // 初期月: 最も早いアイテムの年月（無ければ 2026-06）。
   const initial = useMemo(() => {
@@ -100,7 +87,13 @@ export default function HistoryCalendar({ items }: Props) {
   }, [cur])
 
   const dateKey = (d: number) => `${cur.y}-${pad(cur.m)}-${pad(d)}`
+  // その日に「始まる」出来事（開始日が一致）。
   const selectedItems = selected ? (byDate.get(selected) ?? []) : []
+  // その日に「開催中」の出来事（period_start < 選択日 <= period_end）。
+  // 開始日当日は selectedItems 側に出すため、ここでは開始日より後〜終了日までを対象にする。
+  const ongoingItems = selected
+    ? items.filter((it) => it.endDate && it.date < selected && selected <= it.endDate)
+    : []
 
   return (
     <div>
@@ -148,6 +141,7 @@ export default function HistoryCalendar({ items }: Props) {
           const key = dateKey(d)
           const dayItems = byDate.get(key) ?? []
           const isSelected = selected === key
+          const isToday = key === today
           const weekday = (i % 7)
           return (
             <button
@@ -160,14 +154,19 @@ export default function HistoryCalendar({ items }: Props) {
                   : dayItems.length > 0
                     ? "border-gold-200/70 bg-white/70 hover:bg-gold-50/60"
                     : "border-transparent bg-white/30"
-              }`}
+              } ${isToday ? "ring-2 ring-gold-400 ring-offset-1" : ""}`}
             >
               <span
-                className={`text-[11px] font-bold tabular-nums ${
+                className={`flex items-center gap-1 text-[11px] font-bold tabular-nums ${
                   weekday === 0 ? "text-rose-400" : weekday === 6 ? "text-sky-500" : "text-[#6a5570]"
                 }`}
               >
                 {d}
+                {isToday && (
+                  <span className="rounded-full bg-gold-400 px-1 text-[8px] font-bold leading-tight text-white">
+                    今日
+                  </span>
+                )}
               </span>
               {/* チップ（最大2件 + 残数）。SP では点表示に切替。 */}
               <div className="mt-0.5 flex flex-col gap-0.5">
@@ -217,48 +216,67 @@ export default function HistoryCalendar({ items }: Props) {
         ))}
       </div>
 
-      {/* 選択日の詳細 */}
-      {selected && selectedItems.length > 0 && (
+      {/* 選択日の詳細（その日に始まる出来事 + 開催中） */}
+      {selected && (selectedItems.length > 0 || ongoingItems.length > 0) && (
         <div className="mt-5 rounded-2xl border border-gold-200/70 bg-white/70 p-4">
           <p className="mb-3 font-serif text-sm font-bold text-[#3a2540]">{selected} の出来事</p>
-          <ul className="flex flex-col gap-2">
-            {selectedItems.map((it, i) => {
-              const meta = CATEGORY_META[it.category]
-              const isExternal = it.href.startsWith("http")
-              const isHash = it.href === "#"
-              const label = (
-                <span className="flex items-center gap-2">
-                  <span
-                    className={`inline-block w-16 shrink-0 rounded ${meta.bg} ${meta.text} px-2 py-0.5 text-center text-[10px] font-bold uppercase tracking-wider`}
-                  >
-                    {meta.label}
-                  </span>
-                  <span className="text-sm font-medium text-[#3a2540]">{it.title}</span>
-                </span>
-              )
-              if (isHash) return <li key={i}>{label}</li>
-              return (
-                <li key={i}>
-                  {isExternal ? (
-                    <a
-                      href={it.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="transition-opacity hover:opacity-70"
-                    >
-                      {label}
-                    </a>
-                  ) : (
-                    <Link href={it.href} className="transition-opacity hover:opacity-70">
-                      {label}
-                    </Link>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
+          {selectedItems.length > 0 ? (
+            <ItemList items={selectedItems} />
+          ) : (
+            <p className="text-xs text-[#9a8aa0]">この日に始まる出来事はありません。</p>
+          )}
+
+          {/* 開催中（選択日に期間が重なっているもの） */}
+          {ongoingItems.length > 0 && (
+            <div className="mt-4 border-t border-gold-100/70 pt-3">
+              <p className="mb-3 text-sm font-bold text-rose-500">🔥 開催中</p>
+              <ItemList items={ongoingItems} />
+            </div>
+          )}
         </div>
       )}
     </div>
+  )
+}
+
+/** 選択日詳細・開催中で共用するアイテムリスト。 */
+function ItemList({ items }: { items: TimelineItem[] }) {
+  return (
+    <ul className="flex flex-col gap-2">
+      {items.map((it, i) => {
+        const meta = CATEGORY_META[it.category]
+        const isExternal = it.href.startsWith("http")
+        const isHash = it.href === "#"
+        const label = (
+          <span className="flex items-center gap-2">
+            <span
+              className={`inline-block w-16 shrink-0 rounded ${meta.bg} ${meta.text} px-2 py-0.5 text-center text-[10px] font-bold uppercase tracking-wider`}
+            >
+              {meta.label}
+            </span>
+            <span className="text-sm font-medium text-[#3a2540]">{it.title}</span>
+          </span>
+        )
+        if (isHash) return <li key={i}>{label}</li>
+        return (
+          <li key={i}>
+            {isExternal ? (
+              <a
+                href={it.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-70"
+              >
+                {label}
+              </a>
+            ) : (
+              <Link href={it.href} className="transition-opacity hover:opacity-70">
+                {label}
+              </Link>
+            )}
+          </li>
+        )
+      })}
+    </ul>
   )
 }
