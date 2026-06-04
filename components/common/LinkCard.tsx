@@ -37,8 +37,9 @@ export default function LinkCard({
   // thumbnail 未設定でも href が YouTube URL なら hqdefault を自動取得。
   const thumb = thumbnail || resolveYoutubeThumbnail(undefined, href)
   // EventCard と同じシール風の傾き（sp-sticker）。傾き角度は nth-child で決まる。
+  // 背景は半透明白（bg-white/75）＋ backdrop-blur-md（blur(12px)）でグラスモーフィズム。
   const className =
-    "sp-sticker group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white p-3 shadow-md hover:shadow-lg"
+    "sp-sticker group relative block overflow-hidden rounded-2xl border border-pink-200 bg-white/75 p-3 shadow-md backdrop-blur-md hover:shadow-lg"
 
   const inner = (
     <>
