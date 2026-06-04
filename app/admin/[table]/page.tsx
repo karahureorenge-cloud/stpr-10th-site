@@ -129,7 +129,65 @@ export default async function AdminTableListPage({
           </p>
         )}
 
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-gold-200/70 bg-white/80 shadow-sm">
+        {/* SP（モバイル）: 横スクロールを避けるためカード形式（縦並び）で表示。
+            タイトル + 日付など最低限のみ。操作ボタンは大きく・縦並び・削除は分離。 */}
+        <div className="mt-6 space-y-3 md:hidden">
+          {rows.length === 0 ? (
+            <p className="rounded-2xl border border-gold-200/70 bg-white/80 px-4 py-12 text-center text-sm text-[#9a8aa0] shadow-sm">
+              データがありません。「＋ 新規追加」から登録してください。
+            </p>
+          ) : (
+            rows.map((row) => {
+              const id = String(row.id)
+              const title = String(row[cfg.titleField] ?? "")
+              // 日付列（type=date）を 1 つだけ抽出して補助情報に表示。
+              const dateCol = cfg.listColumns.find(
+                (col) => cfg.fields.find((f) => f.name === col)?.type === "date",
+              )
+              const dateField = dateCol ? cfg.fields.find((f) => f.name === dateCol) : undefined
+              return (
+                <div
+                  key={id}
+                  className="rounded-2xl border border-gold-200/70 bg-white/80 p-4 shadow-sm"
+                >
+                  <p className="font-bold text-[#3a2540]">
+                    {title || <span className="text-[#c9bccd]">（無題）</span>}
+                  </p>
+                  {dateCol && (
+                    <div className="mt-1 text-sm">{renderCell(dateCol, row[dateCol], dateField)}</div>
+                  )}
+                  {/* 編集・複製は横並び（各 44px 以上）。削除は誤タップ防止で分離。 */}
+                  <div className="mt-4 flex gap-2">
+                    <Link
+                      href={`/admin/${table}/${id}/edit`}
+                      className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl border border-gold-300 px-4 text-sm font-medium text-gold-700 transition-colors hover:bg-gold-50"
+                    >
+                      編集
+                    </Link>
+                    <Link
+                      href={`/admin/${table}/new?from=${id}`}
+                      className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl border border-gold-300 px-4 text-sm font-medium text-gold-700 transition-colors hover:bg-gold-50"
+                    >
+                      複製
+                    </Link>
+                  </div>
+                  <div className="mt-3 border-t border-gold-100/70 pt-3">
+                    <DeleteButton
+                      tableKey={table}
+                      id={id}
+                      label={title}
+                      formClassName="w-full"
+                      className="flex min-h-[44px] w-full items-center justify-center rounded-xl border border-rose-300 px-4 text-sm font-medium text-rose-500 transition-colors hover:bg-rose-50"
+                    />
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* PC（md 以上）: 従来のテーブル表示。 */}
+        <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-gold-200/70 bg-white/80 shadow-sm md:block">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gold-200/70 bg-gold-50/50 text-[11px] uppercase tracking-wider text-gold-600">
