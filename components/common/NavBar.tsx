@@ -20,7 +20,7 @@ const NAV_ITEMS: { label: string; segment: string }[] = [
   { label: "PROJECT", segment: "project" },
   { label: "MOVIE", segment: "movie" },
   { label: "STREAM", segment: "stream" },
-  { label: "HISTORY", segment: "history" },
+  { label: "SCHEDULE", segment: "history" },
   { label: "ABOUT", segment: "about" },
 ]
 

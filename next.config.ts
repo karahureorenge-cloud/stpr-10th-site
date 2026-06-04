@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: fileURLToPath(new URL(".", import.meta.url)),
   },
+  // Server Actions の既定ボディ上限は 1MB のため、画像アップロード（最大10MB）が
+  // 1MB を超えると送信時点で失敗し「アップロード中にエラーが発生しました」になる。
+  // upload-actions の上限（10MB）に合わせて引き上げる。
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
   images: {
     remotePatterns: [
       // YouTube サムネイル
