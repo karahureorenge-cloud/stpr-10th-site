@@ -26,13 +26,6 @@ function pad(n: number): string {
   return String(n).padStart(2, "0")
 }
 
-/** "YYYY-MM-DD" を分解。 */
-function splitYmd(s: string): { y: number; m: number; d: number } | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
-  if (!m) return null
-  return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) }
-}
-
 /**
  * HISTORY 月カレンダービュー（外部ライブラリ不使用の自前実装）。
  * - 各日付にイベント・グッズ等のチップを表示。ライブは会場公演（schedules）単位で各公演日に表示。
@@ -66,12 +59,11 @@ export default function HistoryCalendar({ items, schedules = [] }: Props) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
   }, [])
 
-  // 初期月: 最も早いアイテムの年月（無ければ 2026-06）。
+  // 初期月: 今日（new Date()）の年月。開いたときは常に当月を表示する。
   const initial = useMemo(() => {
-    const first = [...items].map((i) => i.date).sort()[0]
-    const p = first ? splitYmd(first) : null
-    return p ? { y: p.y, m: p.m } : { y: 2026, m: 6 }
-  }, [items])
+    const d = new Date()
+    return { y: d.getFullYear(), m: d.getMonth() + 1 }
+  }, [])
 
   const [cur, setCur] = useState(initial)
   const [selected, setSelected] = useState<string | null>(null)

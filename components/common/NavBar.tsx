@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import SearchBox from "@/components/common/SearchBox"
 
 const BASE = "/stpr-10th-anniversary"
 
@@ -87,8 +86,6 @@ export default function NavBar({
             )
           })}
         </ul>
-        {/* サイト内検索 */}
-        <SearchBox className="w-44 shrink-0 lg:w-56" />
       </div>
     </nav>
   )
