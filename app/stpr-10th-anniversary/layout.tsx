@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import NavBar from "@/components/common/NavBar"
 import BottomNav from "@/components/common/BottomNav"
 import Footer from "@/components/common/Footer"
-import SearchBox from "@/components/common/SearchBox"
+import FloatingSearch from "@/components/common/FloatingSearch"
 import { getCount } from "@/lib/repo"
 import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site"
 
@@ -64,13 +64,11 @@ export default async function TenthLayout({
   return (
     <div className="theme-10th theme-10th-bg flex min-h-screen flex-col font-serif">
       <NavBar {...flags} />
-      {/* SP（モバイル）ヘッダーの検索バー。PC は NavBar 内に検索ボックスがある。 */}
-      <div className="sticky top-0 z-[90] border-b border-gold-200/60 bg-white/70 px-4 py-2 backdrop-blur-md md:hidden">
-        <SearchBox />
-      </div>
       <main className="flex-1">{children}</main>
       <Footer />
       <BottomNav {...flags} />
+      {/* 画面右下の固定検索ボタン（PC・SP 共通）。 */}
+      <FloatingSearch />
     </div>
   )
 }
