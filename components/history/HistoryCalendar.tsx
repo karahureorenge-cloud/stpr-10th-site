@@ -6,8 +6,6 @@ import type { TimelineCategory, TimelineItem } from "@/lib/utils"
 
 type Props = {
   items: TimelineItem[]
-  // 会場公演（schedules）チップ。live のチップ表示はこちらに置き換える。
-  schedules?: TimelineItem[]
 }
 
 // カテゴリ別のチップ配色（HistoryView と統一）。
@@ -16,6 +14,10 @@ const CATEGORY_META: Record<TimelineCategory, { label: string; bg: string; text:
   live: { label: "LIVE", bg: "bg-rose-100", text: "text-rose-600" },
   event: { label: "EVENT", bg: "bg-amber-100", text: "text-amber-700" },
   goods: { label: "GOODS", bg: "bg-emerald-100", text: "text-emerald-700" },
+  music: { label: "MUSIC", bg: "bg-fuchsia-100", text: "text-fuchsia-700" },
+  movie: { label: "MOVIE", bg: "bg-indigo-100", text: "text-indigo-700" },
+  project: { label: "PROJECT", bg: "bg-teal-100", text: "text-teal-700" },
+  stream: { label: "STREAM", bg: "bg-blue-100", text: "text-blue-700" },
   magazine: { label: "MAGAZINE", bg: "bg-violet-100", text: "text-violet-700" },
   media: { label: "MEDIA", bg: "bg-sky-100", text: "text-sky-700" },
 }
@@ -28,30 +30,25 @@ function pad(n: number): string {
 
 /**
  * HISTORY 月カレンダービュー（外部ライブラリ不使用の自前実装）。
- * - 各日付にイベント・グッズ等のチップを表示。ライブは会場公演（schedules）単位で各公演日に表示。
+ * - 各日付にライブ（会場公演単位）・イベント・グッズ・配信・企画・楽曲・動画等のチップを表示。
  * - 今日の日付はゴールドの枠線でハイライト。
  * - 日付クリックで「その日に始まる出来事」+「🔥 開催中（期間が重なるもの）」を下部表示。
- *   「開催中」はライブ全体の期間（period_start〜period_end）で判定する。
- * - 初期表示はアイテムが存在する月（最も早い日付の月）。
+ *   「開催中」はライブ全体の期間（period_start〜period_end）で判定する（ongoingOnly スパン）。
+ * - 初期表示は当月（new Date()）。
  */
-export default function HistoryCalendar({ items, schedules = [] }: Props) {
+export default function HistoryCalendar({ items }: Props) {
   // 日付（YYYY-MM-DD）→ チップ配列。
-  // live は会場公演（schedules）チップに置き換えるため items の live は除外する。
-  // （items の live アイテムは下部「開催中」判定のためにそのまま保持する。）
+  // ongoingOnly（ライブ全体期間の非表示スパン）はチップに出さず、下部「開催中」判定にのみ使う。
   const byDate = useMemo(() => {
     const map = new Map<string, TimelineItem[]>()
-    const add = (it: TimelineItem) => {
+    for (const it of items) {
+      if (it.ongoingOnly) continue
       const arr = map.get(it.date)
       if (arr) arr.push(it)
       else map.set(it.date, [it])
     }
-    for (const it of items) {
-      if (it.category === "live") continue
-      add(it)
-    }
-    for (const s of schedules) add(s)
     return map
-  }, [items, schedules])
+  }, [items])
 
   // 今日（YYYY-MM-DD）。クライアントの現在時刻で算出。
   const today = useMemo(() => {

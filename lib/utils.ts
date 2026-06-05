@@ -8,6 +8,10 @@ import type { Event } from "@/data/events"
 import type { Goods } from "@/data/goods"
 import type { Magazine } from "@/data/magazines"
 import type { Media } from "@/data/media"
+import type { Stream } from "@/data/streams"
+import type { Project } from "@/data/projects"
+import type { Song } from "@/data/songs"
+import type { Movie } from "@/data/movies"
 
 /**
  * ライブのステータスを日付から判定する。
@@ -273,6 +277,10 @@ export type TimelineCategory =
   | "live"
   | "event"
   | "goods"
+  | "music"
+  | "movie"
+  | "project"
+  | "stream"
   | "magazine"
   | "media"
 
@@ -284,6 +292,9 @@ export type TimelineItem = {
   title: string
   description?: string
   href: string
+  // ライブ全体の期間（periodStart〜periodEnd）を表す非表示スパン。
+  // カレンダーの「開催中」判定専用で、チップ・リスト・件数には出さない。
+  ongoingOnly?: boolean
 }
 
 const TIMELINE_BASE = "/stpr-10th-anniversary"
@@ -300,9 +311,13 @@ function normalizeTimelineDate(raw?: string): string | null {
 }
 
 /**
- * lives / events / goods / magazines / media を年表アイテムへ集約する。
- * - 日付は各データの代表日（live/event=periodStart, goods/magazine=releaseDate,
- *   media=dateLabel）を正規化して使用。
+ * lives / events / goods / magazines / media / streams / projects / songs / movies
+ * を年表アイテムへ集約する。
+ * - ライブは会場公演（venues[].shows[].date）単位で各公演日に1件ずつ展開する
+ *   （タイトル「{ライブ名} {会場名}」）。ライブ全体の開始日・終了日では表示しない。
+ *   ただし「開催中」判定用に periodStart〜periodEnd の非表示スパン（ongoingOnly）を別途追加。
+ * - その他は各データの代表日（event=periodStart, goods/magazine=releaseDate,
+ *   media=dateLabel, stream/project/movie=publishDate, song=publishedDate）を正規化して使用。
  * - すとぷり 10周年（2026-06-04）を DB 非依存の固定エントリとして必ず追加。
  * - 日付昇順（古い→新しい。同日はカテゴリ順）で返す。
  */
@@ -312,6 +327,10 @@ export function buildTimeline(opts: {
   goods?: Goods[]
   magazines?: Magazine[]
   media?: Media[]
+  streams?: Stream[]
+  projects?: Project[]
+  songs?: Song[]
+  movies?: Movie[]
 }): TimelineItem[] {
   const out: TimelineItem[] = []
 
@@ -341,11 +360,34 @@ export function buildTimeline(opts: {
   })
 
   for (const l of opts.lives ?? []) {
-    push(
-      l.periodStart,
-      { category: "live", title: l.title, description: l.description, href: `${TIMELINE_BASE}/live/${l.slug}` },
-      l.periodEnd,
-    )
+    const href = `${TIMELINE_BASE}/live/${l.slug}`
+    // 会場公演（venues[].shows[].date）単位で各公演日に展開。
+    let pushed = 0
+    for (const v of l.venues ?? []) {
+      const venueName = v.venueName || v.stageName
+      if (!venueName) continue
+      const seen = new Set<string>()
+      for (const s of v.shows ?? []) {
+        const date = normalizeTimelineDate(s.date)
+        if (!date || seen.has(date)) continue
+        seen.add(date)
+        out.push({ date, year: Number(date.slice(0, 4)), category: "live", title: `${l.title} ${venueName}`, href })
+        pushed++
+      }
+    }
+    // 会場公演データが無いライブは periodStart にライブ名のみで1件フォールバック。
+    if (pushed === 0) {
+      const date = normalizeTimelineDate(l.periodStart)
+      if (date) {
+        out.push({ date, year: Number(date.slice(0, 4)), category: "live", title: l.title, description: l.description, href })
+      }
+    }
+    // 「開催中」判定用の非表示スパン（periodStart〜periodEnd）。多日程のみ。
+    const ds = normalizeTimelineDate(l.periodStart)
+    const de = normalizeTimelineDate(l.periodEnd)
+    if (ds && de && de !== ds) {
+      out.push({ date: ds, year: Number(ds.slice(0, 4)), endDate: de, category: "live", title: l.title, href, ongoingOnly: true })
+    }
   }
   for (const e of opts.events ?? []) {
     push(
@@ -378,66 +420,56 @@ export function buildTimeline(opts: {
       href: "#",
     })
   }
+  for (const s of opts.streams ?? []) {
+    push(s.publishDate, {
+      category: "stream",
+      title: s.title,
+      description: s.description,
+      href: s.url ?? `${TIMELINE_BASE}/stream`,
+    })
+  }
+  for (const p of opts.projects ?? []) {
+    push(p.publishDate, {
+      category: "project",
+      title: p.title,
+      description: p.description,
+      href: `${TIMELINE_BASE}/project/${p.slug}`,
+    })
+  }
+  for (const s of opts.songs ?? []) {
+    push(s.publishedDate, {
+      category: "music",
+      title: s.title,
+      description: s.artist ?? s.description,
+      href: `${TIMELINE_BASE}/music/${s.slug}`,
+    })
+  }
+  for (const m of opts.movies ?? []) {
+    // songs 由来の MV（id が "song-" 始まり）は MUSIC として別途追加済みのため除外。
+    if (m.id.startsWith("song-")) continue
+    push(m.publishDate, {
+      category: "movie",
+      title: m.title,
+      description: m.description,
+      href: m.url ?? `${TIMELINE_BASE}/movie`,
+    })
+  }
 
   const catOrder: Record<TimelineCategory, number> = {
     anniversary: 0,
     live: 1,
     event: 2,
     goods: 3,
-    magazine: 4,
-    media: 5,
+    music: 4,
+    movie: 5,
+    project: 6,
+    stream: 7,
+    magazine: 8,
+    media: 9,
   }
   out.sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? -1 : 1
     return catOrder[a.category] - catOrder[b.category]
   })
-  return out
-}
-
-/**
- * lives の各会場公演（venues[].shows[].date）をカレンダー用のチップへ展開する。
- * - 1 公演日 = 1 アイテム。タイトルは「{ライブ名} - {会場名}」。
- * - 同一会場で同日に複数公演（昼/夜）があっても日付単位で1件に集約。
- * - 会場・公演日データを持たないライブは periodStart にライブ名のみで1件フォールバック。
- * - カレンダーのチップ表示専用。「開催中」判定は buildTimeline の live アイテム
- *   （periodStart〜periodEnd）が担うため、ここには endDate を持たせない。
- */
-export function buildLiveSchedules(lives: Live[]): TimelineItem[] {
-  const out: TimelineItem[] = []
-  for (const l of lives ?? []) {
-    const href = `${TIMELINE_BASE}/live/${l.slug}`
-    let pushed = 0
-    for (const v of l.venues ?? []) {
-      const venueName = v.venueName || v.stageName
-      if (!venueName) continue
-      const seen = new Set<string>()
-      for (const s of v.shows ?? []) {
-        const date = normalizeTimelineDate(s.date)
-        if (!date || seen.has(date)) continue
-        seen.add(date)
-        out.push({
-          date,
-          year: Number(date.slice(0, 4)),
-          category: "live",
-          title: `${l.title} - ${venueName}`,
-          href,
-        })
-        pushed++
-      }
-    }
-    // 会場公演データが無い場合は従来どおり periodStart に1件だけ表示。
-    if (pushed === 0) {
-      const date = normalizeTimelineDate(l.periodStart)
-      if (date) {
-        out.push({
-          date,
-          year: Number(date.slice(0, 4)),
-          category: "live",
-          title: l.title,
-          href,
-        })
-      }
-    }
-  }
   return out
 }

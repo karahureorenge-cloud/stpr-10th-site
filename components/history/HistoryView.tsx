@@ -7,8 +7,6 @@ import HistoryCalendar from "@/components/history/HistoryCalendar"
 
 type Props = {
   items: TimelineItem[]
-  // 会場公演（schedules）チップ。カレンダー表示専用（リスト・件数には影響しない）。
-  liveSchedules?: TimelineItem[]
 }
 
 const CATEGORY_META: Record<
@@ -19,6 +17,10 @@ const CATEGORY_META: Record<
   live: { label: "LIVE", bg: "bg-rose-100", text: "text-rose-600" },
   event: { label: "EVENT", bg: "bg-amber-100", text: "text-amber-700" },
   goods: { label: "GOODS", bg: "bg-emerald-100", text: "text-emerald-700" },
+  music: { label: "MUSIC", bg: "bg-fuchsia-100", text: "text-fuchsia-700" },
+  movie: { label: "MOVIE", bg: "bg-indigo-100", text: "text-indigo-700" },
+  project: { label: "PROJECT", bg: "bg-teal-100", text: "text-teal-700" },
+  stream: { label: "STREAM", bg: "bg-blue-100", text: "text-blue-700" },
   magazine: { label: "MAGAZINE", bg: "bg-violet-100", text: "text-violet-700" },
   media: { label: "MEDIA", bg: "bg-sky-100", text: "text-sky-700" },
 }
@@ -28,6 +30,10 @@ const CATEGORY_FILTER_OPTIONS: { key: "all" | TimelineCategory; label: string }[
   { key: "live", label: "LIVE" },
   { key: "event", label: "EVENT" },
   { key: "goods", label: "GOODS" },
+  { key: "music", label: "MUSIC" },
+  { key: "movie", label: "MOVIE" },
+  { key: "project", label: "PROJECT" },
+  { key: "stream", label: "STREAM" },
   { key: "magazine", label: "MAGAZINE" },
   { key: "media", label: "MEDIA" },
 ]
@@ -49,17 +55,21 @@ function fmtRange(startDate: string, endDate?: string): string {
  * - グループフィルタは廃止（単一作品）。年タブ + カテゴリーフィルタ + 縦タイムライン。
  * - アクセントはサイトカラー（ゴールド）。
  */
-export default function HistoryView({ items, liveSchedules = [] }: Props) {
+export default function HistoryView({ items }: Props) {
   const years = useMemo(() => {
     const set = new Set<number>()
-    items.forEach((i) => set.add(i.year))
+    // 「開催中」用の非表示スパンは年タブの集計から除外。
+    items.forEach((i) => {
+      if (!i.ongoingOnly) set.add(i.year)
+    })
     // 古い→新しい（時系列順）
     return [...set].sort((a, b) => a - b)
   }, [items])
 
   const [year, setYear] = useState<number | undefined>(years[0])
   const [category, setCategory] = useState<"all" | TimelineCategory>("all")
-  const [view, setView] = useState<"list" | "calendar">("list")
+  // デフォルトはカレンダー表示。
+  const [view, setView] = useState<"list" | "calendar">("calendar")
 
   if (items.length === 0) {
     return (
@@ -71,13 +81,13 @@ export default function HistoryView({ items, liveSchedules = [] }: Props) {
 
   const currentYear =
     year !== undefined && years.includes(year) ? year : years[0]
+  // カレンダーへ渡す全件（「開催中」判定用の ongoingOnly スパンを含む）。
   const filteredAll = items.filter(
     (i) => category === "all" || i.category === category,
   )
-  const filteredYear = filteredAll.filter((i) => i.year === currentYear)
-  // カレンダーの会場公演チップ。カテゴリーが「all / live」のときのみ表示。
-  const calendarSchedules =
-    category === "all" || category === "live" ? liveSchedules : []
+  // リスト・件数用の表示対象（ongoingOnly スパンは除外）。
+  const visibleAll = filteredAll.filter((i) => !i.ongoingOnly)
+  const visibleYear = visibleAll.filter((i) => i.year === currentYear)
 
   return (
     <>
@@ -156,21 +166,19 @@ export default function HistoryView({ items, liveSchedules = [] }: Props) {
         <p className="text-xs text-[#9a8aa0]">
           {view === "list" ? (
             <>
-              {currentYear} 年: {filteredYear.length} 件
+              {currentYear} 年: {visibleYear.length} 件
               {category !== "all" && (
-                <span className="ml-1 text-gold-300">/ 全期間 {filteredAll.length} 件</span>
+                <span className="ml-1 text-gold-300">/ 全期間 {visibleAll.length} 件</span>
               )}
             </>
           ) : (
-            <>全期間: {filteredAll.length} 件</>
+            <>全期間: {visibleAll.length} 件</>
           )}
         </p>
       </div>
 
       {/* カレンダー表示 */}
-      {view === "calendar" && (
-        <HistoryCalendar items={filteredAll} schedules={calendarSchedules} />
-      )}
+      {view === "calendar" && <HistoryCalendar items={filteredAll} />}
 
       {/* 年見出し（リスト表示のみ） */}
       {view === "list" && (
@@ -184,13 +192,13 @@ export default function HistoryView({ items, liveSchedules = [] }: Props) {
 
       {/* アイテム一覧（リスト表示のみ） */}
       {view === "list" &&
-        (filteredYear.length === 0 ? (
+        (visibleYear.length === 0 ? (
           <div className="py-16 text-center text-sm text-[#9a8aa0]">
             条件に一致する出来事がありません
           </div>
         ) : (
           <ol className="relative ml-4 border-l border-gold-200">
-          {filteredYear.map((item, i) => {
+          {visibleYear.map((item, i) => {
             const meta = CATEGORY_META[item.category]
             const isExternal = item.href.startsWith("http")
             const isHash = item.href === "#"
