@@ -24,6 +24,7 @@ export type SubFieldType =
   | "image"
   | "select"
   | "repeater"
+  | "richtext" // Tiptap リッチテキスト（行内）。保存値は HTML 文字列
 
 export type SubField = {
   name: string
@@ -400,7 +401,7 @@ export const TABLES: Record<string, TableConfig> = {
         type: "repeater",
         itemFields: [
           { name: "sectionTitle", label: "セクションタイトル", type: "text" },
-          { name: "content", label: "内容", type: "textarea" },
+          { name: "content", label: "内容", type: "richtext" },
           { name: "image", label: "画像", type: "image", multiple: true },
         ],
       },

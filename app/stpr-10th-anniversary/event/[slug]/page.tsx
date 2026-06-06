@@ -25,6 +25,11 @@ import { SITE_URL } from "@/lib/site"
 
 const BASE = "/stpr-10th-anniversary"
 
+/** HTML タグを含むか（リッチテキスト保存値か、旧来のプレーンテキストか判定）。 */
+function looksLikeHtml(s: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(s)
+}
+
 export const dynamic = "force-dynamic"
 
 export async function generateMetadata({
@@ -313,9 +318,15 @@ export default async function EventDetailPage({
               // eslint-disable-next-line @next/next/no-img-element
               <img key={idx} src={src} alt={c.sectionTitle ?? ""} className="mb-3 w-full rounded-xl" />
             ))}
-            {c.content && (
-              <p className="whitespace-pre-wrap text-sm text-[#6a5570]">{c.content}</p>
-            )}
+            {c.content &&
+              (looksLikeHtml(c.content) ? (
+                <div
+                  className="rte-content text-[#3a2540]"
+                  dangerouslySetInnerHTML={{ __html: c.content }}
+                />
+              ) : (
+                <p className="whitespace-pre-wrap text-sm text-[#6a5570]">{c.content}</p>
+              ))}
           </EventSection>
         ))}
     </div>

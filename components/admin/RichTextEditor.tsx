@@ -12,19 +12,22 @@ import { Color } from "@tiptap/extension-color"
 import { uploadImage } from "@/app/admin/upload-actions"
 
 type Props = {
-  name: string // フォーム送信名（hidden input）
+  name?: string // フォーム送信名（hidden input）。非制御モードで使用
   table: string // 画像アップロードのパス用
   initialValue?: string // 既存 HTML
+  /** 制御モード（repeater 行内など）。指定時は hidden input を出さず onChange で親へ通知する。 */
+  onChange?: (html: string) => void
 }
 
 /**
- * Tiptap リッチテキストエディタ（admin の PROJECT.description 用）。
+ * Tiptap リッチテキストエディタ（admin の PROJECT.description / イベントのカスタムセクション用）。
  * - ツールバー: 見出し(H1/H2/H3)・太字・斜体・下線・取り消し線・リスト・リンク・画像・配置
  * - 画像は Supabase Storage（uploadImage）へアップロードし URL を挿入
- * - 編集内容は HTML 文字列として hidden input に書き出し、DB に保存する
+ * - 非制御モード: 編集内容を HTML 文字列として hidden input(name) に書き出し DB に保存
+ * - 制御モード: onChange で HTML を親へ通知（repeater の JSON へまとめて保存）
  * StarterKit v3 は Link / Underline を内蔵するため重複回避で無効化し、個別拡張を追加する。
  */
-export default function RichTextEditor({ name, table, initialValue }: Props) {
+export default function RichTextEditor({ name, table, initialValue, onChange }: Props) {
   const [html, setHtml] = useState(initialValue ?? "")
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +46,11 @@ export default function RichTextEditor({ name, table, initialValue }: Props) {
       Color,
     ],
     content: initialValue ?? "",
-    onUpdate: ({ editor }) => setHtml(editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      const next = editor.getHTML()
+      setHtml(next)
+      onChange?.(next)
+    },
     editorProps: {
       attributes: {
         class: "rte-content min-h-[220px] rounded-b-xl border border-t-0 border-gold-200 bg-white px-4 py-3 outline-none",
@@ -92,8 +99,8 @@ export default function RichTextEditor({ name, table, initialValue }: Props) {
       <EditorContent editor={editor} />
 
       <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} className="hidden" />
-      {/* DB 保存値（HTML） */}
-      <input type="hidden" name={name} value={html} />
+      {/* DB 保存値（HTML）。制御モード（name 未指定）では親が保存するため出力しない。 */}
+      {name && <input type="hidden" name={name} value={html} />}
 
       {error && <p className="mt-1 text-xs text-rose-500">{error}</p>}
     </div>

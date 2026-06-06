@@ -3,6 +3,7 @@
 import { useState } from "react"
 import type { SubField } from "@/lib/admin/tables"
 import ImageField from "./ImageField"
+import RichTextEditor from "./RichTextEditor"
 
 type Row = Record<string, unknown>
 
@@ -85,6 +86,20 @@ function SubFieldInput({
             table={table}
           />
         </div>
+      </div>
+    )
+  }
+
+  if (field.type === "richtext") {
+    // 制御モード: 編集 HTML を行の値として親 state に通知（repeater の JSON に保存）。
+    return (
+      <div className="flex flex-col gap-1 sm:col-span-2">
+        <span className="text-[11px] font-medium text-gold-700">{field.label}</span>
+        <RichTextEditor
+          table={table}
+          initialValue={typeof value === "string" ? value : ""}
+          onChange={(html) => onChange(html)}
+        />
       </div>
     )
   }
