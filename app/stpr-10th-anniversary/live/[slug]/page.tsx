@@ -26,6 +26,10 @@ import { SITE_URL } from "@/lib/site"
 
 const BASE = "/stpr-10th-anniversary"
 
+function looksLikeHtml(s: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(s)
+}
+
 export const dynamic = "force-dynamic"
 
 export async function generateMetadata({
@@ -448,6 +452,31 @@ function LiveGoodsBlock({ goods }: { goods: LiveGoodsInfo }) {
       <div className="space-y-1 text-sm text-[#6a5570]">
         {goods.salePeriod && <p>{goods.salePeriod}</p>}
         {goods.deliveryInfo && <p>{goods.deliveryInfo}</p>}
+        {goods.purchaseBonus && (
+          <p>
+            <span className="text-[#9a8aa0]">購入特典：</span>
+            {goods.purchaseBonus}
+          </p>
+        )}
+        {goods.paymentMethod && (
+          <p>
+            <span className="text-[#9a8aa0]">お支払い方法：</span>
+            {goods.paymentMethod}
+          </p>
+        )}
+        {goods.venueProducts && (
+          <div className="mt-2">
+            <p className="mb-1 text-[#9a8aa0]">会場販売商品</p>
+            {looksLikeHtml(goods.venueProducts) ? (
+              <div
+                className="rte-content text-[#3a2540]"
+                dangerouslySetInnerHTML={{ __html: goods.venueProducts }}
+              />
+            ) : (
+              <p className="whitespace-pre-wrap">{goods.venueProducts}</p>
+            )}
+          </div>
+        )}
         {goods.info && (
           <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{goods.info}</p>
         )}
@@ -496,47 +525,42 @@ function VenueBlock({ venue }: { venue: Venue }) {
         )}
         {venue.venueGoods && venue.venueGoods.length > 0 && (
           <div className="mb-6">
-            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">GOODS / 会場グッズ販売情報</p>
+            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">GOODS / 会場物販状況</p>
             <div className="space-y-3">
               {venue.venueGoods.map((vg, i) => (
                 <div key={i} className="rounded-lg border border-gold-100/70 p-3">
-                  {vg.venueName && (
-                    <h4 className="mb-1.5 text-sm font-bold text-gold-700">{vg.venueName}</h4>
-                  )}
                   <div className="space-y-1 text-sm text-[#6a5570]">
-                    {vg.saleSchedule && (
+                    {vg.saleTime && (
                       <p>
-                        <span className="text-[#9a8aa0]">販売日時：</span>
-                        <span className="whitespace-pre-wrap">{vg.saleSchedule}</span>
+                        <span className="text-[#9a8aa0]">販売時間：</span>
+                        <span className="whitespace-pre-wrap">{vg.saleTime}</span>
                       </p>
                     )}
-                    {vg.ticketInfo && (
+                    {vg.saleLocation && (
                       <p>
-                        <span className="text-[#9a8aa0]">整理券：</span>
-                        <span className="whitespace-pre-wrap">{vg.ticketInfo}</span>
+                        <span className="text-[#9a8aa0]">販売場所：</span>
+                        <span className="whitespace-pre-wrap">{vg.saleLocation}</span>
                       </p>
                     )}
                     {vg.ticketPeriod && (
                       <p>
-                        <span className="text-[#9a8aa0]">整理券申込期間：</span>
-                        {vg.ticketPeriod}
+                        <span className="text-[#9a8aa0]">整理券の受付期間：</span>
+                        <span className="whitespace-pre-wrap">{vg.ticketPeriod}</span>
                       </p>
                     )}
-                    {vg.payment && (
+                    {vg.lotteryResult && (
                       <p>
-                        <span className="text-[#9a8aa0]">決済方法：</span>
-                        {vg.payment}
+                        <span className="text-[#9a8aa0]">抽選結果発表：</span>
+                        <span className="whitespace-pre-wrap">{vg.lotteryResult}</span>
+                      </p>
+                    )}
+                    {vg.ticketRequiredTime && (
+                      <p>
+                        <span className="text-[#9a8aa0]">整理券が必要な時間：</span>
+                        <span className="whitespace-pre-wrap">{vg.ticketRequiredTime}</span>
                       </p>
                     )}
                   </div>
-                  {vg.note && (
-                    <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{vg.note}</p>
-                  )}
-                  {vg.goodsImages && vg.goodsImages.length > 0 && (
-                    <div className="mt-3">
-                      <ImageGallery images={vg.goodsImages} />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
