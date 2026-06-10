@@ -191,10 +191,11 @@ export const TABLES: Record<string, TableConfig> = {
         itemFields: [
           { name: "ticketType", label: "種別", type: "text", placeholder: "一般 / FC先行" },
           {
-            name: "ticketLineupRef",
-            label: "対象チケット（ラインナップ）",
+            name: "ticketLineupRefs",
+            label: "対象チケット（ラインナップ・複数可）",
             type: "select",
             optionsSource: "ticketLineup",
+            multiple: true,
           },
           { name: "salePeriod", label: "販売期間", type: "text" },
           { name: "price", label: "価格", type: "text" },

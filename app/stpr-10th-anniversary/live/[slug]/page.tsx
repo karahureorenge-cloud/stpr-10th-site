@@ -417,10 +417,10 @@ function TicketBlock({ ticket }: { ticket: TicketInfo }) {
         )}
       </div>
       <div className="space-y-1 text-sm text-[#6a5570]">
-        {ticket.ticketLineupRef && (
+        {ticket.ticketLineupRefs && ticket.ticketLineupRefs.length > 0 && (
           <p>
             <span className="text-[#9a8aa0]">対象チケット：</span>
-            {ticket.ticketLineupRef}
+            {ticket.ticketLineupRefs.join("、")}
           </p>
         )}
         {ticket.salePeriod && <p>{ticket.salePeriod}</p>}

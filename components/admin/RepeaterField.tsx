@@ -99,6 +99,68 @@ function DynamicSelect({
   )
 }
 
+/** 動的マルチセレクト（チェック式）。値は string[] で保持する。 */
+function DynamicMultiSelect({
+  field,
+  value,
+  onChange,
+  source,
+}: {
+  field: SubField
+  value: unknown
+  onChange: (v: unknown) => void
+  source: NonNullable<SubField["optionsSource"]>
+}) {
+  const [opts, setOpts] = useState<string[]>(() => readSourceValues(source))
+  const selected = Array.isArray(value)
+    ? (value as unknown[]).filter((v): v is string => typeof v === "string")
+    : typeof value === "string" && value
+      ? [value]
+      : []
+  // 保存済みの値が候補に無くても残す（参照元の変更時のデータ保全）。
+  const options = Array.from(new Set([...opts, ...selected]))
+  const toggle = (opt: string) =>
+    onChange(selected.includes(opt) ? selected.filter((v) => v !== opt) : [...selected, opt])
+  return (
+    <div
+      className="flex flex-col gap-1 sm:col-span-2"
+      onMouseEnter={() => setOpts(readSourceValues(source))}
+      onFocus={() => setOpts(readSourceValues(source))}
+    >
+      <span className="text-[11px] font-medium text-gold-700">{field.label}</span>
+      {options.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-gold-200 px-3 py-2 text-[11px] text-[#9a8aa0]">
+          先に「チケットラインナップ」を登録してください
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {options.map((opt) => {
+            const on = selected.includes(opt)
+            return (
+              <label
+                key={opt}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors ${
+                  on
+                    ? "border-gold-400 bg-gold-100 text-gold-700"
+                    : "border-gold-200 bg-white text-[#6a5570] hover:bg-gold-50"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={() => toggle(opt)}
+                  className="h-3.5 w-3.5 accent-gold-400"
+                />
+                {opt}
+              </label>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** サブ項目 1 つの入力 UI。 */
 function SubFieldInput({
   field,
@@ -192,7 +254,14 @@ function SubFieldInput({
 
   if (field.type === "select") {
     if (field.optionsSource) {
-      return (
+      return field.multiple ? (
+        <DynamicMultiSelect
+          field={field}
+          value={value}
+          onChange={onChange}
+          source={field.optionsSource}
+        />
+      ) : (
         <DynamicSelect
           field={field}
           value={value}

@@ -45,7 +45,7 @@ export type TicketLineup = {
 /** チケット種別（複数対応） */
 export type TicketInfo = {
   ticketType: string
-  ticketLineupRef?: string // 対応するチケットラインナップ（ticketName を参照）
+  ticketLineupRefs?: string[] // 対応するチケットラインナップ（ticketName を参照・複数可）
   salePeriod?: string
   price?: string
   method?: string // "抽選" / "先着" 等
