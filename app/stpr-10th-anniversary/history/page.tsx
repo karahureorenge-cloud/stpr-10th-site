@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import PageContainer from "@/components/common/PageContainer"
 import HistoryView from "@/components/history/HistoryView"
 import {
-  getLives,
+  getTenthLives,
   getEvents,
   getGoods,
   getMagazines,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default async function HistoryPage() {
   const [lives, events, goods, magazines, media, streams, projects, songs, movies] =
     await Promise.all([
-      getLives(),
+      getTenthLives(),
       getEvents(),
       getGoods(),
       getMagazines(),

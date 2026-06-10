@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 import { SITE_URL, BASE_PATH } from "@/lib/site"
-import { getLives, getGoods, getEvents, getSongs, getAlbums } from "@/lib/repo"
+import { getTenthLives, getGoods, getEvents, getSongs, getAlbums } from "@/lib/repo"
 
 // Supabase から slug を取得するため動的生成。
 export const dynamic = "force-dynamic"
@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dynamicEntries: MetadataRoute.Sitemap = []
   try {
     const [lives, goods, events, songs, albums] = await Promise.all([
-      getLives(),
+      getTenthLives(),
       getGoods(),
       getEvents(),
       getSongs(),

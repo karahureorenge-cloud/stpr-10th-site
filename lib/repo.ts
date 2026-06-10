@@ -628,12 +628,15 @@ export async function searchAll(query: string): Promise<SearchGroup[]> {
     {
       category: "live",
       label: SEARCH_LABELS.live,
-      hits: lives.map((r) => ({
-        category: "live" as const,
-        title: String(r.title ?? ""),
-        sub: u(r.live_type as string | null),
-        href: `${SEARCH_BASE}/live/${String(r.slug)}`,
-      })),
+      // 10周年サイトの検索なので 10周年ライブ（is_10th=true）のみ。
+      hits: lives
+        .filter((r) => r.is_10th === true)
+        .map((r) => ({
+          category: "live" as const,
+          title: String(r.title ?? ""),
+          sub: u(r.live_type as string | null),
+          href: `${SEARCH_BASE}/live/${String(r.slug)}`,
+        })),
     },
     {
       category: "goods",

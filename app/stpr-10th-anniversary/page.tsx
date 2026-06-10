@@ -16,7 +16,7 @@ import EmptyState from "@/components/common/EmptyState"
 import MoreLink from "@/components/common/MoreLink"
 import { MEMBERS } from "@/data/members"
 import {
-  getLives,
+  getTenthLives,
   getEvents,
   getGoods,
   getSongs,
@@ -49,7 +49,7 @@ export default async function TopPage() {
   // 全カテゴリのデータを並行取得。
   const [lives, events, goods, songs, albums, magazines, media, projects, movies, streams] =
     await Promise.all([
-      getLives(),
+      getTenthLives(),
       getEvents(),
       getGoods(),
       getSongs(),
