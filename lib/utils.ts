@@ -38,6 +38,40 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
+/** チケット受付ステータス（自動計算）。 */
+export type TicketSaleStatus = "受付前" | "受付中" | "受付終了"
+
+/** "2026-05-01 10:00" / ISO 文字列を Date に。パース不能・空は null。 */
+function parseDateTime(s?: string): Date | null {
+  if (!s) return null
+  const trimmed = s.trim()
+  if (!trimmed) return null
+  // "YYYY-MM-DD HH:mm" はスペースを T に正規化してローカル時刻として解釈する。
+  const d = new Date(trimmed.replace(" ", "T"))
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * チケットの受付ステータスを受付開始/終了日時から判定する。
+ * - 現在 < saleStart: "受付前"
+ * - saleStart 〜 saleEnd: "受付中"
+ * - 現在 > saleEnd: "受付終了"
+ * saleStart / saleEnd のどちらかが未設定・不正なら undefined（非表示）。
+ * 比較は日時単位で行う。
+ */
+export function getTicketStatus(
+  saleStart?: string,
+  saleEnd?: string,
+): TicketSaleStatus | undefined {
+  const start = parseDateTime(saleStart)
+  const end = parseDateTime(saleEnd)
+  if (!start || !end) return undefined
+  const now = new Date()
+  if (now < start) return "受付前"
+  if (now > end) return "受付終了"
+  return "受付中"
+}
+
 /**
  * "2026-06-04" → "2026年6月4日" に整形する。
  * パースできない文字列はそのまま返す。

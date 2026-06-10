@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import {
   getLiveStatus,
+  getTicketStatus,
   formatPeriod,
   formatDateDot,
   getDaysUntil,
@@ -388,7 +389,9 @@ export default async function LiveDetailPage({
 // ====== サブコンポーネント ======
 
 function TicketBlock({ ticket }: { ticket: TicketInfo }) {
-  const isClosed = ticket.status === "受付終了"
+  // ステータスは受付開始/終了日時から自動計算する。
+  const status = getTicketStatus(ticket.saleStart, ticket.saleEnd)
+  const isClosed = status === "受付終了"
   const isLottery = ticket.method?.includes("抽選")
   const venueDates = (ticket.venueDates ?? []).filter(
     (vd) => vd.venueName || vd.date || vd.salePeriod || (vd.ticketLineupRefs?.length ?? 0) > 0,
@@ -398,15 +401,17 @@ function TicketBlock({ ticket }: { ticket: TicketInfo }) {
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-bold text-gold-700">{ticket.ticketType}</h3>
-          {ticket.status && (
+          {status && (
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                ticket.status === "受付中"
+                status === "受付中"
                   ? "bg-green-100 text-green-700"
-                  : "bg-gray-200 text-gray-500"
+                  : status === "受付前"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-200 text-gray-500"
               }`}
             >
-              {ticket.status}
+              {status}
             </span>
           )}
         </div>

@@ -198,10 +198,12 @@ export const TABLES: Record<string, TableConfig> = {
             multiple: true,
           },
           { name: "salePeriod", label: "販売期間", type: "text" },
+          // ステータスは受付開始/終了から自動計算するため status 入力は廃止。
+          { name: "saleStart", label: "受付開始日時", type: "text", placeholder: "2026-05-01 10:00" },
+          { name: "saleEnd", label: "受付終了日時", type: "text", placeholder: "2026-05-10 23:59" },
           { name: "price", label: "価格", type: "text" },
           { name: "method", label: "販売方式", type: "text", placeholder: "抽選 / 先着" },
           { name: "purchaseUrl", label: "購入URL", type: "text" },
-          { name: "status", label: "ステータス", type: "text", placeholder: "受付中 / 受付終了" },
           {
             name: "venueDates",
             label: "会場・日付ごとの受付期間",

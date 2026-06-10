@@ -47,11 +47,12 @@ export type TicketInfo = {
   ticketType: string
   ticketLineupRefs?: string[] // 対応するチケットラインナップ（ticketName を参照・複数可）
   salePeriod?: string
+  saleStart?: string // 受付開始日時（ステータス自動判定用）
+  saleEnd?: string // 受付終了日時（ステータス自動判定用）
   price?: string
   method?: string // "抽選" / "先着" 等
   info?: string
   purchaseUrl?: string
-  status?: string // "受付中" / "受付終了" 等
   venueDates?: TicketVenueDate[] // 会場・日付ごとの受付期間
 }
 
