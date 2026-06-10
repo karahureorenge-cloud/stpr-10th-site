@@ -14,7 +14,7 @@ import type {
   Venue,
   Show,
   TicketInfo,
-  LiveGoodsInfo,
+  GoodsReceiveMethod,
 } from "@/data/lives"
 import SafeImage from "@/components/common/SafeImage"
 import StatusBadge from "@/components/common/StatusBadge"
@@ -27,10 +27,6 @@ import SetlistSelector from "@/components/live/SetlistSelector"
 import { SITE_URL } from "@/lib/site"
 
 const BASE = "/stpr-10th-anniversary"
-
-function looksLikeHtml(s: string): boolean {
-  return /<[a-z][\s\S]*>/i.test(s)
-}
 
 export const dynamic = "force-dynamic"
 
@@ -80,6 +76,10 @@ export default async function LiveDetailPage({
     (s) =>
       s.showRef &&
       ((s.setlist && s.setlist.length > 0) || (s.note && s.note.trim().length > 0)),
+  )
+  const goodsImages = live.goodsImages ?? []
+  const goodsReceiveMethods = (live.goodsReceiveMethods ?? []).filter(
+    (m) => m.method || m.salePeriod || m.purchaseUrl || m.deliveryInfo || m.purchaseBonus,
   )
 
   return (
@@ -297,23 +297,47 @@ export default async function LiveDetailPage({
         </section>
       )}
 
-      {/* グッズ情報（ツアー全体） */}
-      {live.goodsInfo && live.goodsInfo.length > 0 && (
+      {/* GOODS（ツアー全体）：①写真 + ②受付方法 + ツアー共通の会場限定 */}
+      {(goodsImages.length > 0 ||
+        goodsReceiveMethods.length > 0 ||
+        live.commonVenueLimitedGoods ||
+        live.commonVenueLimitedItems) && (
         <section className={SECTION}>
-          <h2 className={SECTION_H2}>グッズ情報（ツアー全体）</h2>
-          <div className="space-y-3">
-            {live.goodsInfo.map((g, i) => (
-              <LiveGoodsBlock key={i} goods={g} />
-            ))}
-          </div>
-        </section>
-      )}
+          <h2 className={SECTION_H2}>GOODS / グッズ</h2>
 
-      {/* ライブグッズ（複数画像・ライトボックス） */}
-      {live.goodsImages && live.goodsImages.length > 0 && (
-        <section className={SECTION}>
-          <h2 className={SECTION_H2}>ライブグッズ</h2>
-          <ImageGallery images={live.goodsImages} />
+          {goodsImages.length > 0 && (
+            <div className="mb-5">
+              <ImageGallery images={goodsImages} />
+            </div>
+          )}
+
+          {goodsReceiveMethods.length > 0 && (
+            <div className="mb-5">
+              <p className="mb-2 text-xs font-bold text-[#9a8aa0]">受付方法</p>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {goodsReceiveMethods.map((m, i) => (
+                  <GoodsReceiveBlock key={i} m={m} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(live.commonVenueLimitedGoods || live.commonVenueLimitedItems) && (
+            <div className="space-y-4">
+              {live.commonVenueLimitedGoods && (
+                <div className={BLOCK}>
+                  <p className="mb-2 text-xs font-bold text-[#9a8aa0]">会場限定グッズ（全会場共通）</p>
+                  <RichText html={live.commonVenueLimitedGoods} />
+                </div>
+              )}
+              {live.commonVenueLimitedItems && (
+                <div className={BLOCK}>
+                  <p className="mb-2 text-xs font-bold text-[#9a8aa0]">会場限定配布物（全会場共通）</p>
+                  <RichText html={live.commonVenueLimitedItems} />
+                </div>
+              )}
+            </div>
+          )}
         </section>
       )}
 
@@ -510,61 +534,39 @@ function TicketBlock({ ticket }: { ticket: TicketInfo }) {
   )
 }
 
-function LiveGoodsBlock({ goods }: { goods: LiveGoodsInfo }) {
-  // image は単一URL（旧データ）/ URL配列（複数）の両対応。
-  const images = Array.isArray(goods.image)
-    ? goods.image.filter((s) => typeof s === "string" && s.length > 0)
-    : goods.image
-      ? [goods.image]
-      : []
+/** リッチテキスト（HTML）描画。会場限定グッズ/配布物などに使用。 */
+function RichText({ html }: { html: string }) {
   return (
-    <div className="rounded-xl border border-gold-100/70 p-4">
-      <h3 className="mb-3 font-bold text-gold-700">{goods.saleType}</h3>
-      {images.length > 0 && (
-        <div className="mb-3">
-          <ImageGallery images={images} />
-        </div>
-      )}
+    <div
+      className="rte-content text-sm text-[#3a2540]"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
+}
+
+/** ツアー全体のグッズ受付方法ブロック。 */
+function GoodsReceiveBlock({ m }: { m: GoodsReceiveMethod }) {
+  return (
+    <div className={BLOCK}>
+      <h3 className="mb-1 font-bold text-gold-700">{m.method || "受付"}</h3>
       <div className="space-y-1 text-sm text-[#6a5570]">
-        {goods.salePeriod && <p>{goods.salePeriod}</p>}
-        {goods.deliveryInfo && <p>{goods.deliveryInfo}</p>}
-        {goods.purchaseBonus && (
+        {m.salePeriod && <p>{m.salePeriod}</p>}
+        {m.deliveryInfo && (
+          <p>
+            <span className="text-[#9a8aa0]">配送・受取：</span>
+            <span className="whitespace-pre-wrap">{m.deliveryInfo}</span>
+          </p>
+        )}
+        {m.purchaseBonus && (
           <p>
             <span className="text-[#9a8aa0]">購入特典：</span>
-            {goods.purchaseBonus}
+            {m.purchaseBonus}
           </p>
-        )}
-        {goods.paymentMethod && (
-          <p>
-            <span className="text-[#9a8aa0]">お支払い方法：</span>
-            {goods.paymentMethod}
-          </p>
-        )}
-        {goods.venueProducts && (
-          <div className="mt-2">
-            <p className="mb-1 text-[#9a8aa0]">会場販売商品</p>
-            {looksLikeHtml(goods.venueProducts) ? (
-              <div
-                className="rte-content text-[#3a2540]"
-                dangerouslySetInnerHTML={{ __html: goods.venueProducts }}
-              />
-            ) : (
-              <p className="whitespace-pre-wrap">{goods.venueProducts}</p>
-            )}
-          </div>
-        )}
-        {goods.info && (
-          <p className="mt-2 whitespace-pre-wrap text-xs text-[#9a8aa0]">{goods.info}</p>
         )}
       </div>
-      {goods.purchaseUrl && (
-        <a
-          href={goods.purchaseUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block rounded-xl bg-gold-400 px-4 py-2 text-xs text-white transition-colors hover:bg-gold-500"
-        >
-          購入ページ →
+      {m.purchaseUrl && (
+        <a href={m.purchaseUrl} target="_blank" rel="noopener noreferrer" className={`mt-3 ${BTN}`}>
+          申込・購入 →
         </a>
       )}
     </div>
@@ -601,15 +603,26 @@ function VenueBlock({ venue }: { venue: Venue }) {
         )}
         {venue.venueGoods && venue.venueGoods.length > 0 && (
           <div className="mb-6">
-            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">GOODS / 会場物販状況</p>
+            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">GOODS / 会場ごとの販売方法</p>
             <div className="space-y-3">
               {venue.venueGoods.map((vg, i) => (
                 <div key={i} className="rounded-lg border border-gold-100/70 p-3">
+                  {vg.saleType && (
+                    <span className="mb-2 inline-block rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-bold text-gold-700">
+                      {vg.saleType}
+                    </span>
+                  )}
                   <div className="space-y-1 text-sm text-[#6a5570]">
-                    {vg.saleTime && (
+                    {vg.seirikenPeriod && (
                       <p>
-                        <span className="text-[#9a8aa0]">販売時間：</span>
-                        <span className="whitespace-pre-wrap">{vg.saleTime}</span>
+                        <span className="text-[#9a8aa0]">整理券 申込期間：</span>
+                        <span className="whitespace-pre-wrap">{vg.seirikenPeriod}</span>
+                      </p>
+                    )}
+                    {vg.lotteryResultDate && (
+                      <p>
+                        <span className="text-[#9a8aa0]">当選発表日：</span>
+                        <span className="whitespace-pre-wrap">{vg.lotteryResultDate}</span>
                       </p>
                     )}
                     {vg.saleLocation && (
@@ -618,28 +631,41 @@ function VenueBlock({ venue }: { venue: Venue }) {
                         <span className="whitespace-pre-wrap">{vg.saleLocation}</span>
                       </p>
                     )}
-                    {vg.ticketPeriod && (
+                    {vg.saleTime && (
                       <p>
-                        <span className="text-[#9a8aa0]">整理券の受付期間：</span>
-                        <span className="whitespace-pre-wrap">{vg.ticketPeriod}</span>
+                        <span className="text-[#9a8aa0]">販売時間：</span>
+                        <span className="whitespace-pre-wrap">{vg.saleTime}</span>
                       </p>
                     )}
-                    {vg.lotteryResult && (
-                      <p>
-                        <span className="text-[#9a8aa0]">抽選結果発表：</span>
-                        <span className="whitespace-pre-wrap">{vg.lotteryResult}</span>
-                      </p>
-                    )}
-                    {vg.ticketRequiredTime && (
-                      <p>
-                        <span className="text-[#9a8aa0]">整理券が必要な時間：</span>
-                        <span className="whitespace-pre-wrap">{vg.ticketRequiredTime}</span>
-                      </p>
+                    {vg.note && (
+                      <p className="whitespace-pre-wrap text-xs text-[#9a8aa0]">{vg.note}</p>
                     )}
                   </div>
+                  {vg.lotteryUrl && (
+                    <a
+                      href={vg.lotteryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`mt-2 ${BTN}`}
+                    >
+                      整理券申込 →
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
+          </div>
+        )}
+        {venue.venueLimitedGoods && (
+          <div className="mb-6">
+            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">この会場限定グッズ</p>
+            <RichText html={venue.venueLimitedGoods} />
+          </div>
+        )}
+        {venue.venueLimitedItems && (
+          <div className="mb-6">
+            <p className="mb-3 text-xs font-bold text-[#9a8aa0]">この会場限定配布物</p>
+            <RichText html={venue.venueLimitedItems} />
           </div>
         )}
         {venue.areaMapImage && (

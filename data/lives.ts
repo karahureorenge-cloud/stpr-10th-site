@@ -31,7 +31,9 @@ export type Venue = {
   prefecture?: string
   areaMapImage?: string
   shows?: Show[]
-  venueGoods?: VenueGoods[] // この会場のグッズ販売情報
+  venueGoods?: VenueGoods[] // この会場のグッズ販売方法
+  venueLimitedGoods?: string // この会場限定グッズ（リッチテキストHTML）
+  venueLimitedItems?: string // この会場限定配布物（リッチテキストHTML）
   setlistNotes?: string // この会場でのセトリ変更メモ
 }
 
@@ -71,26 +73,24 @@ export type TicketInfo = {
   venueDates?: TicketVenueDate[] // 会場・日付ごとの受付期間
 }
 
-/** 会場ごとのグッズ販売状況 */
+/** 会場ごとのグッズ販売方法（1会場に複数の売り方を登録可） */
 export type VenueGoods = {
-  saleTime?: string // 販売時間
+  saleType?: string // 例: 事前整理券あり / 整理券なし（当日）
+  seirikenPeriod?: string // 整理券 申込期間（整理券ありのとき）
+  lotteryResultDate?: string // 当選発表日（整理券ありのとき）
+  lotteryUrl?: string // 抽選URL（整理券ありのとき）
   saleLocation?: string // 販売場所
-  ticketPeriod?: string // 整理券の受付期間
-  lotteryResult?: string // 抽選結果発表
-  ticketRequiredTime?: string // 整理券が必要な時間
+  saleTime?: string // 販売時間
+  note?: string // 補足
 }
 
-/** ライブ物販情報 */
-export type LiveGoodsInfo = {
-  saleType?: string
-  image?: string | string[]
-  salePeriod?: string
-  deliveryInfo?: string
-  venueProducts?: string // 会場販売商品（テキスト/リッチテキスト）
+/** ツアー全体のグッズ受付方法（事前通販 / 会場受取 / 事後通販） */
+export type GoodsReceiveMethod = {
+  method?: string // 事前通販 / 会場受取 / 事後通販
+  salePeriod?: string // 受付期間
+  purchaseUrl?: string // 申込 / 購入URL
+  deliveryInfo?: string // 配送 / 受取情報
   purchaseBonus?: string // 購入特典
-  paymentMethod?: string // お支払い方法
-  info?: string
-  purchaseUrl?: string
 }
 
 /** 配信（PPV） */
@@ -144,9 +144,10 @@ export type Live = {
   venues: Venue[]
   ticketLineup?: TicketLineup[]
   ticketInfo?: TicketInfo[]
-  goodsInfo?: LiveGoodsInfo[]
-  goodsImages?: string[] // ライブグッズ画像（公開URL[]）
-  venueGoods?: VenueGoods[] // 会場ごとのグッズ販売情報
+  goodsImages?: string[] // ① ツアー全体のグッズ写真（公開URL[]）
+  goodsReceiveMethods?: GoodsReceiveMethod[] // ② 受付方法（事前通販/会場受取/事後通販）
+  commonVenueLimitedGoods?: string // ツアー共通の会場限定グッズ（リッチテキストHTML）
+  commonVenueLimitedItems?: string // ツアー共通の会場限定配布物（リッチテキストHTML）
   setlist?: SetlistItem[] // 基本セットリスト
   showSetlists?: ShowSetlist[] // 公演ごとのセットリスト
   ppvInfo?: PpvInfo[]
