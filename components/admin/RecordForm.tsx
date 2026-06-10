@@ -91,8 +91,14 @@ export default function RecordForm({
       {fields.map((field) => {
         const value = initial ? initial[field.name] : undefined
         const inputValue = toInputValue(field, value)
+        // boolean は基本 false 初期。ただし is_active（公開フラグ・DB既定 true）は
+        // 新規作成時に既定でオンにする（未公開のまま登録される事故を防ぐ）。
         const checked =
-          field.type === "boolean" ? Boolean(value) : undefined
+          field.type === "boolean"
+            ? value != null
+              ? Boolean(value)
+              : mode !== "edit" && field.name === "is_active"
+            : undefined
 
         // ブロック型は label ではなく div でラップ（誤クリック対策）。
         const Wrapper = BLOCK_TYPES.has(field.type) ? "div" : "label"
