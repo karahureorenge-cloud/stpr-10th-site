@@ -272,12 +272,19 @@ export async function getLiveBySlug(slug: string): Promise<Live | undefined> {
 }
 
 /**
- * 公開 /live 用。is_active=false を除外したライブを新しい順で返す。
- * groupSlug を渡すとそのグループだけに絞り込む。
+ * 公開 /live（非公式ファンサイト）用。is_active=false と 10周年（is_10th=true）を
+ * 除外したライブを新しい順で返す。groupSlug を渡すとそのグループだけに絞り込む。
  */
 export async function getActiveLives(groupSlug?: string): Promise<Live[]> {
-  const lives = (await getLives()).filter((l) => l.isActive !== false)
+  const lives = (await getLives()).filter(
+    (l) => l.isActive !== false && l.is10th !== true,
+  )
   return groupSlug ? lives.filter((l) => l.groupSlug === groupSlug) : lives
+}
+
+/** 公開 /stpr-10th-anniversary/live 用。is_10th=true のライブを新しい順で返す。 */
+export async function getTenthLives(): Promise<Live[]> {
+  return (await getLives()).filter((l) => l.is10th === true)
 }
 
 /** 指定グループの公開ライブを新しい順で返す。 */

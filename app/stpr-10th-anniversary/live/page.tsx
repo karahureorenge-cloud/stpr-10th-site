@@ -1,6 +1,6 @@
 import PageContainer from "@/components/common/PageContainer"
 import LiveListView from "@/components/live/LiveListView"
-import { getLives } from "@/lib/repo"
+import { getTenthLives } from "@/lib/repo"
 
 export const dynamic = "force-dynamic"
 
@@ -10,7 +10,7 @@ export const metadata = {
 }
 
 export default async function LivePage() {
-  const lives = await getLives()
+  const lives = await getTenthLives()
   return (
     <PageContainer subtitle="LIVE" title="ライブ">
       <LiveListView lives={lives} />

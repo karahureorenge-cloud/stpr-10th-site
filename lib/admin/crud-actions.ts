@@ -137,6 +137,12 @@ export async function createRecord(
     return { error: e instanceof Error ? e.message : "入力エラー" }
   }
 
+  // lives は管理画面のスコープで is_10th を自動設定する
+  // （/admin=非公式ファンサイト=false / /stpr-10th-anniversary/admin=10周年=true）。
+  if (tableKey === "lives") {
+    record.is_10th = basePath.startsWith("/stpr-10th-anniversary")
+  }
+
   const supabase = createAdminClient()
   const { error } = await supabase.from(tableKey).insert(record)
   if (error) return { error: error.message }
@@ -160,6 +166,11 @@ export async function updateRecord(
     record = buildRecord(tableKey, formData)
   } catch (e) {
     return { error: e instanceof Error ? e.message : "入力エラー" }
+  }
+
+  // lives は管理画面のスコープで is_10th を固定する（編集でも別スコープへ移動させない）。
+  if (tableKey === "lives") {
+    record.is_10th = basePath.startsWith("/stpr-10th-anniversary")
   }
 
   const supabase = createAdminClient()

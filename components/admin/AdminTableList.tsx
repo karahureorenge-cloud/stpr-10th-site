@@ -65,11 +65,17 @@ export default async function AdminTableList({ basePath, table, label }: Props) 
   let loadError: string | null = null
   try {
     const supabase = createAdminClient()
-    const { data, error } = await supabase
+    let query = supabase
       .from(table)
       .select("*")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true })
+    // lives は管理画面のスコープで is_10th を出し分ける
+    // （/admin=非公式ファンサイト=false / /stpr-10th-anniversary/admin=10周年=true）。
+    if (table === "lives") {
+      query = query.eq("is_10th", basePath.startsWith("/stpr-10th-anniversary"))
+    }
+    const { data, error } = await query
     if (error) loadError = error.message
     else rows = (data ?? []) as Record<string, unknown>[]
   } catch (e) {

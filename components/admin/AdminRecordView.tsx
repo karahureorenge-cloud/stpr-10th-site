@@ -34,6 +34,10 @@ export default function AdminRecordView({
   const submitLabel =
     mode === "edit" ? "更新する" : mode === "duplicate" ? "複製して追加" : "追加する"
 
+  // lives の is_10th は管理画面スコープで自動設定するため、フォームには出さない。
+  const fields =
+    table === "lives" ? cfg.fields.filter((f) => f.name !== "is_10th") : cfg.fields
+
   return (
     <>
       <AdminHeader basePath={basePath} label={label} />
@@ -62,7 +66,7 @@ export default function AdminRecordView({
         <div className="rounded-2xl border border-gold-200/70 bg-white/80 p-6 shadow-sm">
           <RecordForm
             action={action}
-            fields={cfg.fields}
+            fields={fields}
             table={table}
             initial={initial}
             submitLabel={submitLabel}
