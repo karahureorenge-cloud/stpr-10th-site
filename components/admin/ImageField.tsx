@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { uploadImage } from "@/app/admin/upload-actions"
+import { uploadImage } from "@/lib/admin/upload-actions"
 
 type Props = {
   /** フォーム送信名。制御モード（onChange あり）では省略可。 */

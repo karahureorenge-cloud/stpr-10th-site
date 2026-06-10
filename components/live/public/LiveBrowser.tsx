@@ -73,7 +73,11 @@ function LiveBrowserInner({ lives }: Props) {
   }
 
   const filtered =
-    currentGroup === "all" ? lives : lives.filter((l) => l.groupSlug === currentGroup)
+    currentGroup === "all"
+      ? lives
+      : lives.filter(
+          (l) => l.groupSlug === currentGroup || (l.groupSlugs ?? []).includes(currentGroup),
+        )
 
   const groups = groupByYear(filtered, (l) => l.periodStart, sort)
 

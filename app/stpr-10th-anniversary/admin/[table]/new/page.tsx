@@ -6,9 +6,9 @@ import { loadDuplicateSource } from "@/lib/admin/record-source"
 
 export const dynamic = "force-dynamic"
 
-const BASE = "/admin"
+const BASE = "/stpr-10th-anniversary/admin"
 
-export default async function AdminNewRecordPage({
+export default async function Admin10thNewRecordPage({
   params,
   searchParams,
 }: {
@@ -31,7 +31,7 @@ export default async function AdminNewRecordPage({
       action={action}
       initial={initial}
       mode={initial ? "duplicate" : "new"}
-      label="非公式ファンサイト"
+      label="10周年"
     />
   )
 }

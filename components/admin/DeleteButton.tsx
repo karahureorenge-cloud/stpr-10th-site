@@ -1,8 +1,9 @@
 "use client"
 
-import { deleteRecord } from "@/app/admin/crud-actions"
+import { deleteRecord } from "@/lib/admin/crud-actions"
 
 type Props = {
+  basePath: string // 管理画面のベースパス（/admin or /stpr-10th-anniversary/admin）
   tableKey: string
   id: string
   label: string // 確認用の行ラベル
@@ -17,6 +18,7 @@ const DEFAULT_BUTTON_CLASS =
 
 /** 削除ボタン。確認ダイアログ後に server action を実行する。 */
 export default function DeleteButton({
+  basePath,
   tableKey,
   id,
   label,
@@ -25,7 +27,7 @@ export default function DeleteButton({
 }: Props) {
   return (
     <form
-      action={deleteRecord.bind(null, tableKey, id)}
+      action={deleteRecord.bind(null, basePath, tableKey, id)}
       className={formClassName}
       onSubmit={(e) => {
         if (!confirm(`「${label}」を削除します。よろしいですか？`)) {

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getTableConfig, type Field } from "@/lib/admin/tables"
-import { assertAdmin } from "./auth-actions"
+import { assertAdmin } from "@/lib/admin/auth-actions"
 
 export type FormState = { error?: string }
 
@@ -28,6 +28,14 @@ function parseField(field: Field, formData: FormData): unknown {
       return s
         .split(",")
         .map((v) => v.trim())
+        .filter((v) => v.length > 0)
+    }
+
+    case "multiselect": {
+      // <select multiple> は同名で複数値を送る → text[] へ。
+      return formData
+        .getAll(field.name)
+        .map((v) => String(v))
         .filter((v) => v.length > 0)
     }
 
@@ -113,8 +121,9 @@ function buildRecord(tableKey: string, formData: FormData): Record<string, unkno
   return record
 }
 
-/** 新規作成。bind(null, tableKey) で使う。 */
+/** 新規作成。bind(null, basePath, tableKey) で使う。 */
 export async function createRecord(
+  basePath: string,
   tableKey: string,
   _prevState: FormState,
   formData: FormData,
@@ -132,12 +141,13 @@ export async function createRecord(
   const { error } = await supabase.from(tableKey).insert(record)
   if (error) return { error: error.message }
 
-  revalidatePath(`/admin/${tableKey}`)
-  redirect(`/admin/${tableKey}`)
+  revalidatePath(`${basePath}/${tableKey}`)
+  redirect(`${basePath}/${tableKey}`)
 }
 
-/** 更新。bind(null, tableKey, id) で使う。 */
+/** 更新。bind(null, basePath, tableKey, id) で使う。 */
 export async function updateRecord(
+  basePath: string,
   tableKey: string,
   id: string,
   _prevState: FormState,
@@ -156,17 +166,21 @@ export async function updateRecord(
   const { error } = await supabase.from(tableKey).update(record).eq("id", id)
   if (error) return { error: error.message }
 
-  revalidatePath(`/admin/${tableKey}`)
-  redirect(`/admin/${tableKey}`)
+  revalidatePath(`${basePath}/${tableKey}`)
+  redirect(`${basePath}/${tableKey}`)
 }
 
-/** 削除。bind(null, tableKey, id) で使う。 */
-export async function deleteRecord(tableKey: string, id: string): Promise<void> {
+/** 削除。bind(null, basePath, tableKey, id) で使う。 */
+export async function deleteRecord(
+  basePath: string,
+  tableKey: string,
+  id: string,
+): Promise<void> {
   await assertAdmin()
 
   const supabase = createAdminClient()
   const { error } = await supabase.from(tableKey).delete().eq("id", id)
   if (error) throw new Error(error.message)
 
-  revalidatePath(`/admin/${tableKey}`)
+  revalidatePath(`${basePath}/${tableKey}`)
 }

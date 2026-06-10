@@ -1,7 +1,7 @@
 "use server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
-import { assertAdmin } from "./auth-actions"
+import { assertAdmin } from "@/lib/admin/auth-actions"
 
 /** Storage のバケット名（Public） */
 const BUCKET = "media"

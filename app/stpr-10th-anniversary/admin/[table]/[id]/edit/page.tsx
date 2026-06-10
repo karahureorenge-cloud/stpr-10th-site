@@ -6,9 +6,9 @@ import { loadRecordById } from "@/lib/admin/record-source"
 
 export const dynamic = "force-dynamic"
 
-const BASE = "/admin"
+const BASE = "/stpr-10th-anniversary/admin"
 
-export default async function AdminEditRecordPage({
+export default async function Admin10thEditRecordPage({
   params,
 }: {
   params: Promise<{ table: string; id: string }>
@@ -37,7 +37,7 @@ export default async function AdminEditRecordPage({
       action={action}
       initial={data}
       mode="edit"
-      label="非公式ファンサイト"
+      label="10周年"
     />
   )
 }

@@ -67,21 +67,37 @@ function toLive(r: Record<string, unknown>): Live {
   return {
     slug: String(r.slug),
     title: String(r.title),
-    groupSlug: u(r.group_slug as string | null),
+    groupSlugs: strArr(r.group_slugs),
+    // group_slug（旧・単一）優先。無ければ group_slugs の先頭。
+    groupSlug: u(r.group_slug as string | null) ?? strArr(r.group_slugs)[0],
     subtitle: u(r.subtitle as string | null),
     tourName: u(r.tour_name as string | null),
-    liveType: u(r.live_type as string | null),
+    // live_type は 0012 で text[] 化。配列なら先頭を代表値に、文字列なら従来通り。
+    liveType: Array.isArray(r.live_type)
+      ? (r.live_type as string[])[0]
+      : u(r.live_type as string | null),
+    liveTypes: Array.isArray(r.live_type)
+      ? (r.live_type as string[])
+      : r.live_type
+        ? [String(r.live_type)]
+        : [],
     status: (r.status as LiveStatus) ?? "coming",
     periodStart: u(r.period_start as string | null),
     periodEnd: u(r.period_end as string | null),
-    keyVisual: u(r.key_visual as string | null),
+    // 新・key_visual_url 優先。無ければ旧 key_visual。
+    keyVisual: u(r.key_visual_url as string | null) ?? u(r.key_visual as string | null),
     isActive: u(r.is_active as boolean | null),
     isFamily: u(r.is_family as boolean | null),
     members: strArr(r.members),
+    memberSlugs: strArr(r.member_slugs),
+    microcmsId: u(r.microcms_id as string | null),
     hashtag: u(r.hashtag as string | null),
     description: u(r.description as string | null),
     note: u(r.note as string | null),
-    venues: jsonArr<Venue>(r.venues),
+    // 新・venues_json（取込の受け皿）が非空ならそちらを優先。無ければ旧 venues。
+    venues: jsonArr<Venue>(r.venues_json).length
+      ? jsonArr<Venue>(r.venues_json)
+      : jsonArr<Venue>(r.venues),
     ticketLineup: jsonArr<TicketLineup>(r.ticket_lineup),
     ticketInfo: jsonArr<TicketInfo>(r.ticket_info),
     goodsInfo: jsonArr<LiveGoodsInfo>(r.goods_info),

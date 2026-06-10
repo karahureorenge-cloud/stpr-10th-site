@@ -91,13 +91,22 @@ export type Live = {
   title: string
   /** 所属グループ識別子（data/groups.ts の GroupSlug）。公開 /live の絞り込みに使う。 */
   groupSlug?: string
+  /** 複数所属グループ（0012・microCMS 取込の受け皿 group_slugs）。 */
+  groupSlugs?: string[]
   subtitle?: string
   tourName?: string
+  /** 代表ライブ種別（live_type[] の先頭。表示用の後方互換）。 */
   liveType?: string
+  /** ライブ種別（複数。0012 で live_type を text[] 化）。 */
+  liveTypes?: string[]
   status: LiveStatus
   periodStart?: string // ISO datetime
   periodEnd?: string
   keyVisual?: string
+  /** メンバー slugs（新・取込用 member_slugs）。 */
+  memberSlugs?: string[]
+  /** microCMS 元ID（移行照合用）。 */
+  microcmsId?: string
   /** 公開フラグ。false で公開一覧から除外（default true）。 */
   isActive?: boolean
   /** STPR Family / すとふぇす 等の合同ライブ。 */

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useActionState } from "react"
 import type { Field } from "@/lib/admin/tables"
-import type { FormState } from "@/app/admin/crud-actions"
+import type { FormState } from "@/lib/admin/crud-actions"
 import ImageField from "./ImageField"
 import ImageListField from "./ImageListField"
 import RepeaterField from "./RepeaterField"
@@ -11,7 +11,7 @@ import RichTextEditor from "./RichTextEditor"
 
 // 複数コントロールを内包し、<label> で包むと余白クリックが内部の最初の
 // ボタン（行削除等）を発火させてしまう型。これらは <div> でラップする。
-const BLOCK_TYPES = new Set(["repeater", "image", "imagelist", "richtext"])
+const BLOCK_TYPES = new Set(["repeater", "image", "imagelist", "richtext", "multiselect"])
 
 type Props = {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>
@@ -155,6 +155,27 @@ export default function RecordForm({
                   </option>
                 ))}
               </select>
+            )}
+
+            {field.type === "multiselect" && (
+              <>
+                <select
+                  name={field.name}
+                  multiple
+                  defaultValue={Array.isArray(value) ? value.map(String) : []}
+                  size={Math.min(field.options?.length ?? 4, 8)}
+                  className="rounded-xl border border-gold-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
+                >
+                  {field.options?.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {field.optionLabels?.[opt] ?? opt}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-[11px] text-[#9a8aa0]">
+                  Ctrl（Mac は ⌘）+クリックで複数選択
+                </span>
+              </>
             )}
 
             {field.type === "boolean" && (

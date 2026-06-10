@@ -1,6 +1,6 @@
 import AdminLogin from "@/components/admin/AdminLogin"
 
-export default async function AdminLoginPage({
+export default async function Admin10thLoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; from?: string }>
@@ -8,8 +8,8 @@ export default async function AdminLoginPage({
   const { error, from } = await searchParams
   return (
     <AdminLogin
-      basePath="/admin"
-      subtitle="非公式ファンサイト 管理画面"
+      basePath="/stpr-10th-anniversary/admin"
+      subtitle="すとぷり 10周年 管理画面"
       error={error}
       from={from}
     />

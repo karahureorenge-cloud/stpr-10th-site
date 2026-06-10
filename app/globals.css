@@ -330,3 +330,28 @@ body {
 .rte-content .ProseMirror-selectednode {
   outline: 2px solid var(--color-gold-400);
 }
+
+/* =========================================================================
+ * 管理画面テーマ（2系統）
+ *   .admin-10th    … すとぷり10th 管理画面（ゴールド・既定の見た目）
+ *   .admin-fansite … 非公式ファンサイト 管理画面（STPR Blue）
+ *
+ * 共有コンポーネントは gold-* ユーティリティで書かれている。
+ * .admin-fansite スコープ内で --color-gold-* を青系へ再マッピングすることで、
+ * コンポーネントを一切変更せずに配色だけを STPR Blue へ切り替える。
+ * --ad-bar は見出し左の縦バー（グラデーション）の色。
+ * ========================================================================= */
+.admin-10th {
+  --ad-bar: linear-gradient(180deg, #d4a853 0%, #f472b6 100%);
+}
+.admin-fansite {
+  --ad-bar: linear-gradient(180deg, #005397 0%, #2e75b2 100%);
+  --color-gold-50: #e6eef5;
+  --color-gold-100: #cfe0ee;
+  --color-gold-200: #b8d0e5;
+  --color-gold-300: #8ab2d4;
+  --color-gold-400: #005397;
+  --color-gold-500: #00427a;
+  --color-gold-600: #1463a4;
+  --color-gold-700: #00315c;
+}

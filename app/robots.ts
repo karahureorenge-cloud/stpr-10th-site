@@ -7,8 +7,13 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // 管理画面はクロール対象外。
-        disallow: ["/admin", "/admin/"],
+        // 管理画面（2系統）はクロール対象外。
+        disallow: [
+          "/admin",
+          "/admin/",
+          "/stpr-10th-anniversary/admin",
+          "/stpr-10th-anniversary/admin/",
+        ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

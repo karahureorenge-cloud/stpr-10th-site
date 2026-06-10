@@ -9,7 +9,7 @@ import Underline from "@tiptap/extension-underline"
 import TextAlign from "@tiptap/extension-text-align"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
-import { uploadImage } from "@/app/admin/upload-actions"
+import { uploadImage } from "@/lib/admin/upload-actions"
 
 type Props = {
   name?: string // フォーム送信名（hidden input）。非制御モードで使用
