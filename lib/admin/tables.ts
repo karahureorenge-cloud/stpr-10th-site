@@ -208,9 +208,15 @@ export const TABLES: Record<string, TableConfig> = {
             type: "repeater",
             itemFields: [
               { name: "venueName", label: "会場名", type: "select", optionsSource: "venues" },
+              {
+                name: "ticketLineupRefs",
+                label: "対象チケット（ラインナップ・複数可）",
+                type: "select",
+                optionsSource: "ticketLineup",
+                multiple: true,
+              },
               { name: "date", label: "対象日付", type: "text", placeholder: "2026-06-04" },
-              { name: "saleStart", label: "受付開始日時", type: "text", placeholder: "2026-05-01 10:00" },
-              { name: "saleEnd", label: "受付終了日時", type: "text", placeholder: "2026-05-10 23:59" },
+              { name: "salePeriod", label: "受付期間", type: "text", placeholder: "2026/05/01 10:00〜2026/05/10 23:59" },
             ],
           },
         ],

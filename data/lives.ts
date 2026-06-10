@@ -31,9 +31,9 @@ export type Venue = {
 /** チケット種別ごとの 会場・日付別 受付期間 */
 export type TicketVenueDate = {
   venueName?: string // 会場名（venues に登録された会場名から選択）
+  ticketLineupRefs?: string[] // 対象チケット（ticketName を参照・複数可）
   date?: string // チケットの対象日付（公演日ではない）
-  saleStart?: string // 受付開始日時
-  saleEnd?: string // 受付終了日時
+  salePeriod?: string // 受付期間（自由文字列・販売期間と同形式）
 }
 
 /** チケットラインナップ（名称・価格の早見） */
