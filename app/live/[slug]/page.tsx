@@ -131,22 +131,40 @@ export default async function LiveDetailPage({ params }: Params) {
   return (
     <div className="space-y-12">
       {/* ===== HERO ===== */}
+      {/* KV はトリミングせず本来の比率を維持。
+          スマホ: 画像を全幅でそのまま表示 → 情報パネルを下に。
+          PC: 情報パネル（左）＋画像（右・contain で全体表示）の分割。 */}
       <section>
-        {/* PC（lg+）：情報パネル＋KV の分割レイアウト */}
-        <div className="hidden overflow-hidden rounded-3xl border border-gray-200 shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)]">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+          {/* KV（画像の比率を維持） */}
+          <div className="relative flex items-center justify-center bg-gray-900 lg:order-2 lg:min-h-[420px]">
+            {live.keyVisual ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={live.keyVisual}
+                alt={live.title}
+                className="block w-full lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-contain"
+              />
+            ) : (
+              <div className="aspect-video w-full bg-gradient-to-br from-accent-500 to-accent-700 lg:absolute lg:inset-0 lg:aspect-auto lg:h-full" />
+            )}
+          </div>
+
           {/* 情報パネル */}
-          <div className="relative flex flex-col justify-center gap-5 bg-gradient-to-br from-accent-700 to-accent-900 p-10 text-white xl:p-12">
+          <div className="relative flex flex-col gap-4 bg-gradient-to-br from-accent-700 to-accent-900 p-6 text-white lg:order-1 lg:justify-center lg:gap-5 lg:p-10 xl:p-12">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.14),transparent_55%)]"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.12),transparent_55%)]"
             />
             <div className="relative">
               <HeroBadges live={live} status={status} />
             </div>
-            <h1 className="relative text-4xl font-extrabold leading-[1.12] tracking-tight xl:text-[3.25rem]">
+            <h1 className="relative text-2xl font-extrabold leading-[1.15] tracking-tight md:text-3xl lg:text-4xl xl:text-[3.1rem]">
               {live.title}
             </h1>
-            {live.subtitle && <p className="relative -mt-1 text-base text-white/70">{live.subtitle}</p>}
+            {live.subtitle && (
+              <p className="relative -mt-1 text-sm text-white/70 lg:text-base">{live.subtitle}</p>
+            )}
             <div className="relative flex flex-col gap-1 text-sm">
               <span className="font-medium text-white/90">
                 {formatPeriod(live.periodStart, live.periodEnd)}
@@ -168,72 +186,11 @@ export default async function LiveDetailPage({ params }: Params) {
                 href={live.officialSiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative inline-flex w-fit items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-sm transition-colors hover:bg-white/90"
+                className="relative inline-flex w-fit items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-accent-700 shadow-sm transition-colors hover:bg-white/90 lg:px-6 lg:py-3"
               >
                 公式サイト ↗
               </a>
             )}
-          </div>
-          {/* KV */}
-          <div className="relative min-h-[460px]">
-            {live.keyVisual ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={live.keyVisual}
-                alt={live.title}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-accent-500 to-accent-700" />
-            )}
-          </div>
-        </div>
-
-        {/* スマホ/タブレット（<lg）：従来のオーバーレイバナー（変更なし） */}
-        <div className="relative -mx-4 overflow-hidden md:mx-0 md:rounded-2xl lg:hidden">
-          <div className="relative min-h-[440px] md:min-h-[520px]">
-            {live.keyVisual ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={live.keyVisual}
-                alt={live.title}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-accent-700 to-accent-500" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/85" />
-            <div className="relative flex min-h-[440px] flex-col justify-end gap-6 p-6 md:min-h-[520px] md:flex-row md:items-end md:justify-between md:p-10">
-              <div className="min-w-0">
-                <div className="mb-3">
-                  <HeroBadges live={live} status={status} />
-                </div>
-                <h1 className="mb-2 text-3xl font-extrabold leading-tight text-white md:text-5xl">
-                  {live.title}
-                </h1>
-                {live.subtitle && <p className="mb-4 text-sm text-white/75">{live.subtitle}</p>}
-                <p className="mb-1 text-sm font-medium text-white/90">
-                  {formatPeriod(live.periodStart, live.periodEnd)}
-                  {venues.length > 0 && `　${venues.length}会場${showCount}公演`}
-                </p>
-                {live.hashtag && <p className="text-sm text-white/70">{live.hashtag}</p>}
-                {live.officialSiteUrl && (
-                  <a
-                    href={live.officialSiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 rounded-md border border-white/35 bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
-                  >
-                    公式サイト ↗
-                  </a>
-                )}
-              </div>
-              {status === "coming" && (
-                <div className="hidden md:block">
-                  <HeroCountdown target={live.periodStart} />
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </section>
