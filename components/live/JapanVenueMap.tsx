@@ -72,10 +72,10 @@ export default function JapanVenueMap({ venues }: { venues: VenueMapItem[] }) {
 
   return (
     <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_300px]">
         {/* 会場リスト */}
-        <div className="flex flex-col justify-center gap-1.5 border-b border-gray-200 p-5 md:border-b-0 md:border-r">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+        <div className="flex flex-col justify-start gap-2 border-b border-gray-200 p-5 md:border-b-0 md:border-r">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
             SCHEDULE &amp; PLACE
           </p>
           {venues.map((v, i) => (
@@ -83,10 +83,10 @@ export default function JapanVenueMap({ venues }: { venues: VenueMapItem[] }) {
               key={i}
               type="button"
               onClick={() => goto(i)}
-              className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+              className={`flex items-center gap-3 rounded-lg border px-3.5 py-3 text-left transition-colors ${
                 i === active
-                  ? "border-accent-200 bg-accent-50"
-                  : "border-transparent hover:border-gray-200 hover:bg-gray-50"
+                  ? "border-accent-300 bg-accent-50"
+                  : "border-gray-200 bg-white hover:border-accent-200 hover:bg-gray-50"
               }`}
             >
               <span
@@ -94,21 +94,21 @@ export default function JapanVenueMap({ venues }: { venues: VenueMapItem[] }) {
                 style={{ background: COLORS[i % COLORS.length] }}
               />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-bold text-gray-800">{v.name}</span>
+                <span className="block truncate text-[15px] font-bold text-gray-900">{v.name}</span>
                 {(v.prefecture || v.dateLabel) && (
-                  <span className="block truncate text-xs text-gray-500">
+                  <span className="mt-0.5 block truncate text-xs text-gray-500">
                     {[v.prefecture, v.dateLabel].filter(Boolean).join(" / ")}
                   </span>
                 )}
               </span>
-              <span className="ml-auto text-xs text-gray-400">↓</span>
+              <span className="ml-auto text-base text-gray-300">›</span>
             </button>
           ))}
         </div>
 
         {/* 日本地図 */}
         <div className="flex items-center justify-center bg-gray-50 p-4">
-          <svg viewBox="0 0 400 500" className="h-auto w-full max-w-[320px]" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 400 500" className="mx-auto h-auto max-h-[300px] w-full max-w-[240px]" xmlns="http://www.w3.org/2000/svg">
             <g
               fill="#d1d5db"
               stroke="#fff"
