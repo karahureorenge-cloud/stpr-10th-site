@@ -135,9 +135,9 @@ export default async function LiveDetailPage({ params }: Params) {
           スマホ: 画像を全幅でそのまま表示 → 情報パネルを下に。
           PC: 情報パネル（左）＋画像（右・contain で全体表示）の分割。 */}
       <section>
-        <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm lg:grid lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.3fr)] lg:rounded-3xl">
           {/* KV（画像の比率を維持） */}
-          <div className="relative flex items-center justify-center overflow-hidden bg-gray-900 lg:order-2 lg:min-h-[420px]">
+          <div className="relative flex items-center justify-center overflow-hidden bg-gray-900 lg:order-2 lg:min-h-[460px] xl:min-h-[560px] 2xl:min-h-[620px]">
             {live.keyVisual ? (
               <>
                 {/* PC: contain の余白をブラー背景で埋める（額装風） */}
@@ -161,7 +161,7 @@ export default async function LiveDetailPage({ params }: Params) {
           </div>
 
           {/* 情報パネル */}
-          <div className="relative flex flex-col gap-4 bg-gradient-to-br from-accent-700 to-accent-900 p-6 text-white lg:order-1 lg:justify-center lg:gap-5 lg:p-10 xl:p-12">
+          <div className="relative flex flex-col gap-4 bg-gradient-to-br from-accent-700 to-accent-900 p-6 text-white lg:order-1 lg:justify-center lg:gap-6 lg:p-12 xl:p-16 2xl:p-20">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.12),transparent_55%)]"
@@ -169,13 +169,13 @@ export default async function LiveDetailPage({ params }: Params) {
             <div className="relative">
               <HeroBadges live={live} status={status} />
             </div>
-            <h1 className="relative text-2xl font-extrabold leading-[1.15] tracking-tight md:text-3xl lg:text-4xl xl:text-[3.1rem]">
+            <h1 className="relative text-2xl font-extrabold leading-[1.12] tracking-tight md:text-3xl lg:text-5xl xl:text-6xl 2xl:text-[4.25rem]">
               {live.title}
             </h1>
             {live.subtitle && (
-              <p className="relative -mt-1 text-sm text-white/70 lg:text-base">{live.subtitle}</p>
+              <p className="relative -mt-1 text-sm text-white/70 lg:text-lg">{live.subtitle}</p>
             )}
-            <div className="relative flex flex-col gap-1 text-sm">
+            <div className="relative flex flex-col gap-1 text-sm lg:text-base">
               <span className="font-medium text-white/90">
                 {formatPeriod(live.periodStart, live.periodEnd)}
               </span>
