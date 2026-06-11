@@ -11,6 +11,7 @@ import ReportFlipBook from "@/components/live/ReportFlipBook"
 import HeroCountdown from "@/components/live/HeroCountdown"
 import MemberIconRow from "@/components/live/MemberIconRow"
 import VenueMap from "@/components/common/VenueMap"
+import ImageGallery from "@/components/common/ImageGallery"
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -255,13 +256,9 @@ export default async function LiveDetailPage({ params }: Params) {
         <section>
           <SectionHeading title="グッズ情報" />
           {live.goodsImages && live.goodsImages.length > 0 && (
-            <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {live.goodsImages.map((src, i) => (
-                <div key={i} className="aspect-square overflow-hidden rounded-md bg-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt={`グッズ${i + 1}`} className="h-full w-full object-cover" />
-                </div>
-              ))}
+            <div className="mb-3">
+              {/* 元画像のアスペクト比を維持＋クリックでライトボックス拡大 */}
+              <ImageGallery images={live.goodsImages} />
             </div>
           )}
           {live.goodsReceiveMethods && live.goodsReceiveMethods.length > 0 && (
