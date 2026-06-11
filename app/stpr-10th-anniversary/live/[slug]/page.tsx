@@ -404,7 +404,7 @@ export default async function LiveDetailPage({
 
 function TicketBlock({ ticket }: { ticket: TicketInfo }) {
   // ステータスは受付開始/終了日時から自動計算する。
-  const status = getTicketStatus(ticket.saleStart, ticket.saleEnd)
+  const status = getTicketStatus(ticket.saleStart, ticket.saleEnd, ticket.salePeriod)
   const isClosed = status === "受付終了"
   const isLottery = ticket.method?.includes("抽選")
   const salesOutlets = (ticket.salesOutlets ?? []).filter(

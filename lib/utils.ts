@@ -51,24 +51,67 @@ function parseDateTime(s?: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d
 }
 
+/** 和暦混じり日時 "2026年5月3日(日)20:00" → Date（年が無ければ fallbackYear）。 */
+function parseJpDateTimePart(s: string, fallbackYear?: number): Date | null {
+  const m = /(?:(\d{4})年)?\s*(\d{1,2})月\s*(\d{1,2})日(?:\s*[（(][^）)]*[）)])?\s*(?:(\d{1,2})[:：](\d{2}))?/.exec(s)
+  if (!m) return null
+  const y = m[1] ? Number(m[1]) : fallbackYear
+  if (!y) return null
+  const dt = new Date(y, Number(m[2]) - 1, Number(m[3]), m[4] ? Number(m[4]) : 0, m[5] ? Number(m[5]) : 0)
+  return Number.isNaN(dt.getTime()) ? null : dt
+}
+
+/** 和暦 / スラッシュ / ISO の日時を緩く Date に（年が無ければ fallbackYear）。 */
+function parseFlexDateTime(s?: string, fallbackYear?: number): Date | null {
+  if (!s) return null
+  const jp = parseJpDateTimePart(s, fallbackYear)
+  if (jp) return jp
+  const m = /(?:(\d{4})[/-])?\s*(\d{1,2})[/-](\d{1,2})(?:[ T](\d{1,2})[:：](\d{2}))?/.exec(s.trim())
+  if (!m) return null
+  const y = m[1] ? Number(m[1]) : fallbackYear
+  if (!y) return null
+  const dt = new Date(y, Number(m[2]) - 1, Number(m[3]), m[4] ? Number(m[4]) : 0, m[5] ? Number(m[5]) : 0)
+  return Number.isNaN(dt.getTime()) ? null : dt
+}
+
+/** 販売期間の自由文字列（"…～…"）から開始・終了 Date を抽出。 */
+function parseSalePeriod(period?: string): { start: Date | null; end: Date | null } | null {
+  const t = (period ?? "").trim()
+  if (!t) return null
+  const parts = t
+    .split(/[～〜~]|—|–|−/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const start = parseFlexDateTime(parts[0])
+  const end = parts.length > 1 ? parseFlexDateTime(parts[1], start?.getFullYear()) : null
+  if (!start && !end) return null
+  return { start, end }
+}
+
 /**
- * チケットの受付ステータスを受付開始/終了日時から判定する。
- * - 現在 < saleStart: "受付前"
- * - saleStart 〜 saleEnd: "受付中"
- * - 現在 > saleEnd: "受付終了"
- * saleStart / saleEnd のどちらかが未設定・不正なら undefined（非表示）。
- * 比較は日時単位で行う。
+ * チケットの受付ステータスを判定する。
+ * - 現在 < 開始: "受付前" / 開始〜終了: "受付中" / 現在 > 終了: "受付終了"
+ * - saleStart / saleEnd（日時）を優先。空なら salePeriod（販売期間の自由文字列）を解析。
+ * - 判定できる日時が一切無ければ undefined（非表示）。
  */
 export function getTicketStatus(
   saleStart?: string,
   saleEnd?: string,
+  salePeriod?: string,
 ): TicketSaleStatus | undefined {
-  const start = parseDateTime(saleStart)
-  const end = parseDateTime(saleEnd)
-  if (!start || !end) return undefined
+  let start = parseDateTime(saleStart)
+  let end = parseDateTime(saleEnd)
+  if (!start || !end) {
+    const p = parseSalePeriod(salePeriod)
+    if (p) {
+      if (!start) start = p.start
+      if (!end) end = p.end
+    }
+  }
+  if (!start && !end) return undefined
   const now = new Date()
-  if (now < start) return "受付前"
-  if (now > end) return "受付終了"
+  if (start && now < start) return "受付前"
+  if (end && now > end) return "受付終了"
   return "受付中"
 }
 

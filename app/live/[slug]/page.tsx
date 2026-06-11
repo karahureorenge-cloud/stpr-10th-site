@@ -711,7 +711,7 @@ function TicketScheduleItem({ ticket }: { ticket: TicketInfo }) {
   const saleStart = ticket.saleStart ?? ticket.sale_start
   const saleEnd = ticket.saleEnd ?? ticket.sale_end
   const info = ticket.info ?? ticket.note
-  const status = getTicketStatus(saleStart, saleEnd)
+  const status = getTicketStatus(saleStart, saleEnd, ticket.salePeriod)
   const isClosed = status === "受付終了"
   const venueDates = (ticket.venueDates ?? []).filter(
     (vd) => vd.venueName || vd.date || vd.salePeriod || (vd.showRefs?.length ?? 0) > 0,
