@@ -243,6 +243,7 @@ export default async function LiveDetailPage({ params }: Params) {
       {/* ===== グッズ情報 ===== */}
       {((live.goodsImages && live.goodsImages.length > 0) ||
         (live.goodsReceiveMethods && live.goodsReceiveMethods.length > 0) ||
+        (live.upgradeGoodsInfo && live.upgradeGoodsInfo.length > 0) ||
         live.commonVenueLimitedGoods ||
         live.commonVenueLimitedItems) && (
         <section>
@@ -251,6 +252,14 @@ export default async function LiveDetailPage({ params }: Params) {
             <div className="mb-3">
               {/* 元画像のアスペクト比を維持＋クリックでライトボックス拡大 */}
               <ImageGallery images={live.goodsImages} />
+            </div>
+          )}
+          {live.upgradeGoodsInfo && live.upgradeGoodsInfo.length > 0 && (
+            <div className="mb-3">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500">
+                アプグレグッズ情報
+              </p>
+              <ImageGallery images={live.upgradeGoodsInfo} />
             </div>
           )}
           {live.goodsReceiveMethods && live.goodsReceiveMethods.length > 0 && (
