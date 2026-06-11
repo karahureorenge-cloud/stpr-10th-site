@@ -298,7 +298,11 @@ export default async function LiveDetailPage({ params }: Params) {
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500">
                 アプグレグッズ情報
               </p>
-              <ImageGallery images={live.upgradeGoodsInfo} />
+              {/* 説明インフォグラフィックなので、読めるよう少ない列数で大きく表示 */}
+              <ImageGallery
+                images={live.upgradeGoodsInfo}
+                columnsClassName="columns-1 gap-3 sm:columns-2"
+              />
             </div>
           )}
           {live.goodsReceiveMethods && live.goodsReceiveMethods.length > 0 && (

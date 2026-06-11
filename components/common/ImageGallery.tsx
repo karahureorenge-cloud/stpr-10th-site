@@ -11,7 +11,14 @@ import { createPortal } from "react-dom"
  *   overflow-hidden を持つ祖先（アコーディオン等）に閉じ込められず全画面で開く。
  * - × / 背景タップ / Esc で閉じる。
  */
-export default function ImageGallery({ images }: { images: string[] }) {
+export default function ImageGallery({
+  images,
+  columnsClassName = "columns-2 gap-2 sm:columns-3 md:columns-4",
+}: {
+  images: string[]
+  /** masonry の段組みクラス。読ませたい説明画像は少ない列数を渡す。 */
+  columnsClassName?: string
+}) {
   const imgs = images.filter((s) => typeof s === "string" && s.length > 0)
   const [active, setActive] = useState<string | null>(null)
 
@@ -19,7 +26,7 @@ export default function ImageGallery({ images }: { images: string[] }) {
 
   return (
     <>
-      <div className="columns-2 gap-2 sm:columns-3 md:columns-4">
+      <div className={columnsClassName}>
         {imgs.map((src, i) => (
           <button
             key={i}
