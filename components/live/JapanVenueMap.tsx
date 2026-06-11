@@ -9,7 +9,7 @@ export type VenueMapItem = {
   dateLabel?: string
 }
 
-const COLORS = [
+export const VENUE_COLORS = [
   "#c084fc",
   "#ef4444",
   "#3b82f6",
@@ -19,6 +19,7 @@ const COLORS = [
   "#14b8a6",
   "#8b5cf6",
 ]
+const COLORS = VENUE_COLORS
 
 // 都道府県 → 経度・緯度（県庁所在地のおおよそ）。
 const PREF_LONLAT: Record<string, [number, number]> = {
