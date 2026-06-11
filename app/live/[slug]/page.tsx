@@ -4,7 +4,7 @@ import { getLiveBySlug } from "@/lib/repo"
 import { getGroupName } from "@/data/groups"
 import { MEMBERS } from "@/data/members"
 import { formatDateDot, formatPeriod, getLiveStatus, getTicketStatus } from "@/lib/utils"
-import type { Venue, TicketInfo, TicketLineup, TicketSalesOutlet, SetlistItem } from "@/data/lives"
+import type { Live, Venue, TicketInfo, TicketLineup, TicketSalesOutlet, SetlistItem } from "@/data/lives"
 import SetlistSelector from "@/components/live/SetlistSelector"
 import JapanVenueMap, { type VenueMapItem } from "@/components/live/JapanVenueMap"
 import { VENUE_COLORS } from "@/components/live/venue-colors"
@@ -37,6 +37,40 @@ function SectionHeading({ title, sub }: { title: string; sub?: string }) {
       <span aria-hidden className="h-[18px] w-[3px] shrink-0 rounded-sm bg-accent-600" />
       <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-900">{title}</h2>
       {sub && <span className="ml-auto text-[11px] text-gray-500">{sub}</span>}
+    </div>
+  )
+}
+
+/** HERO のバッジ群（グループ / 種別 / Family / ステータス）。暗い背景前提。 */
+function HeroBadges({ live, status }: { live: Live; status: ReturnType<typeof getLiveStatus> }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {live.groupSlug && (
+        <span className="rounded bg-accent-600 px-2.5 py-1 text-[11px] font-bold tracking-wide text-white">
+          {getGroupName(live.groupSlug)}
+        </span>
+      )}
+      {live.liveType && (
+        <span className="rounded border border-white/30 bg-white/15 px-2.5 py-1 text-[11px] font-bold text-white">
+          {live.liveType}
+        </span>
+      )}
+      {live.isFamily && (
+        <span className="rounded bg-rose-400 px-2.5 py-1 text-[11px] font-bold text-white">
+          STPR Family
+        </span>
+      )}
+      <span
+        className={`rounded px-2.5 py-1 text-[11px] font-bold text-white ${
+          status === "ongoing"
+            ? "bg-green-500"
+            : status === "coming"
+              ? "bg-blue-500"
+              : "bg-gray-500/80"
+        }`}
+      >
+        {status === "ongoing" ? "● LIVE NOW" : status === "coming" ? "COMING SOON" : "FINISHED"}
+      </span>
     </div>
   )
 }
@@ -97,74 +131,109 @@ export default async function LiveDetailPage({ params }: Params) {
   return (
     <div className="space-y-12">
       {/* ===== HERO ===== */}
-      <section className="relative -mx-4 overflow-hidden md:mx-0 md:rounded-2xl">
-        <div className="relative min-h-[440px] md:min-h-[520px]">
-          {live.keyVisual ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={live.keyVisual}
-              alt={live.title}
-              className="absolute inset-0 h-full w-full object-cover"
+      <section>
+        {/* PC（lg+）：情報パネル＋KV の分割レイアウト */}
+        <div className="hidden overflow-hidden rounded-3xl border border-gray-200 shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)]">
+          {/* 情報パネル */}
+          <div className="relative flex flex-col justify-center gap-5 bg-gradient-to-br from-accent-700 to-accent-900 p-10 text-white xl:p-12">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.14),transparent_55%)]"
             />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-accent-700 to-accent-500" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/85" />
-          <div className="relative flex min-h-[440px] flex-col justify-end gap-6 p-6 md:min-h-[520px] md:flex-row md:items-end md:justify-between md:p-10">
-            <div className="min-w-0">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {live.groupSlug && (
-                  <span className="rounded bg-accent-600 px-2.5 py-1 text-[11px] font-bold tracking-wide text-white">
-                    {getGroupName(live.groupSlug)}
-                  </span>
-                )}
-                {live.liveType && (
-                  <span className="rounded border border-white/30 bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white">
-                    {live.liveType}
-                  </span>
-                )}
-                {live.isFamily && (
-                  <span className="rounded bg-rose-400 px-2.5 py-1 text-[11px] font-bold text-white">
-                    STPR Family
-                  </span>
-                )}
-                <span
-                  className={`rounded px-2.5 py-1 text-[11px] font-bold text-white ${
-                    status === "ongoing"
-                      ? "bg-green-500"
-                      : status === "coming"
-                        ? "bg-blue-500"
-                        : "bg-gray-500/80"
-                  }`}
-                >
-                  {status === "ongoing" ? "● LIVE NOW" : status === "coming" ? "COMING SOON" : "FINISHED"}
-                </span>
-              </div>
-              <h1 className="mb-2 text-3xl font-extrabold leading-tight text-white md:text-5xl">
-                {live.title}
-              </h1>
-              {live.subtitle && <p className="mb-4 text-sm text-white/75">{live.subtitle}</p>}
-              <p className="mb-1 text-sm font-medium text-white/90">
+            <div className="relative">
+              <HeroBadges live={live} status={status} />
+            </div>
+            <h1 className="relative text-4xl font-extrabold leading-[1.12] tracking-tight xl:text-[3.25rem]">
+              {live.title}
+            </h1>
+            {live.subtitle && <p className="relative -mt-1 text-base text-white/70">{live.subtitle}</p>}
+            <div className="relative flex flex-col gap-1 text-sm">
+              <span className="font-medium text-white/90">
                 {formatPeriod(live.periodStart, live.periodEnd)}
-                {venues.length > 0 && `　${venues.length}会場${showCount}公演`}
-              </p>
-              {live.hashtag && <p className="text-sm text-white/70">{live.hashtag}</p>}
-              {live.officialSiteUrl && (
-                <a
-                  href={live.officialSiteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 rounded-md border border-white/35 bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
-                >
-                  公式サイト ↗
-                </a>
+              </span>
+              {venues.length > 0 && (
+                <span className="text-white/70">
+                  {venues.length}会場 {showCount}公演
+                </span>
               )}
+              {live.hashtag && <span className="text-white/55">{live.hashtag}</span>}
             </div>
             {status === "coming" && (
-              <div className="hidden md:block">
+              <div className="relative">
                 <HeroCountdown target={live.periodStart} />
               </div>
             )}
+            {live.officialSiteUrl && (
+              <a
+                href={live.officialSiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative inline-flex w-fit items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-sm transition-colors hover:bg-white/90"
+              >
+                公式サイト ↗
+              </a>
+            )}
+          </div>
+          {/* KV */}
+          <div className="relative min-h-[460px]">
+            {live.keyVisual ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={live.keyVisual}
+                alt={live.title}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-500 to-accent-700" />
+            )}
+          </div>
+        </div>
+
+        {/* スマホ/タブレット（<lg）：従来のオーバーレイバナー（変更なし） */}
+        <div className="relative -mx-4 overflow-hidden md:mx-0 md:rounded-2xl lg:hidden">
+          <div className="relative min-h-[440px] md:min-h-[520px]">
+            {live.keyVisual ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={live.keyVisual}
+                alt={live.title}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-700 to-accent-500" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/85" />
+            <div className="relative flex min-h-[440px] flex-col justify-end gap-6 p-6 md:min-h-[520px] md:flex-row md:items-end md:justify-between md:p-10">
+              <div className="min-w-0">
+                <div className="mb-3">
+                  <HeroBadges live={live} status={status} />
+                </div>
+                <h1 className="mb-2 text-3xl font-extrabold leading-tight text-white md:text-5xl">
+                  {live.title}
+                </h1>
+                {live.subtitle && <p className="mb-4 text-sm text-white/75">{live.subtitle}</p>}
+                <p className="mb-1 text-sm font-medium text-white/90">
+                  {formatPeriod(live.periodStart, live.periodEnd)}
+                  {venues.length > 0 && `　${venues.length}会場${showCount}公演`}
+                </p>
+                {live.hashtag && <p className="text-sm text-white/70">{live.hashtag}</p>}
+                {live.officialSiteUrl && (
+                  <a
+                    href={live.officialSiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 rounded-md border border-white/35 bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+                  >
+                    公式サイト ↗
+                  </a>
+                )}
+              </div>
+              {status === "coming" && (
+                <div className="hidden md:block">
+                  <HeroCountdown target={live.periodStart} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -181,7 +250,7 @@ export default async function LiveDetailPage({ params }: Params) {
 
       {/* 説明 */}
       {live.description && (
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+        <p className="max-w-3xl whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
           {live.description}
         </p>
       )}
@@ -217,26 +286,29 @@ export default async function LiveDetailPage({ params }: Params) {
         (live.ticketInfo && live.ticketInfo.length > 0)) && (
         <section>
           <SectionHeading title="チケット情報" />
-          {live.ticketLineup && live.ticketLineup.length > 0 && (
-            <div className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <CardHead title="チケット種別・料金" />
-              <div className="px-4 py-3">
-                {live.ticketLineup.map((t, i) => (
-                  <TicketLineupRow key={i} t={t} />
-                ))}
+          {/* PC は 種別・料金 / スケジュール を2カラム、モバイルは縦積み */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+            {live.ticketLineup && live.ticketLineup.length > 0 && (
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <CardHead title="チケット種別・料金" />
+                <div className="px-4 py-3">
+                  {live.ticketLineup.map((t, i) => (
+                    <TicketLineupRow key={i} t={t} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {live.ticketInfo && live.ticketInfo.length > 0 && (
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <CardHead title="TICKETスケジュール" />
-              <div className="flex flex-col gap-2 px-4 py-3">
-                {[...live.ticketInfo].reverse().map((t, i) => (
-                  <TicketScheduleItem key={i} ticket={t} />
-                ))}
+            )}
+            {live.ticketInfo && live.ticketInfo.length > 0 && (
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <CardHead title="TICKETスケジュール" />
+                <div className="flex flex-col gap-2 px-4 py-3">
+                  {[...live.ticketInfo].reverse().map((t, i) => (
+                    <TicketScheduleItem key={i} ticket={t} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </section>
       )}
 
