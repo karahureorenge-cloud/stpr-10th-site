@@ -250,7 +250,8 @@ export default async function LiveDetailPage({ params }: Params) {
 
       {/* ===== チケット情報 ===== */}
       {((live.ticketLineup && live.ticketLineup.length > 0) ||
-        (live.ticketInfo && live.ticketInfo.length > 0)) && (
+        (live.ticketInfo && live.ticketInfo.length > 0) ||
+        (live.upgradeGoodsInfo && live.upgradeGoodsInfo.length > 0)) && (
         <section>
           <SectionHeading title="チケット情報" />
           {/* PC は 種別・料金 / スケジュール を2カラム、モバイルは縦積み */}
@@ -276,13 +277,29 @@ export default async function LiveDetailPage({ params }: Params) {
               </div>
             )}
           </div>
+
+          {/* アップグレード券の特典グッズ（通常の物販とは別物） */}
+          {live.upgradeGoodsInfo && live.upgradeGoodsInfo.length > 0 && (
+            <div className="mt-4 overflow-hidden rounded-xl border border-accent-100 bg-accent-50/40 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-accent-700">
+                アップグレード特典グッズ
+              </p>
+              <p className="mb-3 mt-1 text-xs text-gray-500">
+                アップグレード券の当選・購入者に付いてくる特典グッズです。
+              </p>
+              {/* 説明インフォグラフィックなので、読めるよう少ない列数で大きく表示 */}
+              <ImageGallery
+                images={live.upgradeGoodsInfo}
+                columnsClassName="columns-1 gap-3 sm:columns-2"
+              />
+            </div>
+          )}
         </section>
       )}
 
       {/* ===== グッズ情報 ===== */}
       {((live.goodsImages && live.goodsImages.length > 0) ||
         (live.goodsReceiveMethods && live.goodsReceiveMethods.length > 0) ||
-        (live.upgradeGoodsInfo && live.upgradeGoodsInfo.length > 0) ||
         live.commonVenueLimitedGoods ||
         live.commonVenueLimitedItems) && (
         <section>
@@ -291,18 +308,6 @@ export default async function LiveDetailPage({ params }: Params) {
             <div className="mb-3">
               {/* 元画像のアスペクト比を維持＋クリックでライトボックス拡大 */}
               <ImageGallery images={live.goodsImages} />
-            </div>
-          )}
-          {live.upgradeGoodsInfo && live.upgradeGoodsInfo.length > 0 && (
-            <div className="mb-3">
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500">
-                アプグレグッズ情報
-              </p>
-              {/* 説明インフォグラフィックなので、読めるよう少ない列数で大きく表示 */}
-              <ImageGallery
-                images={live.upgradeGoodsInfo}
-                columnsClassName="columns-1 gap-3 sm:columns-2"
-              />
             </div>
           )}
           {live.goodsReceiveMethods && live.goodsReceiveMethods.length > 0 && (
