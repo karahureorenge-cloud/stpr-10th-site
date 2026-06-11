@@ -137,14 +137,24 @@ export default async function LiveDetailPage({ params }: Params) {
       <section>
         <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
           {/* KV（画像の比率を維持） */}
-          <div className="relative flex items-center justify-center bg-gray-900 lg:order-2 lg:min-h-[420px]">
+          <div className="relative flex items-center justify-center overflow-hidden bg-gray-900 lg:order-2 lg:min-h-[420px]">
             {live.keyVisual ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={live.keyVisual}
-                alt={live.title}
-                className="block w-full lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-contain"
-              />
+              <>
+                {/* PC: contain の余白をブラー背景で埋める（額装風） */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={live.keyVisual}
+                  alt=""
+                  aria-hidden
+                  className="hidden lg:absolute lg:inset-0 lg:block lg:h-full lg:w-full lg:scale-110 lg:object-cover lg:opacity-60 lg:blur-2xl"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={live.keyVisual}
+                  alt={live.title}
+                  className="relative block w-full lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-contain"
+                />
+              </>
             ) : (
               <div className="aspect-video w-full bg-gradient-to-br from-accent-500 to-accent-700 lg:absolute lg:inset-0 lg:aspect-auto lg:h-full" />
             )}
@@ -543,8 +553,10 @@ function VenueBlock({
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-accent-700">{s.partLabel || "—"}</td>
-                    <td className="px-4 py-3 text-gray-500">{s.scheduleText || "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-accent-700">{s.partLabel || "—"}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {s.scheduleText ? <ScheduleText text={s.scheduleText} /> : "—"}
+                    </td>
                   </tr>
                 )
               })}
@@ -651,37 +663,65 @@ function TicketLineupRow({ t }: { t: TicketLineup }) {
   const name = lineupName(t)
   const isNum = typeof t.price === "number"
   const price = isNum ? `¥${(t.price as number).toLocaleString()}` : ((t.price as string) ?? "")
-  return (
-    <div
-      className={`flex items-start justify-between gap-3 border-b border-gray-100 py-2.5 last:border-0 ${
-        up ? "my-1 rounded-lg border-0 bg-gradient-to-br from-accent-50 to-transparent px-3 py-3" : ""
-      }`}
+  const priceEl = price ? (
+    <span
+      className={`whitespace-nowrap text-base font-bold ${up ? "text-accent-700" : "text-gray-900"}`}
     >
-      <div className="min-w-0">
-        <p className={`text-sm font-bold ${up ? "text-accent-700" : "text-gray-800"}`}>{name}</p>
-        {t.note && <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">{t.note}</p>}
-        {tags.length > 0 && (
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {tags.map((tag, i) => (
-              <span
-                key={i}
-                className="rounded bg-accent-50 px-2 py-0.5 text-[10px] font-bold text-accent-700"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+      {price}
+      {isNum && <span className="ml-0.5 text-[11px] font-normal text-gray-400">税込</span>}
+    </span>
+  ) : null
+  const tagsEl =
+    tags.length > 0 ? (
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {tags.map((tag, i) => (
+          <span
+            key={i}
+            className="rounded bg-accent-50 px-2 py-0.5 text-[10px] font-bold text-accent-700"
+          >
+            {tag}
+          </span>
+        ))}
       </div>
-      {price && (
-        <span
-          className={`whitespace-nowrap text-base font-bold ${up ? "text-accent-700" : "text-gray-900"}`}
-        >
-          {price}
-          {isNum && <span className="ml-0.5 text-[11px] font-normal text-gray-400">税込</span>}
-        </span>
-      )}
+    ) : null
+
+  // アップグレード券：説明を名前＋価格の下に全幅で表示。
+  if (up) {
+    return (
+      <div className="my-1 rounded-lg bg-gradient-to-br from-accent-50 to-transparent px-3 py-3">
+        <div className="flex items-start justify-between gap-3">
+          <p className="min-w-0 text-sm font-bold text-accent-700">{name}</p>
+          {priceEl}
+        </div>
+        {t.note && <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">{t.note}</p>}
+        {tagsEl}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-start justify-between gap-3 border-b border-gray-100 py-2.5 last:border-0">
+      <div className="min-w-0">
+        <p className="text-sm font-bold text-gray-800">{name}</p>
+        {t.note && <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">{t.note}</p>}
+        {tagsEl}
+      </div>
+      {priceEl}
     </div>
+  )
+}
+
+/** スケジュール文を「開場…/」と「開演…」で改行できるよう、各部を nowrap 単位に分割。 */
+function ScheduleText({ text }: { text: string }) {
+  const idx = text.indexOf("開演")
+  if (idx <= 0) return <>{text}</>
+  const open = text.slice(0, idx).replace(/\s+$/, "")
+  const start = text.slice(idx)
+  return (
+    <>
+      <span className="whitespace-nowrap">{open}</span>{" "}
+      <span className="whitespace-nowrap">{start}</span>
+    </>
   )
 }
 
