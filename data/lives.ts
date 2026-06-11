@@ -76,14 +76,19 @@ export type TicketSalesOutlet = {
 /** チケット種別（複数対応） */
 export type TicketInfo = {
   ticketType: string
+  name?: string // ticketType の別キー（取込・手動データ用）
   ticketLineupRefs?: string[] // 対応するチケットラインナップ（ticketName を参照・複数可）
   showRefs?: string[] // 対象公演（venues の各 shows を「会場 日付 部」で参照・複数可）
   salePeriod?: string
   saleStart?: string // 受付開始日時（ステータス自動判定用）
   saleEnd?: string // 受付終了日時（ステータス自動判定用）
+  sale_start?: string // saleStart の別キー（取込データ用）
+  sale_end?: string // saleEnd の別キー（取込データ用）
   price?: string
   method?: string // "抽選" / "先着" 等
+  saleType?: string // method の別キー（取込データ用）
   info?: string
+  note?: string // info の別キー（取込データ用）
   salesOutlets?: TicketSalesOutlet[] // チケット販売場所・購入URL（複数）
   venueDates?: TicketVenueDate[] // 会場・日付ごとの受付期間
 }

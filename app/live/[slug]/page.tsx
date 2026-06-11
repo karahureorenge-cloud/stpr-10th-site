@@ -6,7 +6,8 @@ import { MEMBERS } from "@/data/members"
 import { formatDateDot, formatPeriod, getLiveStatus, getTicketStatus } from "@/lib/utils"
 import type { Venue, TicketInfo, TicketLineup, TicketSalesOutlet, SetlistItem } from "@/data/lives"
 import SetlistSelector from "@/components/live/SetlistSelector"
-import JapanVenueMap, { type VenueMapItem, VENUE_COLORS } from "@/components/live/JapanVenueMap"
+import JapanVenueMap, { type VenueMapItem } from "@/components/live/JapanVenueMap"
+import { VENUE_COLORS } from "@/components/live/venue-colors"
 import ReportFlipBook from "@/components/live/ReportFlipBook"
 import HeroCountdown from "@/components/live/HeroCountdown"
 import MemberIconRow from "@/components/live/MemberIconRow"
@@ -428,6 +429,13 @@ function LimitedBlock({ title, html }: { title: string; html: string }) {
   )
 }
 
+/** "2026-07-27" → "07.27"（年は省略）。 */
+function mdDot(dateStr?: string): string {
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(dateStr ?? "")
+  if (!m) return ""
+  return `${m[2].padStart(2, "0")}.${m[3].padStart(2, "0")}`
+}
+
 function venueDateLabel(v: Venue): string {
   const dates = (v.shows ?? [])
     .map((s) => s.date)
@@ -435,8 +443,8 @@ function venueDateLabel(v: Venue): string {
     .sort()
   if (dates.length === 0) return ""
   return dates[0] === dates[dates.length - 1]
-    ? formatDateDot(dates[0])
-    : `${formatDateDot(dates[0])}〜${formatDateDot(dates[dates.length - 1])}`
+    ? mdDot(dates[0])
+    : `${mdDot(dates[0])}〜${mdDot(dates[dates.length - 1])}`
 }
 
 function VenueBlock({
@@ -697,67 +705,99 @@ function SalesOutlets({
 }
 
 function TicketScheduleItem({ ticket }: { ticket: TicketInfo }) {
-  const status = getTicketStatus(ticket.saleStart, ticket.saleEnd)
+  // 取込データの別キー（sale_start / saleType / name / note）にも対応。
+  const ticketType = ticket.ticketType || ticket.name || ""
+  const method = ticket.method ?? ticket.saleType
+  const saleStart = ticket.saleStart ?? ticket.sale_start
+  const saleEnd = ticket.saleEnd ?? ticket.sale_end
+  const info = ticket.info ?? ticket.note
+  const status = getTicketStatus(saleStart, saleEnd)
   const isClosed = status === "受付終了"
   const venueDates = (ticket.venueDates ?? []).filter(
     (vd) => vd.venueName || vd.date || vd.salePeriod || (vd.showRefs?.length ?? 0) > 0,
   )
+  const hasBody =
+    !!ticket.salePeriod ||
+    !!ticket.price ||
+    (ticket.ticketLineupRefs?.length ?? 0) > 0 ||
+    !!info ||
+    (ticket.salesOutlets?.length ?? 0) > 0 ||
+    venueDates.length > 0
+
   return (
-    <div
-      className={`grid grid-cols-[1fr_auto] items-start gap-3 rounded-lg border p-3 ${
-        status === "受付中" ? "border-green-200 bg-green-50/30" : "border-gray-200 bg-gray-50"
+    // 受付終了は帯を閉じる（open=false）。受付中/受付前は開いた状態。
+    <details
+      open={!isClosed}
+      className={`group overflow-hidden rounded-lg border ${
+        status === "受付中"
+          ? "border-green-200 bg-green-50/30"
+          : isClosed
+            ? "border-gray-200 bg-gray-100/70"
+            : "border-gray-200 bg-gray-50"
       }`}
     >
-      <div className="min-w-0">
-        <div className="mb-1 flex flex-wrap items-center gap-2">
-          <span className="text-[13px] font-bold text-gray-800">{ticket.ticketType}</span>
-          {ticket.method && (
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className={`text-[13px] font-bold ${isClosed ? "text-gray-500" : "text-gray-800"}`}>
+            {ticketType}
+          </span>
+          {method && (
             <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold text-gray-500">
-              {ticket.method}
+              {method}
             </span>
           )}
         </div>
-        {ticket.salePeriod && <p className="text-[11px] text-gray-500">{ticket.salePeriod}</p>}
-        {ticket.price && <p className="text-[11px] text-gray-500">{ticket.price}</p>}
-        {ticket.ticketLineupRefs && ticket.ticketLineupRefs.length > 0 && (
-          <div className="mt-1.5 flex flex-wrap gap-1">
-            {ticket.ticketLineupRefs.map((r, i) => (
-              <span key={i} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">
-                {r}
-              </span>
-            ))}
-          </div>
-        )}
-        {ticket.info && <p className="mt-1 whitespace-pre-wrap text-[11px] text-gray-500">{ticket.info}</p>}
+        <div className="flex shrink-0 items-center gap-2">
+          {status && (
+            <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${statusBadgeCls(status)}`}>
+              {status}
+            </span>
+          )}
+          {hasBody && (
+            <span className="text-[10px] text-gray-400 transition-transform group-open:rotate-180">▼</span>
+          )}
+        </div>
+      </summary>
 
-        <SalesOutlets outlets={ticket.salesOutlets} isClosed={isClosed} />
-
-        {venueDates.length > 0 && (
-          <div className="mt-3 border-t border-gray-200 pt-2.5">
-            <p className="mb-2 text-[11px] font-bold tracking-wide text-gray-500">会場・日付ごとの受付期間</p>
-            <div className="flex flex-col gap-1.5">
-              {venueDates.map((vd, j) => (
-                <div key={j} className="rounded-md border border-gray-200 bg-white px-3 py-2 text-[11px]">
-                  <p className="font-bold text-gray-800">
-                    {vd.venueName}
-                    {vd.date && <span className="ml-1 font-normal text-gray-500">{formatDateDot(vd.date)}</span>}
-                  </p>
-                  {vd.salePeriod && <p className="text-gray-500">{vd.salePeriod}</p>}
-                  {vd.showRefs && vd.showRefs.length > 0 && (
-                    <p className="mt-0.5 text-gray-500">{vd.showRefs.join("・")}</p>
-                  )}
-                  <SalesOutlets outlets={vd.salesOutlets} isClosed={isClosed} />
-                </div>
+      {hasBody && (
+        <div className="border-t border-gray-200 px-3 pb-3 pt-2.5">
+          {ticket.salePeriod && <p className="text-[11px] text-gray-500">{ticket.salePeriod}</p>}
+          {ticket.price && <p className="text-[11px] text-gray-500">{ticket.price}</p>}
+          {ticket.ticketLineupRefs && ticket.ticketLineupRefs.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {ticket.ticketLineupRefs.map((r, i) => (
+                <span key={i} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">
+                  {r}
+                </span>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-      {status && (
-        <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${statusBadgeCls(status)}`}>
-          {status}
-        </span>
+          )}
+          {info && <p className="mt-1 whitespace-pre-wrap text-[11px] text-gray-500">{info}</p>}
+
+          <SalesOutlets outlets={ticket.salesOutlets} isClosed={isClosed} />
+
+          {venueDates.length > 0 && (
+            <div className="mt-3 border-t border-gray-200 pt-2.5">
+              <p className="mb-2 text-[11px] font-bold tracking-wide text-gray-500">会場・日付ごとの受付期間</p>
+              <div className="flex flex-col gap-1.5">
+                {venueDates.map((vd, j) => (
+                  <div key={j} className="rounded-md border border-gray-200 bg-white px-3 py-2 text-[11px]">
+                    <p className="font-bold text-gray-800">
+                      {vd.venueName}
+                      {vd.date && <span className="ml-1 font-normal text-gray-500">{formatDateDot(vd.date)}</span>}
+                    </p>
+                    {vd.salePeriod && <p className="text-gray-500">{vd.salePeriod}</p>}
+                    {vd.showRefs && vd.showRefs.length > 0 && (
+                      <p className="mt-0.5 text-gray-500">{vd.showRefs.join("・")}</p>
+                    )}
+                    <SalesOutlets outlets={vd.salesOutlets} isClosed={isClosed} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
-    </div>
+    </details>
   )
 }

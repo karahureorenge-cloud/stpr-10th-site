@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { JAPAN_MAP_PATHS } from "./japan-map-paths"
+import { VENUE_COLORS } from "./venue-colors"
 
 export type VenueMapItem = {
   name: string
@@ -9,16 +10,6 @@ export type VenueMapItem = {
   dateLabel?: string
 }
 
-export const VENUE_COLORS = [
-  "#c084fc",
-  "#ef4444",
-  "#3b82f6",
-  "#22c55e",
-  "#f59e0b",
-  "#ec4899",
-  "#14b8a6",
-  "#8b5cf6",
-]
 const COLORS = VENUE_COLORS
 
 // 都道府県 → 経度・緯度（県庁所在地のおおよそ）。
