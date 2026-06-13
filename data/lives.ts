@@ -30,6 +30,7 @@ export type LiveVideo = {
 /** 公演ごとのセットリスト（会場・日付・部ごとにセトリが変わる場合） */
 export type ShowSetlist = {
   showRef?: string // 対象公演（venues の各 shows を「会場 日付 部」で参照）
+  label?: string // タブの表示名（未指定なら自動で DAY2, DAY3…）
   note?: string // 変更点メモ（例: 時間押しでM10カット / アンコールで〇〇追加）。セトリ未入力なら基本セトリ＋このメモを表示
   setlist?: SetlistItem[] // この公演のセトリ（大きく変わる場合のみ。未入力なら基本セトリを使用）
 }
@@ -177,6 +178,7 @@ export type Live = {
   commonVenueLimitedGoods?: string // ツアー共通の会場限定グッズ（リッチテキストHTML）
   commonVenueLimitedItems?: string // ツアー共通の会場限定配布物（リッチテキストHTML）
   setlist?: SetlistItem[] // 基本セットリスト
+  setlistLabel?: string // 基本セトリ（DAY1）タブの表示名（未指定なら "DAY1"）
   showSetlists?: ShowSetlist[] // 公演ごとのセットリスト
   ppvInfo?: PpvInfo[]
   liveViewing?: LiveViewing[]

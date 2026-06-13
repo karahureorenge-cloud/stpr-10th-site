@@ -748,7 +748,12 @@ function VenueBlock({
         {(showSetlists.length > 0 || (baseSetlist && baseSetlist.length > 0)) && (
           <div className="p-5 md:col-span-2">
             <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500">セットリスト</p>
-            <SetlistSelector base={baseSetlist} showSetlists={showSetlists} variant="plain" />
+            <SetlistSelector
+              base={baseSetlist}
+              baseLabel={live?.setlistLabel}
+              showSetlists={showSetlists}
+              variant="plain"
+            />
           </div>
         )}
       </div>

@@ -112,6 +112,7 @@ export function toLive(r: Record<string, unknown>): Live {
     commonVenueLimitedGoods: u(r.common_venue_limited_goods as string | null),
     commonVenueLimitedItems: u(r.common_venue_limited_items as string | null),
     setlist: jsonArr<SetlistItem>(r.setlist),
+    setlistLabel: u(r.setlist_label as string | null),
     showSetlists: jsonArr<ShowSetlist>(r.show_setlists),
     ppvInfo: jsonArr<PpvInfo>(r.ppv_info),
     liveViewing: jsonArr<LiveViewing>(r.live_viewing),

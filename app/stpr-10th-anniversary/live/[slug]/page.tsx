@@ -382,7 +382,12 @@ export default async function LiveDetailPage({
       {/* セットリスト（基本 + 公演ごとをタブ切替 + 各会場の変更メモ）: アコーディオン */}
       {(hasBaseSetlist || showSetlists.length > 0 || venueSetlistNotes.length > 0) && (
         <EventSection title="セトリ">
-          <SetlistSelector base={live.setlist} showSetlists={showSetlists} variant="gold" />
+          <SetlistSelector
+            base={live.setlist}
+            baseLabel={live.setlistLabel}
+            showSetlists={showSetlists}
+            variant="gold"
+          />
           {venueSetlistNotes.length > 0 && (
             <div className="mt-4 space-y-2">
               <p className="text-xs font-bold text-[#9a8aa0]">会場ごとの変更メモ</p>
