@@ -6,6 +6,7 @@ export type FieldType =
   | "text"
   | "textarea"
   | "date"
+  | "datetime" // 日付＋時刻（<input type="datetime-local">）→ timestamptz
   | "select"
   | "multiselect" // 複数選択（チェック式 select）→ text[]
   | "boolean"
@@ -70,9 +71,6 @@ export type TableConfig = {
   fields: Field[]
   listColumns: string[] // 一覧に出す列
   titleField: string // 行の代表表示に使う列
-  /** true で編集フォームに「下書き保存／予約投稿／即時公開」ボタンを出し、
-   *  status 列（draft/scheduled/published）をそのボタンで設定する。 */
-  postMethods?: boolean
 }
 
 /** 「チケット販売場所・対象公演・購入URL」共通フィールド（チケット情報と会場日付で再利用）。
@@ -123,8 +121,7 @@ export const TABLES: Record<string, TableConfig> = {
     key: "news",
     label: "ニュース",
     titleField: "title",
-    listColumns: ["title", "category", "status", "published_at"],
-    postMethods: true,
+    listColumns: ["title", "category", "published_at"],
     fields: [
       { name: "title", label: "タイトル", type: "text", required: true },
       { name: "body", label: "本文", type: "richtext" },
@@ -142,8 +139,8 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "is_featured", label: "注目ニュースに設定", type: "boolean" },
       { name: "spoiler", label: "ネタバレ注意", type: "boolean" },
       { name: "published_at", label: "公開日時", type: "date" },
-      // status は postMethods のボタンで設定（フォームには出さない）。
-      { name: "status", label: "ステータス", type: "select", options: ["draft", "scheduled", "published"], optionLabels: { draft: "下書き", scheduled: "予約", published: "公開" } },
+      // 公開/下書きは publish_status（全テーブル共通の公開ボタン）で設定。
+      // 旧 status 列（draft/scheduled/published）は温存するがフォームには出さない。
     ],
   },
   schedules: {
@@ -225,7 +222,7 @@ export const TABLES: Record<string, TableConfig> = {
       },
       // ステータスは period_start / period_end から自動計算（フォーム非表示・保存時に自動上書き）。
       { name: "status", label: "ステータス", type: "select", options: ["coming", "ongoing", "finished"] },
-      { name: "is_active", label: "公開する", type: "boolean", help: "オフにすると公開 /live 一覧から除外されます。" },
+      // is_active は publish_status（公開ボタン）に統一したためフォームから撤去。
       { name: "is_family", label: "STPR Family / 合同ライブ", type: "boolean" },
       { name: "period_start", label: "開始日時", type: "text", placeholder: "2026-06-04 もしくは 2026-06-04T18:00", help: "ISO形式（datetime）" },
       { name: "period_end", label: "終了日時", type: "text", placeholder: "2026-06-06" },
@@ -482,6 +479,7 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "report_content", label: "レポート本文", type: "textarea" },
       { name: "report_thumbnail", label: "レポートサムネイル画像", type: "image" },
       { name: "report_gallery", label: "レポートギャラリー 画像URL（改行/カンマ区切り）", type: "textarea" },
+      // is_active は publish_status（公開ボタン）に統一したためフォームから撤去。
       { name: "is_10th", label: "10周年関連", type: "boolean" },
       { name: "sort_order", label: "並び順", type: "number" },
       { name: "microcms_id", label: "microCMS ID（移行用・通常は空欄）", type: "text" },
@@ -519,7 +517,6 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "related_live", label: "関連ライブ（スラッグ）", type: "text", placeholder: "anniv-tour-2026" },
       { name: "description", label: "説明", type: "textarea" },
       { name: "member_ids", label: "関連メンバーID（カンマ区切り）", type: "csv", placeholder: "rinu, root" },
-      { name: "is_active", label: "公開（有効）", type: "boolean" },
       { name: "sort_order", label: "並び順", type: "number" },
     ],
   },
@@ -683,7 +680,6 @@ export const TABLES: Record<string, TableConfig> = {
           { name: "image", label: "画像", type: "image", multiple: true },
         ],
       },
-      { name: "is_active", label: "公開（有効）", type: "boolean" },
       { name: "sort_order", label: "並び順", type: "number" },
     ],
   },
@@ -709,7 +705,6 @@ export const TABLES: Record<string, TableConfig> = {
       { name: "credit", label: "クレジット", type: "textarea" },
       { name: "member_ids", label: "関連メンバーID（カンマ区切り）", type: "csv" },
       { name: "description", label: "説明", type: "textarea" },
-      { name: "is_active", label: "公開（有効）", type: "boolean" },
       { name: "sort_order", label: "並び順", type: "number" },
     ],
   },
@@ -765,7 +760,6 @@ export const TABLES: Record<string, TableConfig> = {
         ],
       },
       { name: "description", label: "説明", type: "textarea" },
-      { name: "is_active", label: "公開（有効）", type: "boolean" },
       { name: "sort_order", label: "並び順", type: "number" },
     ],
   },
@@ -883,6 +877,50 @@ export const TABLES: Record<string, TableConfig> = {
 
 export const TABLE_KEYS = Object.keys(TABLES)
 
-export function getTableConfig(key: string): TableConfig | undefined {
-  return TABLES[key]
+/** 予約公開日時。全テーブルに共通注入する（フォーム末尾に表示）。 */
+const PUBLISH_AT_FIELD: Field = {
+  name: "publish_at",
+  label: "予約公開日時（任意）",
+  type: "datetime",
+  help: "日時を指定して「下書き保存」すると、その時刻に自動で公開されます（空欄なら予約なし）。",
 }
+
+/**
+ * テーブル設定を取得する。全テーブル共通で
+ *  - publish_at フィールドをフォーム末尾に注入
+ *  - 一覧に publish_status（状態）列を先頭付近へ注入
+ * する（DRY のため定義側には書かない）。
+ */
+export function getTableConfig(key: string): TableConfig | undefined {
+  const base = TABLES[key]
+  if (!base) return undefined
+
+  const fields = base.fields.some((f) => f.name === "publish_at")
+    ? base.fields
+    : [...base.fields, PUBLISH_AT_FIELD]
+
+  let listColumns = base.listColumns
+  if (!listColumns.includes("publish_status")) {
+    // タイトル列の直後に状態列を差し込む（無ければ先頭）。
+    const i = listColumns.indexOf(base.titleField)
+    listColumns =
+      i >= 0
+        ? [...listColumns.slice(0, i + 1), "publish_status", ...listColumns.slice(i + 1)]
+        : ["publish_status", ...listColumns]
+  }
+
+  return { ...base, fields, listColumns }
+}
+
+/** 検索フィルターのグループ絞り込み対象列（複数選択 group_slugs か 単一 group_slug）。無ければ null。 */
+export function groupFilterField(table: string): "group_slugs" | "group_slug" | null {
+  const cfg = TABLES[table]
+  if (!cfg) return null
+  if (cfg.fields.some((f) => f.name === "group_slugs")) return "group_slugs"
+  if (cfg.fields.some((f) => f.name === "group_slug")) return "group_slug"
+  return null
+}
+
+/** グループ slug → 表示名（フィルターUI 用）。 */
+export const GROUP_FILTER_OPTIONS = GROUP_OPTIONS
+export const GROUP_FILTER_LABELS = GROUP_OPTION_LABELS

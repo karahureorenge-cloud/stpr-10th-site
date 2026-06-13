@@ -169,7 +169,8 @@ export async function saveNewsDraft(input: {
     category: isCategory(input.category) ? input.category : "other",
     // 公開ページは group_slugs（text[]）を見るため配列で保存。
     group_slugs: isGroup(input.group_slug) ? [input.group_slug] : [],
-    status: "draft", // 公開フラグはデフォルト false（下書き）
+    status: "draft", // 旧 status 列（互換のため）
+    publish_status: "draft", // 公開フラグは下書き
   }
 
   let supabase

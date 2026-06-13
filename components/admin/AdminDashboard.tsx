@@ -77,6 +77,22 @@ export default async function AdminDashboard({ basePath, label, caption }: Props
           <span aria-hidden className="ml-auto text-gold-400 transition-transform group-hover:translate-x-1">→</span>
         </Link>
 
+        <Link
+          href={`${basePath}/trash`}
+          className="group mt-3 flex items-center gap-4 rounded-2xl border border-gold-200/70 bg-white/70 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.1)]"
+        >
+          <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-100 text-gold-600">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18M8 6V4h8v2m-9 0v14a2 2 0 002 2h6a2 2 0 002-2V6" />
+            </svg>
+          </span>
+          <span className="flex flex-col leading-tight">
+            <span className="font-serif text-sm font-bold text-[#3a2540] group-hover:text-gold-700">ゴミ箱</span>
+            <span className="text-xs text-[#6a5570]">削除したレコードの復元・完全削除。</span>
+          </span>
+          <span aria-hidden className="ml-auto text-gold-400 transition-transform group-hover:translate-x-1">→</span>
+        </Link>
+
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TABLE_KEYS.map((key) => {
             const cfg = TABLES[key]

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useActionState, useEffect, useRef } from "react"
-import { getTableConfig, type Field } from "@/lib/admin/tables"
+import { type Field } from "@/lib/admin/tables"
 import type { FormState } from "@/lib/admin/crud-actions"
 import ChipMultiSelect from "./ChipMultiSelect"
 import ImageField from "./ImageField"
@@ -44,6 +44,9 @@ function toInputValue(field: Field, value: unknown): string {
     case "date":
       // "2026-06-04T..." → "2026-06-04"
       return String(value).slice(0, 10)
+    case "datetime":
+      // timestamptz → datetime-local 用 "YYYY-MM-DDTHH:mm"
+      return String(value).slice(0, 16)
     case "csv":
       return Array.isArray(value) ? value.join(", ") : String(value)
     case "json":
@@ -72,8 +75,6 @@ export default function RecordForm({
   const slugRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const statusRef = useRef<HTMLInputElement>(null)
-  // 投稿方法ボタン（下書き/予約/即時公開）を出すテーブルか。
-  const postMethods = getTableConfig(table)?.postMethods === true
 
   // 新規作成（複製含む）で slug が空なら自動採番する。SSR は空のまま描画し、
   // マウント後にクライアントで埋めることでハイドレーション不整合を避ける。
@@ -96,9 +97,7 @@ export default function RecordForm({
         }
       }}
     >
-      {fields
-        .filter((field) => !(postMethods && field.name === "status"))
-        .map((field) => {
+      {fields.map((field) => {
         const value = initial ? initial[field.name] : undefined
         const inputValue = toInputValue(field, value)
         // boolean は基本 false 初期。ただし is_active（公開フラグ・DB既定 true）は
@@ -222,10 +221,19 @@ export default function RecordForm({
             {(field.type === "text" ||
               field.type === "csv" ||
               field.type === "number" ||
-              field.type === "date") && (
+              field.type === "date" ||
+              field.type === "datetime") && (
               <input
                 ref={field.name === "slug" ? slugRef : undefined}
-                type={field.type === "date" ? "date" : field.type === "number" ? "number" : "text"}
+                type={
+                  field.type === "date"
+                    ? "date"
+                    : field.type === "datetime"
+                      ? "datetime-local"
+                      : field.type === "number"
+                        ? "number"
+                        : "text"
+                }
                 name={field.name}
                 defaultValue={inputValue}
                 placeholder={field.placeholder}
@@ -247,71 +255,46 @@ export default function RecordForm({
       )}
 
       <div className="flex flex-wrap items-center gap-3 pt-2">
+        <span className="w-full text-xs font-medium tracking-wider text-gold-700">
+          公開操作
+          <span className="ml-2 font-normal text-[#9a8aa0]">
+            現在: {(initial?.publish_status as string) === "published" ? "公開中" : "下書き"}
+          </span>
+        </span>
+        {/* 公開状態はボタンで hidden に書き込んで送信（下書き/公開）。 */}
+        <input
+          type="hidden"
+          name="publish_status"
+          ref={statusRef}
+          defaultValue={(initial?.publish_status as string) ?? "draft"}
+        />
+        <button
+          type="submit"
+          disabled={pending}
+          onClick={() => { if (statusRef.current) statusRef.current.value = "draft" }}
+          className="rounded-full border border-gold-200 bg-white px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50 disabled:opacity-50"
+        >
+          下書き保存
+        </button>
+        <button
+          type="submit"
+          disabled={pending}
+          onClick={() => { if (statusRef.current) statusRef.current.value = "published" }}
+          className="rounded-full bg-gold-400 px-8 py-2.5 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
+        >
+          {pending ? "保存中…" : "公開する"}
+        </button>
         {table === "lives" ? (
-          <>
-            <LivePreview
-              formRef={formRef}
-              initial={initial}
-              submitLabel={submitLabel}
-              pending={pending}
-            />
-            <Link
-              href={cancelHref}
-              className="rounded-full border border-gold-200 px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50"
-            >
-              キャンセル
-            </Link>
-          </>
-        ) : postMethods ? (
-          <>
-            <span className="w-full text-xs font-medium tracking-wider text-gold-700">投稿方法</span>
-            <input
-              type="hidden"
-              name="status"
-              ref={statusRef}
-              defaultValue={(initial?.status as string) ?? "published"}
-            />
-            <button
-              type="submit"
-              disabled={pending}
-              onClick={() => { if (statusRef.current) statusRef.current.value = "draft" }}
-              className="rounded-full border border-gold-200 bg-white px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50 disabled:opacity-50"
-            >
-              下書き保存
-            </button>
-            <button
-              type="submit"
-              disabled={pending}
-              onClick={() => { if (statusRef.current) statusRef.current.value = "scheduled" }}
-              className="rounded-full border border-gold-300 bg-gold-50 px-6 py-2.5 text-sm font-medium text-gold-700 transition-colors hover:bg-gold-100 disabled:opacity-50"
-            >
-              予約投稿
-            </button>
-            <button
-              type="submit"
-              disabled={pending}
-              onClick={() => { if (statusRef.current) statusRef.current.value = "published" }}
-              className="rounded-full bg-gold-400 px-8 py-2.5 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
-            >
-              {pending ? "保存中…" : "即時公開"}
-            </button>
-            <RecordPreview formRef={formRef} fields={fields} submitLabel={submitLabel} pending={pending} viewOnly />
-            <Link
-              href={cancelHref}
-              className="ml-auto rounded-full border border-gold-200 px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50"
-            >
-              キャンセル
-            </Link>
-          </>
+          <LivePreview formRef={formRef} initial={initial} pending={pending} viewOnly />
         ) : (
-          <RecordPreview
-            formRef={formRef}
-            fields={fields}
-            submitLabel={submitLabel}
-            pending={pending}
-            cancelHref={cancelHref}
-          />
+          <RecordPreview formRef={formRef} fields={fields} submitLabel={submitLabel} pending={pending} viewOnly />
         )}
+        <Link
+          href={cancelHref}
+          className="ml-auto rounded-full border border-gold-200 px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50"
+        >
+          キャンセル
+        </Link>
       </div>
     </form>
   )

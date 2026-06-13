@@ -265,6 +265,8 @@ export async function getLives(): Promise<Live[]> {
   const { data, error } = await read()
     .from("lives")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("period_start", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
   if (error || !data) return []
@@ -276,6 +278,8 @@ export async function getLiveBySlug(slug: string): Promise<Live | undefined> {
     .from("lives")
     .select("*")
     .eq("slug", slug)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toLive(data as Row)
@@ -323,25 +327,27 @@ function toNewsPost(r: Row): NewsPost {
   }
 }
 
-/** 公開 NEWS：status=published のみ、公開日時の新しい順。 */
+/** 公開 NEWS：publish_status=published のみ、公開日時の新しい順。 */
 export async function getNews(): Promise<NewsPost[]> {
   const { data, error } = await read()
     .from("news")
     .select("*")
-    .eq("status", "published")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
   if (error || !data) return []
   return (data as Row[]).map(toNewsPost)
 }
 
-/** 公開 NEWS 単体取得（status=published のみ）。 */
+/** 公開 NEWS 単体取得（publish_status=published のみ）。 */
 export async function getNewsById(id: string): Promise<NewsPost | undefined> {
   const { data, error } = await read()
     .from("news")
     .select("*")
     .eq("id", id)
-    .eq("status", "published")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toNewsPost(data as Row)
@@ -369,19 +375,20 @@ export async function getSchedules(): Promise<ScheduleEvent[]> {
   const { data, error } = await read()
     .from("schedules")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("start_at", { ascending: true, nullsFirst: false })
   if (error || !data) return []
   return (data as Row[]).map(toScheduleEvent)
 }
 
 /**
- * 公開 /live（非公式ファンサイト）用。is_active=false と 10周年（is_10th=true）を
- * 除外したライブを新しい順で返す。groupSlug を渡すとそのグループだけに絞り込む。
+ * 公開 /live（非公式ファンサイト）用。10周年（is_10th=true）を除外したライブを
+ * 新しい順で返す（公開判定 publish_status は getLives 側で適用済み）。
+ * groupSlug を渡すとそのグループだけに絞り込む。
  */
 export async function getActiveLives(groupSlug?: string): Promise<Live[]> {
-  const lives = (await getLives()).filter(
-    (l) => l.isActive !== false && l.is10th !== true,
-  )
+  const lives = (await getLives()).filter((l) => l.is10th !== true)
   return groupSlug ? lives.filter((l) => l.groupSlug === groupSlug) : lives
 }
 
@@ -400,6 +407,8 @@ export async function getGoods(): Promise<Goods[]> {
   const { data, error } = await read()
     .from("goods")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })
   if (error || !data) return []
@@ -411,6 +420,8 @@ export async function getGoodsBySlug(slug: string): Promise<Goods | undefined> {
     .from("goods")
     .select("*")
     .eq("slug", slug)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toGoods(data as Row)
@@ -421,6 +432,8 @@ export async function getEvents(): Promise<Event[]> {
   const { data, error } = await read()
     .from("events")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })
   if (error || !data) return []
@@ -432,6 +445,8 @@ export async function getEventBySlug(slug: string): Promise<Event | undefined> {
     .from("events")
     .select("*")
     .eq("slug", slug)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toEvent(data as Row)
@@ -442,6 +457,8 @@ export async function getSongs(): Promise<Song[]> {
   const { data, error } = await read()
     .from("songs")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })
   if (error || !data) return []
@@ -453,6 +470,8 @@ export async function getSongBySlug(slug: string): Promise<Song | undefined> {
     .from("songs")
     .select("*")
     .eq("slug", slug)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toSong(data as Row)
@@ -463,6 +482,8 @@ export async function getAlbums(): Promise<Album[]> {
   const { data, error } = await read()
     .from("albums")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })
   if (error || !data) return []
@@ -474,6 +495,8 @@ export async function getAlbumBySlug(slug: string): Promise<Album | undefined> {
     .from("albums")
     .select("*")
     .eq("slug", slug)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toAlbum(data as Row)
@@ -484,6 +507,8 @@ export async function getMagazines(): Promise<Magazine[]> {
   const { data, error } = await read()
     .from("magazines")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })
   if (error || !data) return []
@@ -495,6 +520,8 @@ export async function getMagazineById(id: string): Promise<Magazine | undefined>
     .from("magazines")
     .select("*")
     .eq("id", id)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toMagazine(data as Row)
@@ -516,6 +543,8 @@ export async function getVisuals(): Promise<Visual[]> {
   const { data, error } = await read()
     .from("visuals")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("release_date", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
   if (error || !data) return []
@@ -527,6 +556,8 @@ export async function getMedia(): Promise<Media[]> {
   const { data, error } = await read()
     .from("media")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true })
   if (error || !data) return []
@@ -553,6 +584,8 @@ export async function getProjects(): Promise<Project[]> {
   const { data, error } = await read()
     .from("projects")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("publish_date", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
   if (error || !data) return []
@@ -564,6 +597,8 @@ export async function getProjectBySlug(slug: string): Promise<Project | undefine
     .from("projects")
     .select("*")
     .eq("slug", slug)
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .maybeSingle()
   if (error || !data) return undefined
   return toProject(data as Row)
@@ -608,9 +643,15 @@ export async function getMovies(): Promise<Movie[]> {
     read()
       .from("movies")
       .select("*")
+      .eq("publish_status", "published")
+      .is("deleted_at", null)
       .order("publish_date", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false }),
-    read().from("songs").select("*"),
+    read()
+      .from("songs")
+      .select("*")
+      .eq("publish_status", "published")
+      .is("deleted_at", null),
   ])
 
   const movies = moviesRes.error || !moviesRes.data ? [] : (moviesRes.data as Row[]).map(toMovie)
@@ -652,6 +693,8 @@ export async function getStreams(): Promise<Stream[]> {
   const { data, error } = await read()
     .from("streams")
     .select("*")
+    .eq("publish_status", "published")
+    .is("deleted_at", null)
     .order("publish_date", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
   if (error || !data) return []
@@ -709,10 +752,16 @@ export async function searchAll(query: string): Promise<SearchGroup[]> {
   const pat = `%${term}%`
   const client = read()
 
-  // 指定列の OR ilike で 1 テーブルを検索する。
+  // 指定列の OR ilike で 1 テーブルを検索する（公開・未削除のみ）。
   const run = async (table: string, cols: string[]): Promise<Row[]> => {
     const or = cols.map((c) => `${c}.ilike.${pat}`).join(",")
-    const { data, error } = await client.from(table).select("*").or(or).limit(50)
+    const { data, error } = await client
+      .from(table)
+      .select("*")
+      .eq("publish_status", "published")
+      .is("deleted_at", null)
+      .or(or)
+      .limit(50)
     if (error || !data) return []
     return data as Row[]
   }

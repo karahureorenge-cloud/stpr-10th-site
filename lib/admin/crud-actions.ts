@@ -5,6 +5,8 @@ import { redirect } from "next/navigation"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getTableConfig, type Field } from "@/lib/admin/tables"
 import { assertAdmin } from "@/lib/admin/auth-actions"
+import { loadRecordById } from "@/lib/admin/record-source"
+import { logChange, scopeOf } from "@/lib/admin/change-log"
 import { getLiveStatus } from "@/lib/utils"
 import { toLive } from "@/lib/repo"
 import type { Live } from "@/data/lives"
@@ -17,6 +19,45 @@ function applyLiveStatus(record: Record<string, unknown>): void {
 }
 
 export type FormState = { error?: string }
+export type ActionResult = { error?: string; ok?: boolean }
+
+/** publish_status を draft/published に正規化する（ボタン由来の hidden 値）。 */
+function parsePublishStatus(formData: FormData): "draft" | "published" {
+  return String(formData.get("publish_status") ?? "draft") === "published" ? "published" : "draft"
+}
+
+/** diff 用に値をコンパクト化（巨大な jsonb はプレースホルダに）。 */
+function snapshot(v: unknown): unknown {
+  try {
+    const s = JSON.stringify(v ?? null)
+    return s.length > 1000 ? "[large]" : (v ?? null)
+  } catch {
+    return String(v)
+  }
+}
+function stable(v: unknown): string {
+  try {
+    return JSON.stringify(v ?? null)
+  } catch {
+    return String(v)
+  }
+}
+
+/** 旧行と新レコードを比較し、変わったキーだけ before/after を返す。 */
+function computeDiff(
+  oldRow: Record<string, unknown> | undefined,
+  newRec: Record<string, unknown>,
+): { before: Record<string, unknown>; after: Record<string, unknown> } {
+  const before: Record<string, unknown> = {}
+  const after: Record<string, unknown> = {}
+  for (const k of Object.keys(newRec)) {
+    if (stable(oldRow?.[k]) !== stable(newRec[k])) {
+      before[k] = snapshot(oldRow?.[k])
+      after[k] = snapshot(newRec[k])
+    }
+  }
+  return { before, after }
+}
 
 /** FormData の 1 フィールドをスキーマに従って DB 値へ変換する。 */
 function parseField(field: Field, formData: FormData): unknown {
@@ -94,7 +135,9 @@ function parseField(field: Field, formData: FormData): unknown {
       return s === "" ? null : s
     }
 
-    case "date": {
+    case "date":
+    case "datetime": {
+      // datetime-local は "YYYY-MM-DDTHH:mm"。空は null。
       const s = String(raw ?? "").trim()
       return s === "" ? null : s
     }
@@ -150,7 +193,7 @@ export async function buildLivePreview(
   try {
     const record = buildRecord("lives", formData)
     applyLiveStatus(record)
-    // プレビューでは非公開（is_active=false）でも中身を確認したいので、そのまま描画する。
+    // プレビューでは非公開（下書き）でも中身を確認したいので、そのまま描画する。
     return { live: toLive(record), record }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "プレビューの生成に失敗しました。" }
@@ -177,6 +220,9 @@ export async function createRecord(
     return { error: e instanceof Error ? e.message : "入力エラー" }
   }
 
+  // 公開状態は公開ボタン（hidden publish_status）で決定。
+  record.publish_status = parsePublishStatus(formData)
+
   // lives は管理画面のスコープで is_10th を自動設定する
   // （/admin=非公式ファンサイト=false / /stpr-10th-anniversary/admin=10周年=true）。
   // status は period_start / period_end から自動計算して上書きする。
@@ -192,6 +238,18 @@ export async function createRecord(
   if (!data || data.length === 0) {
     return { error: "保存できませんでした（書き込み権限がありません）。サーバーの SUPABASE_SECRET_KEY が secret(service-role) キーか確認してください。" }
   }
+
+  const cfg = getTableConfig(tableKey)
+  await logChange({
+    table: tableKey,
+    recordId: String((data[0] as { id: string }).id),
+    changedBy: scopeOf(basePath),
+    action: "create",
+    diff: {
+      title: cfg ? record[cfg.titleField] ?? null : null,
+      publish_status: record.publish_status,
+    },
+  })
 
   revalidatePath(`${basePath}/${tableKey}`)
   redirect(`${basePath}/${tableKey}`)
@@ -218,12 +276,15 @@ export async function updateRecord(
     return { error: e instanceof Error ? e.message : "入力エラー" }
   }
 
-  // lives は管理画面のスコープで is_10th を固定する（編集でも別スコープへ移動させない）。
-  // status は period_start / period_end から自動計算して上書きする。
+  record.publish_status = parsePublishStatus(formData)
+
   if (tableKey === "lives") {
     record.is_10th = basePath.startsWith("/stpr-10th-anniversary")
     applyLiveStatus(record)
   }
+
+  // 差分・公開遷移の判定のため旧行を取得。
+  const { data: oldRow } = await loadRecordById(tableKey, id)
 
   const supabase = createAdminClient()
   // .select() で更新行を取得。0行（RLSで弾かれ/対象なし）なら無言失敗をエラー化。
@@ -233,21 +294,185 @@ export async function updateRecord(
     return { error: "更新が反映されませんでした（対象が無いか、書き込み権限がありません）。サーバーの SUPABASE_SECRET_KEY が secret(service-role) キーか確認してください。" }
   }
 
+  // 公開状態の遷移で action を決定。
+  const oldPS = typeof oldRow?.publish_status === "string" ? oldRow.publish_status : undefined
+  const newPS = record.publish_status as string
+  const action =
+    oldPS !== newPS ? (newPS === "published" ? "publish" : "unpublish") : "update"
+
+  await logChange({
+    table: tableKey,
+    recordId: id,
+    changedBy: scopeOf(basePath),
+    action,
+    diff: computeDiff(oldRow, record),
+  })
+
   revalidatePath(`${basePath}/${tableKey}`)
   redirect(`${basePath}/${tableKey}`)
 }
 
-/** 削除。bind(null, basePath, tableKey, id) で使う。 */
-export async function deleteRecord(
+/** ソフト削除（ゴミ箱へ）。理由必須。物理削除はしない。 */
+export async function softDeleteRecord(
   basePath: string,
   tableKey: string,
   id: string,
-): Promise<void> {
-  await assertAdmin()
+  reason: string,
+): Promise<ActionResult> {
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
+
+  const trimmed = (reason ?? "").trim()
+  if (!trimmed) return { error: "削除理由を入力してください。" }
+
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from(tableKey)
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("id")
+  if (error) return { error: error.message }
+  if (!data || data.length === 0) return { error: "削除できませんでした（対象が無いか権限不足）。" }
+
+  await logChange({
+    table: tableKey,
+    recordId: id,
+    changedBy: scopeOf(basePath),
+    action: "delete",
+    diff: { reason: trimmed },
+  })
+
+  revalidatePath(`${basePath}/${tableKey}`)
+  revalidatePath(`${basePath}/trash`)
+  return { ok: true }
+}
+
+/** ゴミ箱から復元。 */
+export async function restoreRecord(
+  basePath: string,
+  tableKey: string,
+  id: string,
+): Promise<ActionResult> {
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
+
+  const supabase = createAdminClient()
+  const { error } = await supabase.from(tableKey).update({ deleted_at: null }).eq("id", id)
+  if (error) return { error: error.message }
+
+  await logChange({
+    table: tableKey,
+    recordId: id,
+    changedBy: scopeOf(basePath),
+    action: "restore",
+  })
+
+  revalidatePath(`${basePath}/trash`)
+  revalidatePath(`${basePath}/${tableKey}`)
+  return { ok: true }
+}
+
+/** 完全削除（物理削除）。ゴミ箱からのみ実行する想定。 */
+export async function hardDeleteRecord(
+  basePath: string,
+  tableKey: string,
+  id: string,
+): Promise<ActionResult> {
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
 
   const supabase = createAdminClient()
   const { error } = await supabase.from(tableKey).delete().eq("id", id)
-  if (error) throw new Error(error.message)
+  if (error) return { error: error.message }
+
+  await logChange({
+    table: tableKey,
+    recordId: id,
+    changedBy: scopeOf(basePath),
+    action: "hard_delete",
+  })
+
+  revalidatePath(`${basePath}/trash`)
+  return { ok: true }
+}
+
+/** 一括: 公開状態を変更（published / draft）。 */
+export async function bulkSetPublish(
+  basePath: string,
+  tableKey: string,
+  ids: string[],
+  status: "published" | "draft",
+): Promise<ActionResult> {
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
+  if (!ids?.length) return { error: "対象が選択されていません。" }
+
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from(tableKey)
+    .update({ publish_status: status })
+    .in("id", ids)
+  if (error) return { error: error.message }
+
+  const action = status === "published" ? "publish" : "unpublish"
+  await Promise.all(
+    ids.map((id) =>
+      logChange({ table: tableKey, recordId: id, changedBy: scopeOf(basePath), action }),
+    ),
+  )
 
   revalidatePath(`${basePath}/${tableKey}`)
+  return { ok: true }
+}
+
+/** 一括: ゴミ箱へ移動。理由必須。 */
+export async function bulkTrash(
+  basePath: string,
+  tableKey: string,
+  ids: string[],
+  reason: string,
+): Promise<ActionResult> {
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
+  if (!ids?.length) return { error: "対象が選択されていません。" }
+  const trimmed = (reason ?? "").trim()
+  if (!trimmed) return { error: "削除理由を入力してください。" }
+
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from(tableKey)
+    .update({ deleted_at: new Date().toISOString() })
+    .in("id", ids)
+  if (error) return { error: error.message }
+
+  await Promise.all(
+    ids.map((id) =>
+      logChange({
+        table: tableKey,
+        recordId: id,
+        changedBy: scopeOf(basePath),
+        action: "delete",
+        diff: { reason: trimmed },
+      }),
+    ),
+  )
+
+  revalidatePath(`${basePath}/${tableKey}`)
+  revalidatePath(`${basePath}/trash`)
+  return { ok: true }
 }

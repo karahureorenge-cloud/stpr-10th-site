@@ -34,6 +34,10 @@ export async function loadDuplicateSource(
     delete row.id
     delete row.created_at
     delete row.updated_at
+    // 複製は下書き・予約なし・未削除で開始する。
+    row.publish_status = "draft"
+    row.publish_at = null
+    row.deleted_at = null
     // slug は空に（重複防止）。
     row.slug = ""
     // タイトルに（コピー）を付与。

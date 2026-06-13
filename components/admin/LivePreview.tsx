@@ -79,13 +79,16 @@ type Mode = "view" | "confirm"
 export default function LivePreview({
   formRef,
   initial,
-  submitLabel,
+  submitLabel = "更新する",
   pending,
+  viewOnly = false,
 }: {
   formRef: React.RefObject<HTMLFormElement | null>
   initial?: Record<string, unknown>
-  submitLabel: string
+  submitLabel?: string
   pending: boolean
+  /** true で送信ボタンを出さず「プレビュー」のみ（送信は外側の公開ボタンが担う）。 */
+  viewOnly?: boolean
 }) {
   const [open, setOpen] = useState<Mode | null>(null)
   const [state, setState] = useState<LivePreviewState>({})
@@ -111,14 +114,16 @@ export default function LivePreview({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => run("confirm")}
-        disabled={pending || loading}
-        className="rounded-full bg-gold-400 px-8 py-2.5 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
-      >
-        {pending ? "保存中…" : submitLabel}
-      </button>
+      {!viewOnly && (
+        <button
+          type="button"
+          onClick={() => run("confirm")}
+          disabled={pending || loading}
+          className="rounded-full bg-gold-400 px-8 py-2.5 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
+        >
+          {pending ? "保存中…" : submitLabel}
+        </button>
+      )}
       <button
         type="button"
         onClick={() => run("view")}

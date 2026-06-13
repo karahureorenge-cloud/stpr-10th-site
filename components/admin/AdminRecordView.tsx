@@ -1,6 +1,7 @@
 import Link from "next/link"
 import AdminHeader from "@/components/admin/AdminHeader"
 import RecordForm from "@/components/admin/RecordForm"
+import HistoryPanel from "@/components/admin/HistoryPanel"
 import type { FormState } from "@/lib/admin/crud-actions"
 import type { TableConfig } from "@/lib/admin/tables"
 
@@ -76,6 +77,10 @@ export default function AdminRecordView({
             mode={mode}
           />
         </div>
+
+        {mode === "edit" && initial?.id != null && (
+          <HistoryPanel table={table} id={String(initial.id)} />
+        )}
       </main>
     </>
   )
