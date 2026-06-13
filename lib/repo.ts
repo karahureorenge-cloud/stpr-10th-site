@@ -63,7 +63,7 @@ function jsonArr<T>(v: unknown): T[] {
 
 // === マッピング（DB row → ドメイン型） ===
 
-function toLive(r: Record<string, unknown>): Live {
+export function toLive(r: Record<string, unknown>): Live {
   return {
     slug: String(r.slug),
     title: String(r.title),

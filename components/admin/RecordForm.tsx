@@ -8,6 +8,7 @@ import ImageField from "./ImageField"
 import ImageListField from "./ImageListField"
 import RepeaterField from "./RepeaterField"
 import RichTextEditor from "./RichTextEditor"
+import LivePreview, { DefaultSubmit } from "./LivePreview"
 
 // 複数コントロールを内包し、<label> で包むと余白クリックが内部の最初の
 // ボタン（行削除等）を発火させてしまう型。これらは <div> でラップする。
@@ -67,6 +68,7 @@ export default function RecordForm({
 }: Props) {
   const [state, formAction, pending] = useActionState(action, {})
   const slugRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // 新規作成（複製含む）で slug が空なら自動採番する。SSR は空のまま描画し、
   // マウント後にクライアントで埋めることでハイドレーション不整合を避ける。
@@ -78,6 +80,7 @@ export default function RecordForm({
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       className="flex flex-col gap-5"
       onKeyDown={(e) => {
@@ -246,20 +249,25 @@ export default function RecordForm({
         </p>
       )}
 
-      <div className="flex items-center gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-gold-400 px-8 py-2.5 font-display text-sm tracking-[0.15em] text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
-        >
-          {pending ? "保存中…" : submitLabel}
-        </button>
-        <Link
-          href={cancelHref}
-          className="rounded-full border border-gold-200 px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50"
-        >
-          キャンセル
-        </Link>
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        {table === "lives" ? (
+          <>
+            <LivePreview
+              formRef={formRef}
+              initial={initial}
+              submitLabel={submitLabel}
+              pending={pending}
+            />
+            <Link
+              href={cancelHref}
+              className="rounded-full border border-gold-200 px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50"
+            >
+              キャンセル
+            </Link>
+          </>
+        ) : (
+          <DefaultSubmit submitLabel={submitLabel} pending={pending} cancelHref={cancelHref} />
+        )}
       </div>
     </form>
   )

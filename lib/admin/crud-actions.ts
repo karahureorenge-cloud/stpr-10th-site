@@ -6,6 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { getTableConfig, type Field } from "@/lib/admin/tables"
 import { assertAdmin } from "@/lib/admin/auth-actions"
 import { getLiveStatus } from "@/lib/utils"
+import { toLive } from "@/lib/repo"
+import type { Live } from "@/data/lives"
 
 /** lives の status を period_start / period_end から自動計算してレコードに設定する。 */
 function applyLiveStatus(record: Record<string, unknown>): void {
@@ -127,6 +129,32 @@ function buildRecord(tableKey: string, formData: FormData): Record<string, unkno
     record[field.name] = value
   }
   return record
+}
+
+export type LivePreviewState = {
+  live?: Live
+  /** DB 形（snake_case）の新レコード。保存済みレコードとの差分判定に使う。 */
+  record?: Record<string, unknown>
+  error?: string
+}
+
+/**
+ * 保存せずに、フォームの現在値を公開ページ用の Live に変換して返す（lives 専用・プレビュー用）。
+ * useActionState から呼ぶ。あわせて DB 形の新レコードも返し、クライアントで保存済みと差分比較する。
+ */
+export async function buildLivePreview(
+  _prevState: LivePreviewState,
+  formData: FormData,
+): Promise<LivePreviewState> {
+  await assertAdmin()
+  try {
+    const record = buildRecord("lives", formData)
+    applyLiveStatus(record)
+    // プレビューでは非公開（is_active=false）でも中身を確認したいので、そのまま描画する。
+    return { live: toLive(record), record }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "プレビューの生成に失敗しました。" }
+  }
 }
 
 /** 新規作成。bind(null, basePath, tableKey) で使う。 */
