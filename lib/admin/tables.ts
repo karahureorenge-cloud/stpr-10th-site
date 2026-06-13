@@ -128,6 +128,7 @@ export const TABLES: Record<string, TableConfig> = {
     fields: [
       { name: "title", label: "タイトル", type: "text", required: true },
       { name: "body", label: "本文", type: "richtext" },
+      { name: "tweet", label: "ツイート文（拡散用）", type: "textarea", placeholder: "🔗記事はこちら→[記事URL] #ハッシュタグ", help: "X投稿用の文面。自動生成機能から保存した場合はここに入ります。" },
       { name: "group_slugs", label: "グループ（複数選択可）", type: "multiselect", options: GROUP_OPTIONS, optionLabels: GROUP_OPTION_LABELS },
       {
         name: "category",

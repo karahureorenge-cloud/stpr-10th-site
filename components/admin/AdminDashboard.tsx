@@ -54,6 +54,29 @@ export default async function AdminDashboard({ basePath, label, caption }: Props
           {caption ?? "編集したいテーブルを選択してください。"}
         </p>
 
+        <Link
+          href={`${basePath}/news-generate`}
+          className="group mt-6 flex items-center gap-4 rounded-2xl border border-gold-300 bg-gradient-to-r from-gold-50 to-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.12)]"
+        >
+          <span
+            aria-hidden
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-400 text-white"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3l1.9 5.8L19.7 9l-4.6 3.4 1.7 5.8L12 14.8 7.2 18.2l1.7-5.8L4.3 9l5.8-.2L12 3z" />
+            </svg>
+          </span>
+          <span className="flex flex-col leading-tight">
+            <span className="font-serif text-base font-bold text-[#3a2540] group-hover:text-gold-700">
+              NEWS記事を自動生成
+            </span>
+            <span className="text-xs text-[#6a5570]">
+              PR文を貼り付けて Claude で記事＋ツイート文を生成し、下書き保存します。
+            </span>
+          </span>
+          <span aria-hidden className="ml-auto text-gold-400 transition-transform group-hover:translate-x-1">→</span>
+        </Link>
+
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TABLE_KEYS.map((key) => {
             const cfg = TABLES[key]
