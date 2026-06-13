@@ -9,7 +9,8 @@ import ImageField from "./ImageField"
 import ImageListField from "./ImageListField"
 import RepeaterField from "./RepeaterField"
 import RichTextEditor from "./RichTextEditor"
-import LivePreview, { DefaultSubmit } from "./LivePreview"
+import LivePreview from "./LivePreview"
+import RecordPreview from "./RecordPreview"
 
 // 複数コントロールを内包し、<label> で包むと余白クリックが内部の最初の
 // ボタン（行削除等）を発火させてしまう型。これらは <div> でラップする。
@@ -294,6 +295,7 @@ export default function RecordForm({
             >
               {pending ? "保存中…" : "即時公開"}
             </button>
+            <RecordPreview formRef={formRef} fields={fields} submitLabel={submitLabel} pending={pending} viewOnly />
             <Link
               href={cancelHref}
               className="ml-auto rounded-full border border-gold-200 px-6 py-2.5 text-sm text-[#6a5570] transition-colors hover:bg-gold-50"
@@ -302,7 +304,13 @@ export default function RecordForm({
             </Link>
           </>
         ) : (
-          <DefaultSubmit submitLabel={submitLabel} pending={pending} cancelHref={cancelHref} />
+          <RecordPreview
+            formRef={formRef}
+            fields={fields}
+            submitLabel={submitLabel}
+            pending={pending}
+            cancelHref={cancelHref}
+          />
         )}
       </div>
     </form>

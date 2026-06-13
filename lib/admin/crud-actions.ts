@@ -186,8 +186,12 @@ export async function createRecord(
   }
 
   const supabase = createAdminClient()
-  const { error } = await supabase.from(tableKey).insert(record)
+  // .select() で挿入行を取得。0行（RLSで弾かれ等）なら無言失敗をエラー化。
+  const { data, error } = await supabase.from(tableKey).insert(record).select("id")
   if (error) return { error: error.message }
+  if (!data || data.length === 0) {
+    return { error: "保存できませんでした（書き込み権限がありません）。サーバーの SUPABASE_SECRET_KEY が secret(service-role) キーか確認してください。" }
+  }
 
   revalidatePath(`${basePath}/${tableKey}`)
   redirect(`${basePath}/${tableKey}`)
@@ -222,8 +226,12 @@ export async function updateRecord(
   }
 
   const supabase = createAdminClient()
-  const { error } = await supabase.from(tableKey).update(record).eq("id", id)
+  // .select() で更新行を取得。0行（RLSで弾かれ/対象なし）なら無言失敗をエラー化。
+  const { data, error } = await supabase.from(tableKey).update(record).eq("id", id).select("id")
   if (error) return { error: error.message }
+  if (!data || data.length === 0) {
+    return { error: "更新が反映されませんでした（対象が無いか、書き込み権限がありません）。サーバーの SUPABASE_SECRET_KEY が secret(service-role) キーか確認してください。" }
+  }
 
   revalidatePath(`${basePath}/${tableKey}`)
   redirect(`${basePath}/${tableKey}`)
