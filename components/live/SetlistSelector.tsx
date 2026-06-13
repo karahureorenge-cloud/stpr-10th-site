@@ -16,6 +16,9 @@ const THEME: Record<
     memo: string
     note: string
     hint: string
+    changedRow: string // 変更曲の行
+    changedTitle: string // 変更曲のタイトル
+    badge: string // 「変更」バッジ
   }
 > = {
   gold: {
@@ -27,6 +30,9 @@ const THEME: Record<
     memo: "text-[#9a8aa0]",
     note: "rounded-lg border border-gold-200 bg-gold-50/70 px-3 py-2 text-xs text-[#6a5570]",
     hint: "text-[#9a8aa0]",
+    changedRow: "bg-gold-100/70",
+    changedTitle: "font-bold text-gold-700",
+    badge: "bg-gold-200 text-gold-800",
   },
   plain: {
     active: "bg-accent-600 text-white",
@@ -37,7 +43,15 @@ const THEME: Record<
     memo: "text-gray-400",
     note: "rounded-lg border border-accent-100 bg-accent-50/60 px-3 py-2 text-xs text-gray-600",
     hint: "text-gray-400",
+    changedRow: "bg-accent-50",
+    changedTitle: "font-bold text-accent-700",
+    badge: "bg-accent-100 text-accent-700",
   },
+}
+
+/** タイトル比較用の正規化（空白除去）。 */
+function normTitle(s?: string): string {
+  return (s ?? "").replace(/\s+/g, "").trim()
 }
 
 type Tab = {
@@ -88,6 +102,18 @@ export default function SetlistSelector({
   const idx = Math.min(active, tabs.length - 1)
   const current = tabs[idx]
 
+  // 自前セトリのタブは、基本セトリと曲番号で突き合わせて「変更された曲」を判定する。
+  const baseByNum = new Map<number, string>()
+  for (const it of base ?? []) {
+    if (typeof it.trackNumber === "number") baseByNum.set(it.trackNumber, normTitle(it.title))
+  }
+  const isDiffTab = current.key !== "__base__" && !current.usesBase && hasBase
+  const isChanged = (s: SetlistItem): boolean => {
+    if (!isDiffTab || typeof s.trackNumber !== "number") return false
+    if (!baseByNum.has(s.trackNumber)) return true // 基本セトリに無い＝追加曲
+    return baseByNum.get(s.trackNumber) !== normTitle(s.title)
+  }
+
   // 区分（section）ごとにグループ化（未指定=本編）。出現順を維持し、各区分内は曲番号順。
   const order: string[] = []
   const groups: Record<string, SetlistItem[]> = {}
@@ -124,7 +150,9 @@ export default function SetlistSelector({
         </div>
       )}
 
-      {current.note && (
+      {/* 変更点メモは「自前セトリが無い（基本セトリ流用）」公演のみ表示。
+          自前セトリがある公演は下の色分け（変更曲ハイライト）で示す。 */}
+      {current.note && current.usesBase && (
         <p className={`mb-2 ${t.note}`}>
           <span className="font-bold">変更点：</span>
           <span className="whitespace-pre-wrap">{current.note}</span>
@@ -137,6 +165,13 @@ export default function SetlistSelector({
         </p>
       )}
 
+      {isDiffTab && hasItems && (
+        <p className={`mb-1.5 text-[11px] ${t.hint}`}>
+          ※ <span className={`rounded px-1 py-0.5 font-bold ${t.badge}`}>色付き</span> ＝
+          基本セトリから変更された曲
+        </p>
+      )}
+
       {hasItems && (
         <div className="space-y-3">
           {order.map((sec) => (
@@ -145,17 +180,32 @@ export default function SetlistSelector({
                 <p className={`mb-1 text-[11px] font-bold ${t.hint}`}>{sec}</p>
               )}
               <ol className={t.list}>
-                {groups[sec].map((s, j) => (
-                  <li key={j} className="flex items-center gap-3 rounded p-1.5">
-                    <span className={`w-8 shrink-0 text-right text-xs ${t.num}`}>
-                      {typeof s.trackNumber === "number"
-                        ? String(s.trackNumber).padStart(2, "0")
-                        : "－"}
-                    </span>
-                    <span className={`flex-1 text-sm ${t.title}`}>{s.title || "?"}</span>
-                    {s.memo && <span className={`text-xs ${t.memo}`}>{s.memo}</span>}
-                  </li>
-                ))}
+                {groups[sec].map((s, j) => {
+                  const changed = isChanged(s)
+                  return (
+                    <li
+                      key={j}
+                      className={`flex items-center gap-3 rounded p-1.5 ${changed ? t.changedRow : ""}`}
+                    >
+                      <span className={`w-8 shrink-0 text-right text-xs ${t.num}`}>
+                        {typeof s.trackNumber === "number"
+                          ? String(s.trackNumber).padStart(2, "0")
+                          : "－"}
+                      </span>
+                      <span className={`flex-1 text-sm ${changed ? t.changedTitle : t.title}`}>
+                        {s.title || "?"}
+                      </span>
+                      {changed && (
+                        <span
+                          className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${t.badge}`}
+                        >
+                          変更
+                        </span>
+                      )}
+                      {s.memo && <span className={`text-xs ${t.memo}`}>{s.memo}</span>}
+                    </li>
+                  )
+                })}
               </ol>
             </div>
           ))}

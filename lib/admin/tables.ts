@@ -381,7 +381,7 @@ export const TABLES: Record<string, TableConfig> = {
         name: "show_setlists",
         label: "公演ごとのセットリスト",
         type: "repeater",
-        help: "公演ごとにセトリが変わる場合に使用。①ちょっとした変更や時間押しのカットは「変更点メモ」だけでOK（基本セトリ＋メモを表示）。②大きく変わる場合は「基本セトリをコピー」して曲を直してください。",
+        help: "公演ごとにセトリが変わる場合に使用。①時間押しのカット等は「変更点メモ」だけでOK（基本セトリ＋メモを表示）。②曲が入れ替わる場合は「基本セトリをコピー」して曲を直すと、基本セトリと自動で突き合わせて変わった曲が色分け表示されます（メモは不要）。",
         itemFields: [
           { name: "showRef", label: "対象公演", type: "select", optionsSource: "shows" },
           {
