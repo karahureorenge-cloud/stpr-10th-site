@@ -52,7 +52,8 @@ export default function ScheduleView({ today, events }: { today: string; events:
     for (const arr of map.values()) arr.sort((a, b) => a.start.localeCompare(b.start))
     return map
   }, [visible])
-  const eventDays = useMemo(() => new Set(events.map((e) => dateKey(e.start))), [events])
+  // ミニカレンダーのドットもフィルタ後（visible）に揃える（絞り込みと不一致にしない）。
+  const eventDays = useMemo(() => new Set(visible.map((e) => dateKey(e.start))), [visible])
 
   const toggle = <T,>(set: Set<T>, val: T): Set<T> => {
     const next = new Set(set)

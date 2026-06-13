@@ -42,7 +42,8 @@ export default function NewsView({ posts }: { posts: NewsPost[] }) {
     [posts, group, cat],
   )
 
-  const breaking = posts.filter((p) => p.isBreaking).slice(0, 4)
+  // 速報もグループ/カテゴリ絞り込みに追従（フィーチャー/一覧と整合）。
+  const breaking = filtered.filter((p) => p.isBreaking).slice(0, 4)
   const featured = filtered.find((p) => p.isFeatured) ?? filtered[0]
   const rest = filtered.filter((p) => p.id !== featured?.id)
 

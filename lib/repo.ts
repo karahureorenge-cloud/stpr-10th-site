@@ -19,7 +19,7 @@ import type {
   LiveVideo,
 } from "@/data/lives"
 import type { Goods } from "@/data/goods"
-import type { GroupSlug } from "@/data/groups"
+import { GROUPS, type GroupSlug } from "@/data/groups"
 import type { NewsPost, NewsCategory } from "@/data/newsPosts"
 import type { ScheduleEvent, ScheduleType } from "@/data/scheduleEvents"
 import type {
@@ -283,11 +283,20 @@ export async function getLiveBySlug(slug: string): Promise<Live | undefined> {
 
 // === NEWS ===
 const NEWS_CATS = new Set(["live", "goods", "ticket", "media", "other"])
+const VALID_GROUP_SLUGS = new Set<string>(GROUPS.map((g) => g.slug))
+
+/** 有効な GroupSlug を取り出す（未知の slug は除外し、無ければ既定）。 */
+function pickGroupSlug(candidates: unknown[]): GroupSlug {
+  for (const c of candidates) {
+    if (typeof c === "string" && VALID_GROUP_SLUGS.has(c)) return c as GroupSlug
+  }
+  return "Strawberry_Prince"
+}
 
 /** richtext(HTML) → プレーンテキスト（ブロック終端を改行に）。 */
 function htmlToPlain(html: string): string {
   return html
-    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, "\n")
+    .replace(/<\/(p|div|h[1-6]|li|tr|blockquote|section|article|header|footer|ul|ol|pre|figure)>/gi, "\n")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
     .replace(/\n{3,}/g, "\n\n")
@@ -302,7 +311,7 @@ function toNewsPost(r: Row): NewsPost {
     id: String(r.id),
     title: String(r.title ?? ""),
     category: cat,
-    groupSlug: ((groups[0] as GroupSlug) ?? "Strawberry_Prince"),
+    groupSlug: pickGroupSlug(groups),
     publishedAt: String(r.published_at ?? r.created_at ?? ""),
     excerpt: plain.replace(/\n+/g, " ").slice(0, 90),
     body: plain,
@@ -346,7 +355,7 @@ function toScheduleEvent(r: Row): ScheduleEvent {
   return {
     id: String(r.id),
     title: String(r.title ?? ""),
-    groupSlug: ((typeof r.group_slug === "string" ? r.group_slug : "Strawberry_Prince") as GroupSlug),
+    groupSlug: pickGroupSlug([r.group_slug]),
     type: t,
     start: String(r.start_at ?? ""),
     end: typeof r.end_at === "string" && r.end_at ? r.end_at : undefined,

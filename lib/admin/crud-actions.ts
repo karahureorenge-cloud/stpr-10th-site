@@ -164,7 +164,11 @@ export async function createRecord(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await assertAdmin()
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
 
   let record: Record<string, unknown>
   try {
@@ -197,7 +201,11 @@ export async function updateRecord(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await assertAdmin()
+  try {
+    await assertAdmin()
+  } catch {
+    return { error: "認証が切れています。再度ログインしてください。" }
+  }
 
   let record: Record<string, unknown>
   try {

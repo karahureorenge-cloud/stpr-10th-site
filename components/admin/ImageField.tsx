@@ -197,6 +197,9 @@ function MultiImageField({ name, table, initialValue, compact, multiValue, onMul
     if (controlled) onMultiChange!(next)
     else setInternal(next)
   }
+  // await を挟む処理で最新の urls を参照するための ref（stale closure 回避）。
+  const urlsRef = useRef<string[]>(urls)
+  urlsRef.current = urls
 
   const [uploading, setUploading] = useState(false)
   const [ingestingIdx, setIngestingIdx] = useState<number | null>(null)
@@ -234,7 +237,8 @@ function MultiImageField({ name, table, initialValue, compact, multiValue, onMul
     setIngestingIdx(i)
     const res = await ingestImageUrl(v)
     if (res.error) setError(res.error)
-    else if (res.url) updateAt(i, res.url)
+    // await 後は最新の urls（urlsRef）から差し替える（他行の編集を失わない）。
+    else if (res.url) setUrls(urlsRef.current.map((u, idx) => (idx === i ? res.url! : u)))
     setIngestingIdx(null)
   }
 

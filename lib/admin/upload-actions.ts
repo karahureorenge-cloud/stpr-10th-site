@@ -13,6 +13,7 @@ const ALLOWED_IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/webp",
   "image/gif",
+  "image/avif",
 ])
 
 export type UploadResult = { url?: string; error?: string }
@@ -34,6 +35,7 @@ const EXT_TO_MIME: Record<string, string> = {
   jpeg: "image/jpeg",
   webp: "image/webp",
   gif: "image/gif",
+  avif: "image/avif",
 }
 
 /** ファイル名の拡張子（小文字・記号除去）を返す。 */
@@ -165,6 +167,30 @@ function isStorageUrl(url: string): boolean {
   return url.includes("supabase.co") || url.includes("/storage/v1/object/")
 }
 
+/** SSRF対策：ループバック/リンクローカル/プライベートIP/localhost を拒否する。 */
+function isBlockedHost(rawUrl: string): boolean {
+  let host: string
+  try {
+    host = new URL(rawUrl).hostname.toLowerCase().replace(/^\[|\]$/g, "")
+  } catch {
+    return true
+  }
+  if (host === "localhost" || host.endsWith(".localhost")) return true
+  // IPv6 ループバック / リンクローカル / ユニークローカル
+  if (host === "::1" || host.startsWith("fe80") || host.startsWith("fc") || host.startsWith("fd")) return true
+  // IPv4 リテラル
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host)
+  if (m) {
+    const a = Number(m[1])
+    const b = Number(m[2])
+    if (a === 0 || a === 127 || a === 10) return true
+    if (a === 169 && b === 254) return true // リンクローカル（クラウドメタデータ 169.254.169.254 を含む）
+    if (a === 192 && b === 168) return true
+    if (a === 172 && b >= 16 && b <= 31) return true
+  }
+  return false
+}
+
 /**
  * 外部画像URLを media バケットへ取り込み、公開URLへ差し替える server action。
  * - 既に Supabase Storage の URL / 非 http(s)（ローカルパス等）はそのまま返す（処理しない）。
@@ -185,13 +211,27 @@ export async function ingestImageUrl(rawUrl: string): Promise<UploadResult> {
   // 既に Supabase Storage のURLなら処理しない。
   if (isStorageUrl(url)) return { url }
 
+  // SSRF対策：内部/ループバック/プライベートホストは弾く。
+  if (isBlockedHost(url)) return { error: "このホストからは取り込めません（内部/プライベートアドレス）。" }
+
   let res: Response
   try {
-    res = await fetch(url, { redirect: "follow" })
+    // リダイレクトは追跡しない（リダイレクト経由のSSRFを防ぐ）。
+    res = await fetch(url, { redirect: "manual" })
   } catch {
     return { error: "画像の取得に失敗しました（URLを確認してください）。" }
   }
+  // 3xx（リダイレクト）は追跡せずエラー。最終URLを直接指定してもらう。
+  if (res.status >= 300 && res.status < 400) {
+    return { error: "リダイレクトされるURLは取り込めません。画像の直接URLを指定してください。" }
+  }
   if (!res.ok) return { error: `画像の取得に失敗しました（HTTP ${res.status}）。` }
+
+  // Content-Length が上限超過なら全文ダウンロード前に弾く（OOM対策）。
+  const declared = Number(res.headers.get("content-length") ?? "")
+  if (Number.isFinite(declared) && declared > 10 * 1024 * 1024) {
+    return { error: "画像サイズは 10MB 以下にしてください。" }
+  }
 
   const ct = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase()
   const ext = extFromContentType(ct) ?? extFromUrl(url)
