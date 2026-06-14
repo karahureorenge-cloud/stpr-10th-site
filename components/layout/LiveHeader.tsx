@@ -39,16 +39,19 @@ function NavLink({ label, href }: { label: string; href: string }) {
 function Logo() {
   return (
     <a href="/live" className="block shrink-0 leading-none">
-      <span className="flex items-center justify-center gap-1.5 text-[10px] font-bold tracking-[0.2em] text-[#1a347e]">
-        <span className="text-[#36a3e0]">★</span>
-        非公式
-        <span className="text-[#e85298]">★</span>
+      <span className="flex items-center justify-center gap-1 text-[11px] font-extrabold tracking-[0.18em]">
+        <span className="text-[#f5c33b]">✦</span>
+        <span className="text-[#ec4899]">非公式</span>
+        <span className="text-[#f5c33b]">✦</span>
       </span>
-      <span className="mt-0.5 flex items-baseline gap-1">
-        <span className="text-[26px] font-black tracking-tight text-[#1a347e] md:text-[32px]">
-          STPR
+      <span className="mt-0.5 flex items-baseline">
+        <span className="text-[27px] font-black tracking-tight text-[#1b97e0] md:text-[33px]">
+          STPR<span className="text-[#ec4899]">.</span>
         </span>
-        <span className="text-[20px] font-black text-[#1a347e] md:text-[24px]">ファンサイト</span>
+        <span className="text-[20px] font-black tracking-tight md:text-[24px]">
+          <span className="text-[#ec4899]">ファン</span>
+          <span className="text-[#1b97e0]">サイト</span>
+        </span>
       </span>
     </a>
   )
