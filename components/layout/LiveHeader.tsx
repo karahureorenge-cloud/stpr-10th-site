@@ -17,7 +17,7 @@ const GROUP_LINKS: { label: string; href: string }[] = [
 const SECTION_LINKS: { label: string; href: string }[] = [
   { label: "STPRを初めてみる方へ", href: `${FAN}/stpr-for-beginners` },
   { label: "ユニット", href: `${FAN}/%E3%83%A6%E3%83%8B%E3%83%83%E3%83%88` },
-  { label: "ライブ", href: "/live" },
+  { label: "ライブ", href: `${FAN}/live` },
   { label: "イベント", href: `${FAN}/%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88` },
   { label: "グッズ", href: `${FAN}/%E3%82%B0%E3%83%83%E3%82%BA` },
   { label: "素材", href: `${FAN}/sozai` },

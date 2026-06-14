@@ -1,5 +1,4 @@
-// リンク先はあとで差し替え（# は仮）。
-const ABOUT_HREF = "#"
+const ABOUT_HREF = "https://www.stprinformalfansite.com/siteoverview"
 
 /** 公開 /live ページ専用フッター。当サイトについてボタン＋著作表記。 */
 export default function LiveFooter() {
