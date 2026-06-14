@@ -284,13 +284,18 @@ export async function updateRecord(
   }
   record.publish_status = publishStatus
 
-  if (tableKey === "lives") {
-    record.is_10th = basePath.startsWith("/stpr-10th-anniversary")
-    applyLiveStatus(record)
-  }
-
   // 差分・公開遷移の判定のため旧行を取得。
   const { data: oldRow } = await loadRecordById(tableKey, id)
+
+  if (tableKey === "lives") {
+    // is_10th は既存値を維持する。非公式管理から 10周年ライブを編集しても
+    // 10周年（is_10th=true）から外さない。新規作成時のみスコープで決まる。
+    record.is_10th =
+      typeof oldRow?.is_10th === "boolean"
+        ? oldRow.is_10th
+        : basePath.startsWith("/stpr-10th-anniversary")
+    applyLiveStatus(record)
+  }
 
   const supabase = createAdminClient()
   // .select() で更新行を取得。0行（RLSで弾かれ/対象なし）なら無言失敗をエラー化。

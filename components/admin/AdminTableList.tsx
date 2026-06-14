@@ -45,9 +45,10 @@ export default async function AdminTableList({ basePath, table, label, filters }
     const supabase = createAdminClient()
     let query = supabase.from(table).select("*").is("deleted_at", null)
 
-    // lives はスコープで is_10th を出し分ける。
-    if (table === "lives") {
-      query = query.eq("is_10th", basePath.startsWith("/stpr-10th-anniversary"))
+    // lives のスコープ：10周年管理は is_10th=true のみ。
+    // 非公式管理は全部（10周年で登録したものも含む＝スーパーセット）を表示する。
+    if (table === "lives" && basePath.startsWith("/stpr-10th-anniversary")) {
+      query = query.eq("is_10th", true)
     }
     if (status === "draft" || status === "published") {
       query = query.eq("publish_status", status)

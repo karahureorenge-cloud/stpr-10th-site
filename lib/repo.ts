@@ -384,12 +384,13 @@ export async function getSchedules(): Promise<ScheduleEvent[]> {
 }
 
 /**
- * 公開 /live（非公式ファンサイト）用。10周年（is_10th=true）を除外したライブを
- * 新しい順で返す（公開判定 publish_status は getLives 側で適用済み）。
+ * 公開 /live（非公式ファンサイト）用。10周年（is_10th=true）も含めて全ライブを
+ * 新しい順で返す（非公式は全部入り＝スーパーセット。公開判定 publish_status は getLives 側で適用済み）。
+ * ※ 10周年で登録したものは非公式にも出る／非公式で登録したものは 10周年（getTenthLives）には出ない。
  * groupSlug を渡すとそのグループだけに絞り込む。
  */
 export async function getActiveLives(groupSlug?: string): Promise<Live[]> {
-  const lives = (await getLives()).filter((l) => l.is10th !== true)
+  const lives = await getLives()
   return groupSlug ? lives.filter((l) => l.groupSlug === groupSlug) : lives
 }
 
