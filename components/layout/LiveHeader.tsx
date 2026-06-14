@@ -12,7 +12,7 @@ const GROUP_LINKS: { label: string; href: string }[] = [
   { label: "AMPTAK", href: `${FAN}/amptak` },
   { label: "めておら", href: `${FAN}/meteorites` },
   { label: "すにすて", href: `${FAN}/sneakerstep` },
-  { label: "とぅるりぷ", href: "#" },
+  { label: "とぅるりぷ", href: `${FAN}/true-lip` },
 ]
 const SECTION_LINKS: { label: string; href: string }[] = [
   { label: "STPRを初めてみる方へ", href: `${FAN}/stpr-for-beginners` },
