@@ -43,6 +43,36 @@ function PublishBadge({ value }: { value: unknown }) {
   )
 }
 
+/** 公開/下書きをワンクリックで切り替えるトグル（一覧の各行用）。 */
+function PublishToggle({
+  value,
+  busy,
+  onToggle,
+}: {
+  value: unknown
+  busy: boolean
+  onToggle: () => void
+}) {
+  const published = value === "published"
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={busy}
+      title={published ? "クリックで下書きに（非公開）" : "クリックで公開"}
+      aria-pressed={published}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors disabled:opacity-50 ${
+        published
+          ? "bg-green-100 text-green-700 hover:bg-green-200"
+          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+      }`}
+    >
+      <span className={`h-2 w-2 rounded-full ${published ? "bg-green-500" : "bg-gray-400"}`} />
+      {busy ? "…" : published ? "公開" : "下書き"}
+    </button>
+  )
+}
+
 function renderCell(col: ListColumn, value: unknown): ReactNode {
   if (col.name === "publish_status") return <PublishBadge value={value} />
   if (value == null || value === "") return <span className="text-[#c9bccd]">—</span>
@@ -76,10 +106,13 @@ export default function BulkListTable({ basePath, table, titleField, columns, ro
   const [error, setError] = useState<string | null>(null)
   const [trashOpen, setTrashOpen] = useState(false)
   const [reason, setReason] = useState("")
+  const [rowPending, setRowPending] = useState<string | null>(null)
 
   const ids = rows.map((r) => String(r.id))
   const allSelected = ids.length > 0 && ids.every((id) => selected.has(id))
   const selectedIds = [...selected]
+  // publish_status が一覧の列にある場合はその列をトグル化し、専用列は足さない（重複回避）。
+  const hasPublishCol = columns.some((c) => c.name === "publish_status")
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -106,6 +139,17 @@ export default function BulkListTable({ basePath, table, titleField, columns, ro
     setPending(true)
     setError(null)
     afterAction(await bulkSetPublish(basePath, table, selectedIds, status))
+  }
+
+  // 行ごとに公開/下書きを切り替え（一括APIを単一idで再利用）。
+  const togglePublish = async (id: string, current: unknown) => {
+    const next = current === "published" ? "draft" : "published"
+    setRowPending(id)
+    setError(null)
+    const res = await bulkSetPublish(basePath, table, [id], next)
+    setRowPending(null)
+    if (res?.error) setError(res.error)
+    else router.refresh()
   }
 
   const doTrash = async () => {
@@ -184,7 +228,11 @@ export default function BulkListTable({ basePath, table, titleField, columns, ro
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <PublishBadge value={row.publish_status} />
+                      <PublishToggle
+                        value={row.publish_status}
+                        busy={rowPending === id}
+                        onToggle={() => togglePublish(id, row.publish_status)}
+                      />
                       <p className="truncate font-bold text-[#3a2540]">
                         {title || <span className="text-[#c9bccd]">（無題）</span>}
                       </p>
@@ -228,13 +276,14 @@ export default function BulkListTable({ basePath, table, titleField, columns, ro
                   {col.label}
                 </th>
               ))}
+              {!hasPublishCol && <th className="px-4 py-3 font-medium">公開</th>}
               <th className="px-4 py-3 text-right font-medium">操作</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 2} className="px-4 py-12 text-center text-[#9a8aa0]">
+                <td colSpan={columns.length + 2 + (hasPublishCol ? 0 : 1)} className="px-4 py-12 text-center text-[#9a8aa0]">
                   該当するデータがありません。
                 </td>
               </tr>
@@ -251,10 +300,27 @@ export default function BulkListTable({ basePath, table, titleField, columns, ro
                       const isTitle = col.name === titleField
                       return (
                         <td key={col.name} className={`px-4 py-3 ${isTitle ? "font-bold text-[#3a2540]" : ""}`}>
-                          {renderCell(col, row[col.name])}
+                          {col.name === "publish_status" ? (
+                            <PublishToggle
+                              value={row.publish_status}
+                              busy={rowPending === id}
+                              onToggle={() => togglePublish(id, row.publish_status)}
+                            />
+                          ) : (
+                            renderCell(col, row[col.name])
+                          )}
                         </td>
                       )
                     })}
+                    {!hasPublishCol && (
+                      <td className="px-4 py-3">
+                        <PublishToggle
+                          value={row.publish_status}
+                          busy={rowPending === id}
+                          onToggle={() => togglePublish(id, row.publish_status)}
+                        />
+                      </td>
+                    )}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <Link href={editHref(id)} className="rounded-full border border-gold-300 px-3 py-1 text-xs text-gold-700 transition-colors hover:bg-gold-50">
